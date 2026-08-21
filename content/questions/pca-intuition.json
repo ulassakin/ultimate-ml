@@ -1,0 +1,17 @@
+{
+  "content_version": 2,
+  "id": "pca_q001",
+  "topic_ids": ["pca", "covariance"],
+  "question_type": "conceptual",
+  "question_category": "mathematical_intuition",
+  "difficulty": "intermediate",
+  "question": "Why does PCA select directions of maximum variance, and what does that preserve?",
+  "direct_answer": "High-variance directions capture the largest observed changes in the centered data, so retaining them preserves the most variation—and, for PCA, the best low-rank squared-error reconstruction—for a chosen number of dimensions.",
+  "expanded_answer": "PCA rotates the coordinate system toward directions where the data cloud spreads most. Projecting onto the first few directions retains the strongest patterns of variation while dropping weaker ones. That is a compression objective, not a guarantee that the kept directions are the most useful for every prediction task.",
+  "key_points": ["PCA is fitted after centering training data.", "Eigenvalues measure variance along principal directions.", "Maximum variance is a reconstruction criterion, not a label-aware criterion."],
+  "common_wrong_ideas": ["PCA does not necessarily preserve the features most correlated with the target."],
+  "concept_refresher_topic_id": "pca",
+  "deep_review_sections": ["intuition", "mathematical_foundation"],
+  "related_topic_ids": ["covariance"],
+  "tags": ["pca", "mathematical-foundations", "intuition"]
+}

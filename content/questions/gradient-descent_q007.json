@@ -1,0 +1,37 @@
+{
+  "content_version": 2,
+  "id": "gradient-descent_q007",
+  "topic_ids": [
+    "gradient-descent"
+  ],
+  "question_type": "conceptual",
+  "question_category": "comparison",
+  "difficulty": "intermediate",
+  "question": "How do full-batch gradient descent, SGD, and mini-batch SGD differ in how they estimate the gradient?",
+  "direct_answer": "Full-batch GD uses the whole dataset, SGD uses one example at a time, and mini-batch SGD uses a small subset of examples.",
+  "expanded_answer": "The difference is the source of the gradient estimate. Full-batch gradient descent computes the exact gradient of the empirical loss over all training samples, so its updates are stable but expensive. Stochastic gradient descent replaces that with a single sample, making each update noisy but cheap. Mini-batch SGD is the middle ground: it averages gradients over a small batch, trading off computational efficiency, noise, and stability.",
+  "key_points": [
+    "Full-batch: accurate but expensive",
+    "SGD: noisy but very cheap updates",
+    "Mini-batch: practical compromise",
+    "Noise can help exploration but also adds variance"
+  ],
+  "common_wrong_ideas": [
+    "SGD and mini-batch GD are the same thing",
+    "Full-batch GD is always better because it is more accurate",
+    "Noise in SGD is purely a bug"
+  ],
+  "related_topic_ids": [
+    "gradient-flow"
+  ],
+  "concept_refresher_topic_id": "gradient-descent",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-21T12:04:39.305018+00:00",
+    "user_focus": "Generate conceptual quiz questions that test real understanding of Gradient Descent rather than simple memorization.  Focus especially on: - what the gradient represents intuitively and geometrically, - why the update moves in the negative gradient direction, - the role of the learning rate, - what happens when the learning rate is too small or too large, - the difference between full-batch Gradient Descent, SGD, and mini-batch SGD, - the relationship between backpropagation and Gradient Descent, - local minima, saddle points, and flat regions, - the relationship between Gradient Descent, Momentum, and Adam, - common misconceptions.  Prefer \"why\", \"how\", comparison, misconception, and application questions.  Avoid repetitive definition questions. Avoid numerical calculation exercises. Avoid asking for long derivations.  The questions should be useful for long-term spaced repetition and should be answerable conceptually in a few sentences, while the answer/refresher can go much deeper mathematically.",
+    "review_state": "approved"
+  }
+}

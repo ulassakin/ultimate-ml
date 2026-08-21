@@ -1,0 +1,36 @@
+{
+  "content_version": 2,
+  "id": "gradient-descent_q005",
+  "topic_ids": [
+    "gradient-descent"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mechanism",
+  "difficulty": "beginner",
+  "question": "Why does gradient descent subtract the gradient instead of adding it?",
+  "direct_answer": "Because the gradient points uphill, and subtracting it moves parameters downhill to reduce loss.",
+  "expanded_answer": "The gradient gives the local direction in which the loss increases most rapidly. If you add the gradient, you move toward larger loss values. Subtracting the gradient reverses that direction, so the update steps toward lower loss. This is the core reason the update uses a minus sign.",
+  "key_points": [
+    "Gradient points toward increasing loss",
+    "Minus sign reverses the direction",
+    "Update is designed to reduce loss locally"
+  ],
+  "common_wrong_ideas": [
+    "The minus sign is arbitrary",
+    "The gradient itself is the update direction for minimization",
+    "Subtracting works only because of a convention, not a mathematical reason"
+  ],
+  "related_topic_ids": [
+    "gradient-flow"
+  ],
+  "concept_refresher_topic_id": "gradient-descent",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-21T12:04:39.305018+00:00",
+    "user_focus": "Generate conceptual quiz questions that test real understanding of Gradient Descent rather than simple memorization.  Focus especially on: - what the gradient represents intuitively and geometrically, - why the update moves in the negative gradient direction, - the role of the learning rate, - what happens when the learning rate is too small or too large, - the difference between full-batch Gradient Descent, SGD, and mini-batch SGD, - the relationship between backpropagation and Gradient Descent, - local minima, saddle points, and flat regions, - the relationship between Gradient Descent, Momentum, and Adam, - common misconceptions.  Prefer \"why\", \"how\", comparison, misconception, and application questions.  Avoid repetitive definition questions. Avoid numerical calculation exercises. Avoid asking for long derivations.  The questions should be useful for long-term spaced repetition and should be answerable conceptually in a few sentences, while the answer/refresher can go much deeper mathematically.",
+    "review_state": "approved"
+  }
+}

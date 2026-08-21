@@ -1,0 +1,37 @@
+{
+  "content_version": 2,
+  "id": "gradient-descent_q012",
+  "topic_ids": [
+    "gradient-descent"
+  ],
+  "question_type": "conceptual",
+  "question_category": "comparison",
+  "difficulty": "advanced",
+  "question": "How does Adam differ from plain gradient descent and from momentum-based methods?",
+  "direct_answer": "Adam combines momentum-like first-moment smoothing with adaptive per-parameter step sizes based on second-moment estimates.",
+  "expanded_answer": "Plain gradient descent uses the current gradient directly with one global learning rate. Momentum adds an exponentially smoothed history of gradients to reduce noise and accelerate consistent progress. Adam goes further by tracking both a smoothed gradient and a smoothed estimate of gradient magnitude, then normalizing updates per parameter. This makes Adam adapt the step size differently for each parameter, which is especially useful when gradients have very different scales.",
+  "key_points": [
+    "GD: direct gradient with one learning rate",
+    "Momentum: smoothed first-moment updates",
+    "Adam: momentum plus adaptive per-parameter scaling",
+    "Useful when gradients differ in scale across parameters"
+  ],
+  "common_wrong_ideas": [
+    "Adam is just momentum with a different name",
+    "Adam removes the need to tune any hyperparameters",
+    "Adaptive methods always outperform SGD in every setting"
+  ],
+  "related_topic_ids": [
+    "gradient-flow"
+  ],
+  "concept_refresher_topic_id": "gradient-descent",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-21T12:04:39.305018+00:00",
+    "user_focus": "Generate conceptual quiz questions that test real understanding of Gradient Descent rather than simple memorization.  Focus especially on: - what the gradient represents intuitively and geometrically, - why the update moves in the negative gradient direction, - the role of the learning rate, - what happens when the learning rate is too small or too large, - the difference between full-batch Gradient Descent, SGD, and mini-batch SGD, - the relationship between backpropagation and Gradient Descent, - local minima, saddle points, and flat regions, - the relationship between Gradient Descent, Momentum, and Adam, - common misconceptions.  Prefer \"why\", \"how\", comparison, misconception, and application questions.  Avoid repetitive definition questions. Avoid numerical calculation exercises. Avoid asking for long derivations.  The questions should be useful for long-term spaced repetition and should be answerable conceptually in a few sentences, while the answer/refresher can go much deeper mathematically.",
+    "review_state": "approved"
+  }
+}

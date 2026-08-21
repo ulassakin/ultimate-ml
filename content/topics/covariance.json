@@ -1,0 +1,29 @@
+{
+  "content_version": 2,
+  "id": "covariance",
+  "title": "Covariance",
+  "category": "mathematical_foundations",
+  "subcategories": ["probability", "statistics", "linear_algebra"],
+  "knowledge_type": ["conceptual", "mathematical"],
+  "difficulty": "intermediate",
+  "one_sentence_summary": "Covariance measures how two quantities vary together around their means.",
+  "quick_recall": "Positive covariance means variables tend to move together; negative covariance means they tend to move in opposite directions. Its scale depends on the units of both variables.",
+  "big_picture": "Covariance turns a cloud of data points into a description of its direction and spread. In machine learning it appears in PCA, Gaussian models, uncertainty, and feature redundancy.",
+  "intuition": "Imagine two measurements as a tilted cloud of points. If points above average in one coordinate also tend to be above average in the other, the cloud tilts upward and covariance is positive. A round cloud has little directional co-movement.",
+  "core_explanation": "Covariance averages the product of two centered deviations. Centering matters because it asks whether the variables depart from their usual values together, rather than whether they simply have large raw values. A covariance matrix extends this idea to every pair of features and also records each feature's variance on its diagonal.",
+  "why_it_matters": "PCA uses the covariance matrix to find high-variation directions. A Gaussian Mixture Model uses covariance to describe the shape and orientation of each component.",
+  "mathematical_foundation": {
+    "overview": "From shared deviations to feature geometry",
+    "prerequisites": ["expectation", "variance"],
+    "sections": [{
+      "title": "Population covariance",
+      "explanation": "This equation averages paired deviations from each variable's mean. A positive product means both deviations have the same sign; a negative product means they disagree.",
+      "equations": [{"latex": "\\operatorname{Cov}(X,Y)=\\mathbb{E}[(X-\\mathbb{E}[X])(Y-\\mathbb{E}[Y])]", "explanation": "X and Y are random variables; E is expectation. The centered terms remove the baseline, so the result measures co-variation rather than raw magnitude. Large positive or negative values indicate directional dependence, but zero covariance does not generally prove independence."}]
+    }]
+  },
+  "common_misconceptions": ["Covariance is not normalized, so its magnitude cannot be compared across arbitrary units.", "Zero covariance does not always mean independence."],
+  "prerequisite_topic_ids": [],
+  "related_topic_ids": ["pca"],
+  "tags": ["mathematical-foundations", "statistics", "pca", "gmm"],
+  "sources": [{"title": "AI-assisted explanation; review before public use", "type": "ai-assisted"}]
+}

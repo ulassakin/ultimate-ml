@@ -1,0 +1,36 @@
+{
+  "content_version": 2,
+  "id": "gradient-descent_q010",
+  "topic_ids": [
+    "gradient-descent"
+  ],
+  "question_type": "conceptual",
+  "question_category": "intuition",
+  "difficulty": "intermediate",
+  "question": "What typically happens when the learning rate is too small or too large?",
+  "direct_answer": "Too small makes training very slow; too large can overshoot minima and cause divergence or unstable oscillation.",
+  "expanded_answer": "With a too-small learning rate, updates barely move the parameters, so optimization can take a very long time and may appear stuck. With a too-large learning rate, each update can jump across narrow valleys, overshoot good regions, and produce oscillation or even exploding loss. The learning rate therefore controls a stability–speed tradeoff.",
+  "key_points": [
+    "Too small: slow convergence",
+    "Too large: overshooting and instability",
+    "Learning rate strongly affects optimization dynamics"
+  ],
+  "common_wrong_ideas": [
+    "Larger learning rates always converge faster",
+    "Smaller learning rates always converge to better minima",
+    "Learning rate only matters for SGD, not full-batch GD"
+  ],
+  "related_topic_ids": [
+    "gradient-flow"
+  ],
+  "concept_refresher_topic_id": "gradient-descent",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-21T12:04:39.305018+00:00",
+    "user_focus": "Generate conceptual quiz questions that test real understanding of Gradient Descent rather than simple memorization.  Focus especially on: - what the gradient represents intuitively and geometrically, - why the update moves in the negative gradient direction, - the role of the learning rate, - what happens when the learning rate is too small or too large, - the difference between full-batch Gradient Descent, SGD, and mini-batch SGD, - the relationship between backpropagation and Gradient Descent, - local minima, saddle points, and flat regions, - the relationship between Gradient Descent, Momentum, and Adam, - common misconceptions.  Prefer \"why\", \"how\", comparison, misconception, and application questions.  Avoid repetitive definition questions. Avoid numerical calculation exercises. Avoid asking for long derivations.  The questions should be useful for long-term spaced repetition and should be answerable conceptually in a few sentences, while the answer/refresher can go much deeper mathematically.",
+    "review_state": "approved"
+  }
+}

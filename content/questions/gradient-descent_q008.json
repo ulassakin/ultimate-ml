@@ -1,0 +1,37 @@
+{
+  "content_version": 2,
+  "id": "gradient-descent_q008",
+  "topic_ids": [
+    "gradient-descent"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mechanism",
+  "difficulty": "intermediate",
+  "question": "How is backpropagation related to gradient descent?",
+  "direct_answer": "Backpropagation computes the gradients; gradient descent uses those gradients to update the parameters.",
+  "expanded_answer": "These are distinct steps with different roles. Backpropagation is an efficient algorithm for calculating partial derivatives of the loss with respect to each parameter in a neural network. Gradient descent is the optimization rule that uses those derivatives to adjust the parameters. So backpropagation supplies the information, and gradient descent performs the learning update.",
+  "key_points": [
+    "Backprop computes gradients",
+    "Gradient descent applies the update rule",
+    "Backprop is not itself an optimizer",
+    "They are complementary parts of training"
+  ],
+  "common_wrong_ideas": [
+    "Backpropagation and gradient descent are the same algorithm",
+    "Backpropagation directly changes the weights",
+    "Gradient descent can work without gradients"
+  ],
+  "related_topic_ids": [
+    "gradient-flow"
+  ],
+  "concept_refresher_topic_id": "gradient-descent",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-21T12:04:39.305018+00:00",
+    "user_focus": "Generate conceptual quiz questions that test real understanding of Gradient Descent rather than simple memorization.  Focus especially on: - what the gradient represents intuitively and geometrically, - why the update moves in the negative gradient direction, - the role of the learning rate, - what happens when the learning rate is too small or too large, - the difference between full-batch Gradient Descent, SGD, and mini-batch SGD, - the relationship between backpropagation and Gradient Descent, - local minima, saddle points, and flat regions, - the relationship between Gradient Descent, Momentum, and Adam, - common misconceptions.  Prefer \"why\", \"how\", comparison, misconception, and application questions.  Avoid repetitive definition questions. Avoid numerical calculation exercises. Avoid asking for long derivations.  The questions should be useful for long-term spaced repetition and should be answerable conceptually in a few sentences, while the answer/refresher can go much deeper mathematically.",
+    "review_state": "approved"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "content_version": 2,
+  "id": "gradient-descent_q011",
+  "topic_ids": [
+    "gradient-descent"
+  ],
+  "question_type": "conceptual",
+  "question_category": "architecture",
+  "difficulty": "advanced",
+  "question": "Why can momentum improve gradient descent, especially in ravines or noisy settings?",
+  "direct_answer": "It smooths updates by accumulating past gradients, helping speed up consistent directions and damp oscillations.",
+  "expanded_answer": "Momentum adds a velocity-like state that keeps part of the previous update, so the optimizer does not react only to the current gradient. In directions where gradients keep pointing similarly, momentum builds speed and can move faster through shallow valleys. In directions with alternating signs, it averages out noise and reduces zig-zagging, which makes optimization more stable.",
+  "key_points": [
+    "Uses past gradients to build velocity",
+    "Speeds up consistent descent directions",
+    "Damps oscillations in noisy or narrow valleys",
+    "Acts as a smoother than plain GD"
+  ],
+  "common_wrong_ideas": [
+    "Momentum changes the loss function",
+    "Momentum is just a bigger learning rate",
+    "Momentum always guarantees better final accuracy"
+  ],
+  "related_topic_ids": [
+    "gradient-flow"
+  ],
+  "concept_refresher_topic_id": "gradient-descent",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-21T12:04:39.305018+00:00",
+    "user_focus": "Generate conceptual quiz questions that test real understanding of Gradient Descent rather than simple memorization.  Focus especially on: - what the gradient represents intuitively and geometrically, - why the update moves in the negative gradient direction, - the role of the learning rate, - what happens when the learning rate is too small or too large, - the difference between full-batch Gradient Descent, SGD, and mini-batch SGD, - the relationship between backpropagation and Gradient Descent, - local minima, saddle points, and flat regions, - the relationship between Gradient Descent, Momentum, and Adam, - common misconceptions.  Prefer \"why\", \"how\", comparison, misconception, and application questions.  Avoid repetitive definition questions. Avoid numerical calculation exercises. Avoid asking for long derivations.  The questions should be useful for long-term spaced repetition and should be answerable conceptually in a few sentences, while the answer/refresher can go much deeper mathematically.",
+    "review_state": "approved"
+  }
+}
