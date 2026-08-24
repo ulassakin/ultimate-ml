@@ -47,6 +47,20 @@ class Database:
                     title TEXT NOT NULL, payload_json TEXT NOT NULL, metadata_json TEXT NOT NULL DEFAULT '{}',
                     created_at TEXT NOT NULL, updated_at TEXT NOT NULL
                 );
+                CREATE TABLE IF NOT EXISTS youtube_imports (
+                    id TEXT PRIMARY KEY, state TEXT NOT NULL, source_json TEXT NOT NULL,
+                    transcript_cache_path TEXT NOT NULL, analysis_json TEXT,
+                    created_at TEXT NOT NULL, updated_at TEXT NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS youtube_draft_queue_items (
+                    id TEXT PRIMARY KEY, youtube_import_id TEXT NOT NULL, canonical_concept TEXT NOT NULL,
+                    concept_json TEXT NOT NULL, action TEXT NOT NULL, status TEXT NOT NULL,
+                    draft_id TEXT, error_message TEXT, maximum_cost_usd REAL NOT NULL DEFAULT 0,
+                    actual_cost_usd REAL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL,
+                    UNIQUE(youtube_import_id, canonical_concept)
+                );
+                CREATE INDEX IF NOT EXISTS youtube_draft_queue_import_idx
+                    ON youtube_draft_queue_items(youtube_import_id, status, created_at);
             """)
 
     def review(self, question_id: str, rating: str, answer: str = "", now: datetime | None = None):
@@ -137,6 +151,18 @@ class Database:
         result["metadata"] = json.loads(result.pop("metadata_json"))
         return result
 
+    def list_drafts_by_type(self, draft_type):
+        import json
+        with self.connect() as db:
+            rows = db.execute("SELECT * FROM ai_generation_drafts WHERE draft_type=? ORDER BY updated_at DESC", (draft_type,)).fetchall()
+        result = []
+        for row in rows:
+            item = dict(row)
+            item["payload"] = json.loads(item.pop("payload_json"))
+            item["metadata"] = json.loads(item.pop("metadata_json"))
+            result.append(item)
+        return result
+
     def update_draft(self, draft_id, payload, state=None):
         import json
         now = datetime.now(timezone.utc).isoformat()
@@ -144,3 +170,152 @@ class Database:
             cursor = db.execute("UPDATE ai_generation_drafts SET payload_json=?,state=COALESCE(?,state),updated_at=? WHERE id=?",
                 (json.dumps(payload), state, now, draft_id))
         return cursor.rowcount > 0
+
+    def create_youtube_import(self, import_id, source, transcript_cache_path, state="transcript_ready", now=None):
+        import json
+        now = now or datetime.now(timezone.utc)
+        with self.connect() as db:
+            db.execute("""INSERT INTO youtube_imports
+                (id,state,source_json,transcript_cache_path,analysis_json,created_at,updated_at)
+                VALUES(?,?,?,?,?,?,?)""", (import_id, state, json.dumps(source), transcript_cache_path,
+                None, now.isoformat(), now.isoformat()))
+
+    def get_youtube_import(self, import_id):
+        import json
+        with self.connect() as db:
+            row = db.execute("SELECT * FROM youtube_imports WHERE id=?", (import_id,)).fetchone()
+        if not row:
+            return None
+        result = dict(row)
+        result["source"] = json.loads(result.pop("source_json"))
+        result["analysis"] = json.loads(result.pop("analysis_json")) if result.get("analysis_json") else None
+        result.pop("analysis_json", None)
+        return result
+
+    def update_youtube_import(self, import_id, *, state=None, analysis=None):
+        import json
+        now = datetime.now(timezone.utc).isoformat()
+        with self.connect() as db:
+            cursor = db.execute("""UPDATE youtube_imports SET state=COALESCE(?,state),
+                analysis_json=COALESCE(?,analysis_json),updated_at=? WHERE id=?""",
+                (state, json.dumps(analysis) if analysis is not None else None, now, import_id))
+        return cursor.rowcount > 0
+
+    def youtube_usage(self, import_id):
+        import json
+        with self.connect() as db:
+            rows = db.execute("""SELECT operation_type, estimated_cost_usd, input_tokens, output_tokens,
+                cached_input_tokens, status, metadata_json FROM ai_usage_events ORDER BY id""").fetchall()
+        matching = []
+        for row in rows:
+            item = dict(row)
+            if json.loads(item.pop("metadata_json") or "{}").get("youtube_import_id") == import_id:
+                matching.append(item)
+        return {"estimated_cost_usd": sum(item["estimated_cost_usd"] for item in matching), "events": matching}
+
+    def list_youtube_imports(self):
+        with self.connect() as db:
+            rows = db.execute("SELECT * FROM youtube_imports ORDER BY updated_at DESC").fetchall()
+        return [self._youtube_row(row) for row in rows]
+
+    @staticmethod
+    def _youtube_row(row):
+        import json
+        result = dict(row)
+        result["source"] = json.loads(result.pop("source_json"))
+        result["analysis"] = json.loads(result.pop("analysis_json")) if result.get("analysis_json") else None
+        result.pop("analysis_json", None)
+        return result
+
+    def find_active_video_draft(self, youtube_import_id, canonical_concept):
+        """Find equivalent active work without relying on SQLite JSON extensions."""
+        import json, re
+        normal = lambda value: re.sub(r"[^a-z0-9]+", "-", value.casefold()).strip("-")
+        expected = normal(canonical_concept)
+        with self.connect() as db:
+            rows = db.execute("""SELECT * FROM ai_generation_drafts
+                WHERE draft_type='topic' AND state='draft'""").fetchall()
+        for row in rows:
+            metadata = json.loads(row["metadata_json"] or "{}")
+            if metadata.get("youtube_import_id") == youtube_import_id and normal(metadata.get("youtube_concept", "")) == expected:
+                result = dict(row)
+                result["payload"] = json.loads(result.pop("payload_json"))
+                result["metadata"] = metadata
+                result.pop("metadata_json", None)
+                return result
+        return None
+
+    def list_video_drafts(self, youtube_import_id):
+        import json
+        with self.connect() as db:
+            rows = db.execute("SELECT * FROM ai_generation_drafts WHERE draft_type='topic' ORDER BY created_at").fetchall()
+        result = []
+        for row in rows:
+            metadata = json.loads(row["metadata_json"] or "{}")
+            if metadata.get("youtube_import_id") != youtube_import_id:
+                continue
+            item = dict(row)
+            item["payload"] = json.loads(item.pop("payload_json"))
+            item["metadata"] = metadata
+            item.pop("metadata_json", None)
+            result.append(item)
+        return result
+
+    def create_queue_item(self, item_id, *, youtube_import_id, canonical_concept, concept, action,
+                          status="pending", draft_id=None, maximum_cost_usd=0, now=None):
+        import json
+        now = now or datetime.now(timezone.utc)
+        with self.connect() as db:
+            db.execute("""INSERT OR IGNORE INTO youtube_draft_queue_items
+                (id,youtube_import_id,canonical_concept,concept_json,action,status,draft_id,maximum_cost_usd,created_at,updated_at)
+                VALUES(?,?,?,?,?,?,?,?,?,?)""", (item_id, youtube_import_id, canonical_concept,
+                json.dumps(concept), action, status, draft_id, maximum_cost_usd, now.isoformat(), now.isoformat()))
+        return self.get_queue_item_by_concept(youtube_import_id, canonical_concept)
+
+    def get_queue_item_by_concept(self, youtube_import_id, canonical_concept):
+        with self.connect() as db:
+            row = db.execute("""SELECT * FROM youtube_draft_queue_items
+                WHERE youtube_import_id=? AND canonical_concept=?""", (youtube_import_id, canonical_concept)).fetchone()
+        return self._queue_row(row) if row else None
+
+    def get_queue_item(self, item_id):
+        with self.connect() as db:
+            row = db.execute("SELECT * FROM youtube_draft_queue_items WHERE id=?", (item_id,)).fetchone()
+        return self._queue_row(row) if row else None
+
+    def list_queue_items(self, youtube_import_id=None):
+        with self.connect() as db:
+            if youtube_import_id:
+                rows = db.execute("SELECT * FROM youtube_draft_queue_items WHERE youtube_import_id=? ORDER BY created_at", (youtube_import_id,)).fetchall()
+            else:
+                rows = db.execute("SELECT * FROM youtube_draft_queue_items ORDER BY updated_at DESC").fetchall()
+        return [self._queue_row(row) for row in rows]
+
+    @staticmethod
+    def _queue_row(row):
+        import json
+        result = dict(row)
+        result["concept"] = json.loads(result.pop("concept_json"))
+        return result
+
+    def update_queue_item(self, item_id, *, status=None, draft_id=None, error_message=None, actual_cost_usd=None):
+        now = datetime.now(timezone.utc).isoformat()
+        fields, values = ["updated_at=?"], [now]
+        for name, value in (("status", status), ("draft_id", draft_id), ("error_message", error_message), ("actual_cost_usd", actual_cost_usd)):
+            if value is not None:
+                fields.append(f"{name}=?"); values.append(value)
+        values.append(item_id)
+        with self.connect() as db:
+            cursor = db.execute(f"UPDATE youtube_draft_queue_items SET {', '.join(fields)} WHERE id=?", values)
+        return cursor.rowcount > 0
+
+    def update_queue_item_for_draft(self, draft_id, status):
+        now = datetime.now(timezone.utc).isoformat()
+        with self.connect() as db:
+            db.execute("UPDATE youtube_draft_queue_items SET status=?,updated_at=? WHERE draft_id=?", (status, now, draft_id))
+
+    def next_pending_queue_item(self, youtube_import_id):
+        with self.connect() as db:
+            row = db.execute("""SELECT * FROM youtube_draft_queue_items WHERE youtube_import_id=? AND status='pending'
+                ORDER BY created_at LIMIT 1""", (youtube_import_id,)).fetchone()
+        return self._queue_row(row) if row else None

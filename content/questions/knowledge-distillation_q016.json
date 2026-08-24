@@ -1,0 +1,40 @@
+{
+  "content_version": 2,
+  "id": "knowledge-distillation_q016",
+  "topic_ids": [
+    "knowledge-distillation"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mechanism",
+  "difficulty": "intermediate",
+  "question": "Why is the teacher often frozen or updated without gradients from the student during distillation?",
+  "direct_answer": "So the teacher provides a stable target instead of changing to match the student.",
+  "expanded_answer": "If the teacher were updated directly by the student’s gradients, the target could drift during training and make learning unstable. Freezing the teacher or updating it separately helps keep the supervisory signal well-defined. In self-distillation methods, this stability is especially important for avoiding degenerate solutions.",
+  "key_points": [
+    "Teacher should provide a stable target",
+    "Preventing target drift improves optimization stability",
+    "Helps avoid collapse in self-distillation"
+  ],
+  "common_wrong_ideas": [
+    "Teacher and student must always share identical gradients",
+    "Updating the teacher by student gradients improves supervision"
+  ],
+  "related_topic_ids": [
+    "knowledge-distillation"
+  ],
+  "concept_refresher_topic_id": "knowledge-distillation",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-23T13:24:45.074340+00:00",
+    "user_focus": "",
+    "review_state": "approved",
+    "youtube_import_id": "b00fdfa7-1fcc-4a03-9ef9-0d1fe0b61330"
+  },
+  "local_reconciliation": {
+    "reason": "Removed unavailable generated related topic IDs during local approval recovery",
+    "at": "2026-08-23T13:32:17.732281+00:00"
+  }
+}

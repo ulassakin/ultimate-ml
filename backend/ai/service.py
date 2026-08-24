@@ -61,9 +61,23 @@ class AIService:
     def estimate_maximum(self, operation_type: str, settings: AISettings | None = None) -> float:
         settings = settings or self.settings()
         caps = {"topic_draft": (4000, 5000), "question_draft": (2600, 2600), "regenerate_section": (2200, 1800),
-                "connectivity_test": (100, 32)}
+                "connectivity_test": (100, 32), "youtube_concept_extraction": (5000, 1600),
+                "youtube_topic_expansion": (5000, 5000), "youtube_question_generation": (3000, 2600),
+                "topic_quality_review": (6000, 5000), "youtube_topic_quality_review": (6500, 5000)}
         input_tokens, output_tokens = caps[operation_type]
         return estimate_cost(settings.model, input_tokens, output_tokens, override=settings.pricing_override)
+
+    def estimate_operations(self, operation_types: list[str], settings: AISettings | None = None) -> dict:
+        settings = settings or self.settings()
+        operations = [{"operation_type": item, "maximum_estimated_cost_usd": self.estimate_maximum(item, settings)} for item in operation_types]
+        return {"operations": operations, "maximum_estimated_cost_usd": sum(item["maximum_estimated_cost_usd"] for item in operations),
+                "remaining_budget_usd": self.usage_summary()["remaining_budget_usd"]}
+
+    def require_budget_for_operations(self, operation_types: list[str]) -> dict:
+        estimate = self.estimate_operations(operation_types)
+        if estimate["maximum_estimated_cost_usd"] > estimate["remaining_budget_usd"]:
+            raise BudgetExceededError("Monthly local AI budget would be exceeded by generation plus quality review. Raise it in Settings only if you intentionally want to resume.")
+        return estimate
 
     def usage_summary(self, calendar_month: str | None = None) -> dict:
         from datetime import datetime, timezone

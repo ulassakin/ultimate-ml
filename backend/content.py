@@ -2,6 +2,7 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+from .domain import Difficulty
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTENT = ROOT / "content"
@@ -41,7 +42,7 @@ def load_library(content_root: Path | None = None) -> Library:
     errors: list[str] = []
     topic_map = _index(topics, "topic", errors)
     question_map = _index(questions, "question", errors)
-    allowed_difficulties = {"beginner", "intermediate", "advanced"}
+    allowed_difficulties = {item.value for item in Difficulty}
 
     for topic in topics:
         _required(topic, ["id", "title", "category", "difficulty", "quick_recall", "core_explanation"], errors)

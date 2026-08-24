@@ -1,5 +1,6 @@
 from typing import Literal
 from pydantic import BaseModel, Field
+from ..domain import Difficulty
 
 
 class EquationDraft(BaseModel):
@@ -19,9 +20,24 @@ class MathematicalFoundationDraft(BaseModel):
     sections: list[MathSectionDraft] = []
 
 
+class SuggestedRelationship(BaseModel):
+    title: str
+    relationship: Literal["prerequisite", "related"]
+    reason: str
+
+
+class ExistingTopicRelationship(BaseModel):
+    """An explicit reason is required before a catalog ID becomes a durable edge."""
+    topic_id: str
+    relationship: Literal["prerequisite", "related"]
+    reason: str = Field(min_length=12)
+
+
 class TopicDraft(BaseModel):
     title: str
     category: str
+    difficulty: Difficulty
+    concept_type: Literal["broad_concept", "named_method", "architecture", "loss_or_objective", "mathematical_concept", "training_mechanism", "evaluation_concept"] = "broad_concept"
     tags: list[str] = []
     one_sentence_summary: str
     quick_recall: str
@@ -38,12 +54,31 @@ class TopicDraft(BaseModel):
     mental_models: list[str] = []
     prerequisite_topic_ids: list[str] = []
     related_topic_ids: list[str] = []
+    relationship_justifications: list[ExistingTopicRelationship] = []
+    suggested_new_topic_relationships: list[SuggestedRelationship] = []
     deep_dive: str = ""
+
+
+class QualityIssue(BaseModel):
+    area: Literal["technical_correctness", "taxonomy", "difficulty", "tags", "relationships", "mathematics", "named_method_completeness", "source_grounding", "provenance", "overclaims", "schema"]
+    message: str = Field(min_length=1)
+
+
+class TopicQualityReport(BaseModel):
+    blocking_issues_fixed: list[QualityIssue] = []
+    blocking_issues_remaining: list[QualityIssue] = []
+    warnings: list[QualityIssue] = []
+    confidence: Literal["high", "medium", "low"] = "medium"
+
+
+class TopicQualityReview(BaseModel):
+    corrected_topic: TopicDraft
+    quality_report: TopicQualityReport
 
 
 class QuestionDraftItem(BaseModel):
     question_category: Literal["foundation", "intuition", "mechanism", "architecture", "mathematical_intuition", "comparison", "misconception", "application", "research_relevance"]
-    difficulty: Literal["beginner", "intermediate", "advanced"]
+    difficulty: Difficulty
     question: str
     direct_answer: str
     expanded_answer: str

@@ -1,4 +1,5 @@
 import importlib
+import json
 from fastapi.testclient import TestClient
 import backend.main as main
 from backend.ai.provider import ProviderResult
@@ -36,7 +37,11 @@ def test_ai_settings_work_without_exposing_api_key(tmp_path, monkeypatch):
 def test_ai_topic_draft_uses_fake_provider_and_stays_a_draft(tmp_path, monkeypatch):
     class FakeProvider:
         def structured(self, **kwargs):
-            return ProviderResult({"title":"Gaussian Mixture Models","category":"classical_ml","one_sentence_summary":"A mixture model.","quick_recall":"Soft assignments.","core_explanation":"Weighted Gaussian components."}, 20, 30)
+            if kwargs["schema_name"] == "ultimate_ml_topic_quality_review":
+                candidate=json.loads(kwargs["input_text"])["candidate"]
+                corrected={key:value for key,value in candidate.items() if key in TopicDraft.model_fields}
+                return ProviderResult({"corrected_topic": corrected, "quality_report": {"confidence":"high"}}, 10, 20)
+            return ProviderResult({"title":"Gaussian Mixture Models","category":"classical_ml","difficulty":"intermediate","one_sentence_summary":"A mixture model.","quick_recall":"Soft assignments.","core_explanation":"Weighted Gaussian components.","prerequisite_topic_ids":["missing"],"related_topic_ids":["pca"],"suggested_new_topic_relationships":[{"title":"Expectation","relationship":"prerequisite","reason":"Needed for EM."}]}, 20, 30)
     fake_db = main.Database(tmp_path / "api.db")
     monkeypatch.setattr(main, "database", fake_db)
     monkeypatch.setattr(main, "ai_service", AIService(fake_db, FakeProvider(), api_key="fake"))
@@ -46,6 +51,11 @@ def test_ai_topic_draft_uses_fake_provider_and_stays_a_draft(tmp_path, monkeypat
     draft = response.json()
     assert draft["state"] == "draft"
     assert draft["payload"]["generation_metadata"]["review_state"] == "draft"
+    assert draft["payload"]["difficulty"] == "intermediate"
+    assert draft["payload"]["prerequisite_topic_ids"] == []
+    assert draft["payload"]["related_topic_ids"] == []
+    assert draft["payload"]["quality_status"] == "ready"
+    assert draft["payload"]["suggested_new_topic_relationships"][0]["title"] == "Expectation"
     assert fake_db.get_draft(draft["id"])["state"] == "draft"
 
 
@@ -68,3 +78,13 @@ def test_connectivity_endpoint_uses_fake_backend_only_provider(tmp_path, monkeyp
     result = TestClient(main.app).post("/api/ai/connectivity-test").json()
     assert result["key_valid"] is True
     assert result["billing_model_access"] is True
+
+
+def test_draft_validation_reports_missing_difficulty_before_approval(tmp_path, monkeypatch):
+    fake_db = main.Database(tmp_path / "api.db")
+    fake_db.create_draft("draft", "topic", "Bad", {"title":"Bad","category":"classical_ml","one_sentence_summary":"x","quick_recall":"x","core_explanation":"x"})
+    monkeypatch.setattr(main, "database", fake_db)
+    monkeypatch.setattr(main, "ai_service", AIService(fake_db, api_key="fake"))
+    result = TestClient(main.app).get("/api/ai/drafts/draft/validate").json()
+    assert result["valid"] is False
+    assert "difficulty" in result["errors"][0]["message"]

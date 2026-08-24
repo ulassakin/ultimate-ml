@@ -1,0 +1,40 @@
+{
+  "content_version": 2,
+  "id": "knowledge-distillation_q020",
+  "topic_ids": [
+    "knowledge-distillation"
+  ],
+  "question_type": "conceptual",
+  "question_category": "research_relevance",
+  "difficulty": "advanced",
+  "question": "Why can knowledge distillation be useful in self-supervised vision methods like DINO?",
+  "direct_answer": "It turns teacher-student consistency into a label-free learning signal that shapes strong visual representations.",
+  "expanded_answer": "Self-supervised distillation lets the model learn from consistency across augmented views without any manual labels. A teacher can produce a target for one view, and the student must predict that target from another view, which encourages invariance to viewpoint and augmentation while preserving semantic structure. This makes distillation a core mechanism for modern self-supervised representation learning.",
+  "key_points": [
+    "Creates supervision without labels",
+    "Encourages view invariance",
+    "Learns semantic structure from augmentation consistency"
+  ],
+  "common_wrong_ideas": [
+    "Distillation is only a compression trick",
+    "Self-supervised distillation cannot learn meaningful features"
+  ],
+  "related_topic_ids": [
+    "knowledge-distillation"
+  ],
+  "concept_refresher_topic_id": "knowledge-distillation",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-23T13:24:45.074340+00:00",
+    "user_focus": "",
+    "review_state": "approved",
+    "youtube_import_id": "b00fdfa7-1fcc-4a03-9ef9-0d1fe0b61330"
+  },
+  "local_reconciliation": {
+    "reason": "Removed unavailable generated related topic IDs during local approval recovery",
+    "at": "2026-08-23T13:32:17.730730+00:00"
+  }
+}

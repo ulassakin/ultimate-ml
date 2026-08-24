@@ -10,7 +10,7 @@ from backend.database import Database
 
 
 VALID_TOPIC = {
-    "title": "Gaussian Mixture Models", "category": "classical_ml", "one_sentence_summary": "A weighted sum of Gaussian components.",
+    "title": "Gaussian Mixture Models", "category": "classical_ml", "difficulty": "intermediate", "one_sentence_summary": "A weighted sum of Gaussian components.",
     "quick_recall": "A GMM gives each point a soft component assignment.", "core_explanation": "It models data as a mixture.",
 }
 

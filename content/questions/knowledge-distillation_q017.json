@@ -1,0 +1,40 @@
+{
+  "content_version": 2,
+  "id": "knowledge-distillation_q017",
+  "topic_ids": [
+    "knowledge-distillation"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mechanism",
+  "difficulty": "intermediate",
+  "question": "What does it mean to distill something other than class probabilities?",
+  "direct_answer": "The student matches the teacher’s embeddings, attention maps, hidden states, or token distributions.",
+  "expanded_answer": "Distillation is not limited to final classification outputs. A student can be trained to reproduce internal representations such as feature vectors, attention patterns, or patch-token relationships. This lets the teacher transfer richer structural information than labels alone, which is useful in vision, language, and multimodal models.",
+  "key_points": [
+    "Can match internal representations, not just outputs",
+    "Useful for transferring structure and inductive bias",
+    "Applies across many model types"
+  ],
+  "common_wrong_ideas": [
+    "Distillation only applies to classification logits",
+    "Only the final layer can be distilled"
+  ],
+  "related_topic_ids": [
+    "knowledge-distillation"
+  ],
+  "concept_refresher_topic_id": "knowledge-distillation",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-23T13:24:45.074340+00:00",
+    "user_focus": "",
+    "review_state": "approved",
+    "youtube_import_id": "b00fdfa7-1fcc-4a03-9ef9-0d1fe0b61330"
+  },
+  "local_reconciliation": {
+    "reason": "Removed unavailable generated related topic IDs during local approval recovery",
+    "at": "2026-08-23T13:32:17.728365+00:00"
+  }
+}

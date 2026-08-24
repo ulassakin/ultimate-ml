@@ -3,5 +3,8 @@ __pycache__/
 .pytest_cache/
 *.pyc
 data/*.db
+data/youtube_cache/
+data/topic_revisions/
+data/question_revisions/
 .env
 assets/local/

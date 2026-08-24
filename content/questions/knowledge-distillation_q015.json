@@ -1,0 +1,36 @@
+{
+  "content_version": 2,
+  "id": "knowledge-distillation_q015",
+  "topic_ids": [
+    "knowledge-distillation"
+  ],
+  "question_type": "conceptual",
+  "question_category": "intuition",
+  "difficulty": "beginner",
+  "question": "Why are soft teacher probabilities often more informative than hard labels?",
+  "direct_answer": "They expose relative class similarities and uncertainty.",
+  "expanded_answer": "Hard labels only say which class is correct, while soft probabilities show how the teacher distributes belief across classes. That extra information can reveal which classes are confusing or semantically related, giving the student a richer learning signal. As a result, the student can learn smoother and more structured decision boundaries.",
+  "key_points": [
+    "Soft targets contain class similarity information",
+    "They encode uncertainty, not just the argmax class",
+    "They can make student learning smoother"
+  ],
+  "common_wrong_ideas": [
+    "Soft targets are just noisier labels",
+    "Only the top predicted class matters"
+  ],
+  "related_topic_ids": [
+    "knowledge-distillation"
+  ],
+  "concept_refresher_topic_id": "knowledge-distillation",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-23T13:24:45.074340+00:00",
+    "user_focus": "",
+    "review_state": "approved",
+    "youtube_import_id": "b00fdfa7-1fcc-4a03-9ef9-0d1fe0b61330"
+  }
+}
