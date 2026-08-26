@@ -1,0 +1,37 @@
+{
+  "content_version": 2,
+  "id": "dinov3_q002",
+  "topic_ids": [
+    "dinov3"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mechanism",
+  "difficulty": "intermediate",
+  "question": "How does DINOv3 learn representations without labels?",
+  "direct_answer": "It uses self-distillation: a student matches a teacher’s outputs on different augmented views of the same image.",
+  "expanded_answer": "The model creates a training signal by comparing views of the same image rather than using human labels. The student is trained to reproduce the teacher’s predictions across crops and other augmentations, which encourages invariance to view changes while preserving shared semantic content.",
+  "key_points": [
+    "Self-distillation replaces labels",
+    "Student and teacher see different augmentations",
+    "Learns view-invariant semantic features"
+  ],
+  "common_wrong_ideas": [
+    "Believing self-supervised learning means no training objective",
+    "Thinking the teacher is trained directly from labels"
+  ],
+  "related_topic_ids": [],
+  "relationship_warnings": [
+    "Removed unavailable related topic IDs: DINO, knowledge distillation, self-supervised learning"
+  ],
+  "concept_refresher_topic_id": "dinov3",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T06:37:57.812216+00:00",
+    "user_focus": "",
+    "review_state": "approved",
+    "youtube_import_id": "b00fdfa7-1fcc-4a03-9ef9-0d1fe0b61330"
+  }
+}

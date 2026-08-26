@@ -1,0 +1,37 @@
+{
+  "content_version": 2,
+  "id": "vision-transformer-vit_q004",
+  "topic_ids": [
+    "vision-transformer-vit"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mechanism",
+  "difficulty": "intermediate",
+  "question": "How does self-attention help ViT combine local and global information?",
+  "direct_answer": "Each patch token can attend to every other patch, so information can be mixed globally in a data-dependent way.",
+  "expanded_answer": "In self-attention, a token computes weighted interactions with all other tokens. This lets the model integrate distant context, compare parts of the image, and choose which patches matter most for the current representation. The mixing is learned from data rather than fixed by a convolution kernel.",
+  "key_points": [
+    "Any patch can interact with any other patch",
+    "Context is global, not only local",
+    "Weights are data-dependent"
+  ],
+  "common_wrong_ideas": [
+    "Self-attention only captures long-range dependencies",
+    "Self-attention replaces the need for all local reasoning",
+    "The weights are fixed after initialization"
+  ],
+  "related_topic_ids": [
+    "vision-transformer-vit"
+  ],
+  "concept_refresher_topic_id": "vision-transformer-vit",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-24T06:37:58.794208+00:00",
+    "user_focus": "",
+    "review_state": "approved",
+    "youtube_import_id": "b00fdfa7-1fcc-4a03-9ef9-0d1fe0b61330"
+  }
+}

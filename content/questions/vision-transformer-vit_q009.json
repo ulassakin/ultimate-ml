@@ -1,0 +1,40 @@
+{
+  "content_version": 2,
+  "id": "vision-transformer-vit_q009",
+  "topic_ids": [
+    "vision-transformer-vit"
+  ],
+  "question_type": "conceptual",
+  "question_category": "research_relevance",
+  "difficulty": "advanced",
+  "question": "Why does using patch tokens matter for dense visual features, not just image-level embeddings?",
+  "direct_answer": "Patch tokens preserve information about different spatial regions, which is necessary for dense tasks like segmentation, localization, and correspondence.",
+  "expanded_answer": "An image-level embedding compresses the whole image into one vector, which can discard spatial detail. Patch tokens retain separate representations for different regions, so the model can support downstream tasks that need local structure. This is especially important when self-supervised methods aim to learn useful dense features rather than only global recognition features.",
+  "key_points": [
+    "Patch tokens keep spatially separated features",
+    "Dense tasks need local structure",
+    "Global embeddings can lose region-level detail"
+  ],
+  "common_wrong_ideas": [
+    "A single global vector is always enough",
+    "Dense features are only useful for detection",
+    "Patch tokens and image embeddings contain the same information"
+  ],
+  "related_topic_ids": [
+    "vision-transformer-vit"
+  ],
+  "relationship_warnings": [
+    "Removed unavailable related topic IDs: DINOv3, gram anchoring"
+  ],
+  "concept_refresher_topic_id": "vision-transformer-vit",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-24T06:37:58.794208+00:00",
+    "user_focus": "",
+    "review_state": "approved",
+    "youtube_import_id": "b00fdfa7-1fcc-4a03-9ef9-0d1fe0b61330"
+  }
+}

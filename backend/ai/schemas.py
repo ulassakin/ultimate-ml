@@ -12,6 +12,7 @@ class MathSectionDraft(BaseModel):
     title: str
     explanation: str
     equations: list[EquationDraft] = []
+    prerequisites: list[str] = []
 
 
 class MathematicalFoundationDraft(BaseModel):
@@ -31,6 +32,25 @@ class ExistingTopicRelationship(BaseModel):
     topic_id: str
     relationship: Literal["prerequisite", "related"]
     reason: str = Field(min_length=12)
+    confidence: Literal["high", "medium", "low"]
+
+
+class ResolvedRelationship(BaseModel):
+    """One resolver decision; its enclosing list gives the relationship kind."""
+    topic_id: str
+    reason: str = Field(min_length=12)
+    confidence: Literal["high", "medium", "low"]
+
+
+class RejectedRelationshipCandidate(BaseModel):
+    topic_id: str
+    reason: str = Field(min_length=3)
+
+
+class RelationshipResolution(BaseModel):
+    prerequisites: list[ResolvedRelationship] = []
+    related: list[ResolvedRelationship] = []
+    rejected_candidates: list[RejectedRelationshipCandidate] = []
 
 
 class TopicDraft(BaseModel):

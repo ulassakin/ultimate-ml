@@ -1,0 +1,38 @@
+{
+  "content_version": 2,
+  "id": "contrastive-learning_q006",
+  "topic_ids": [
+    "contrastive-learning"
+  ],
+  "question_type": "conceptual",
+  "question_category": "research_relevance",
+  "difficulty": "intermediate",
+  "question": "Why is contrastive learning important in modern self-supervised learning?",
+  "direct_answer": "It provides a way to learn useful representations from unlabeled data by using pairwise similarity as supervision.",
+  "expanded_answer": "Modern self-supervised learning depends on creating a training signal without human labels. Contrastive learning does that by constructing positive pairs and comparing them against other examples. This makes it a strong foundation for representation learning at scale, especially when annotations are expensive or unavailable.",
+  "key_points": [
+    "Creates supervision from data structure",
+    "Works well without labels",
+    "Key building block in self-supervised representation learning"
+  ],
+  "common_wrong_ideas": [
+    "Self-supervised learning means no training signal at all",
+    "Contrastive learning only matters for one specific model family",
+    "Unlabeled data cannot produce useful features"
+  ],
+  "related_topic_ids": [],
+  "relationship_warnings": [
+    "Removed unavailable related topic IDs: self-supervised learning, contrastive learning, SimCLR"
+  ],
+  "concept_refresher_topic_id": "contrastive-learning",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T08:08:19.504877+00:00",
+    "user_focus": "",
+    "review_state": "approved",
+    "youtube_import_id": "b00fdfa7-1fcc-4a03-9ef9-0d1fe0b61330"
+  }
+}

@@ -4,6 +4,28 @@ Ultimate ML is a local-first machine-learning knowledge base and spaced-repetiti
 
 The core workflow always works offline after content is saved: browse a topic, answer a question, reveal the direct answer and a collapsible deep concept review, rate Again/Hard/Good/Easy, and let SQLite schedule the next review.
 
+## Highlights
+
+- **Learn deeply, then retain it.** Rich ML concept pages pair intuition, practical context, source links, architecture/pipeline assets, and LaTeX mathematics with conceptual spaced-repetition questions.
+- **Local-first by design.** Content is portable JSON; learning history, drafts, settings, usage, and revisions stay in local SQLite. Saved learning works without an API key or network connection.
+- **AI assistance with human control.** Structured topic generation, quality review, relationship resolution, and question drafting all end in editable drafts. Nothing becomes durable content or enters review automatically.
+- **A real quality gate, not just generated JSON.** The pipeline checks taxonomy, concept type, technical claims, equations, source grounding, provenance, sparse relationships, and mathematical prerequisites before a human approves a topic.
+- **Transcript-first video learning.** Turn an accessible YouTube transcript or pasted transcript into ranked ML concepts, explicit create/enrich/ignore decisions, reviewed topics, and eventually spaced repetition—without storing full third-party transcripts in the public knowledge base.
+- **Privacy- and budget-aware AI.** OpenAI calls are backend-only, tests use fakes, API usage is recorded locally, and a configurable **$5/month** local hard guardrail estimates and blocks overspend before paid calls.
+- **Safe local editing and recovery.** Topic/question editors preserve IDs and references, create revisions before durable changes, support restore/retry paths, and never spend AI budget for local edits or approvals.
+
+### The authoring loop
+
+```text
+Idea, transcript, or existing draft
+→ structured AI draft
+→ deterministic checks + optional AI quality review
+→ edit and inspect provenance/relationships/math
+→ explicit approval
+→ conceptual questions
+→ spaced repetition
+```
+
 ## Run locally
 
 Python 3.10+ is required.
@@ -131,3 +153,71 @@ The reviewer repairs a complete structured topic and reports its fixed issues, r
 For video-derived topics the source URL is canonicalized locally to `https://www.youtube.com/watch?v=VIDEO_ID`. Evidence timestamps remain only in `source_provenance.source_derived.timestamp_seconds`; source-derived evidence stays separate from the AI-expanded educational explanation, and full transcripts remain in gitignored local cache.
 
 Before a topic or video-topic expansion, the UI shows separate conservative maximum estimates for generation and quality review plus their total and remaining budget. The two calls are recorded as separate local usage events; the existing $5 monthly application hard guard checks the combined maximum before either paid call. Tests use fake providers only and include regression fixtures for Knowledge Distillation, CLIP, Contrastive Learning, malformed math, strict relationships, canonical YouTube provenance, and unresolved review warnings.
+
+## Existing draft quality review
+
+Earlier paid AI topic drafts are never regenerated or automatically modified when the quality gate improves. Legacy drafts show **Generation: Complete** and **Quality review: Not run** until you explicitly choose **Run quality review** from the draft screen or Draft Queue.
+
+That action sends the existing full draft directly to the current structured reviewer; it never calls the topic generator and never generates, deletes, approves, or otherwise changes questions, review history, imports, approved content, or progress. The preflight shows the original already-paid generation estimate, the separate review maximum, the current reviewer version, and remaining local budget. Existing-draft reviews are recorded separately as `topic_quality_review_existing`.
+
+Before a repair is applied, Ultimate ML stores an exact `pre_quality_review` snapshot in local SQLite. It then stores the repaired topic and report as a separate `quality_review` revision. Both can be viewed and restored from the draft screen. A legacy draft is only changed after its optional reviewer call succeeds; failures retain the original content and are marked **Review failed**. Review states are `not_reviewed`, `reviewing`, `reviewed`, `needs_attention`, and `review_failed`; unresolved blockers produce **Needs attention**, never automatic approval.
+
+Duplicate-spend protection hashes the reviewed draft content together with the reviewer prompt version. Reopening or normally running review again for the same repaired revision reuses the saved result with no API call. **Run explicit re-review** is a distinct user action with a new estimate and one new reviewer call. No batch review is performed automatically; each opt-in review is one draft, one structured reviewer call.
+
+## Topic relationships contract
+
+Ultimate ML preserves both `prerequisite_topic_ids` and `related_topic_ids` as a sparse curriculum graph—not a similarity graph. Empty arrays are valid and often preferred.
+
+- A **prerequisite** is something a learner would be materially blocked or substantially confused without first. Training with an optimizer, seeing a term in an equation, or useful general background is not enough.
+- A **related topic** is a strong direct neighbor, extension, close alternative, important comparison, or central architecture/objective pairing. Generic implementation adjacency is not enough.
+
+The soft targets are 0–3 prerequisites and 0–4 related topics, never quotas. Each proposed durable edge needs a rationale and `high`, `medium`, or `low` confidence. Only high-confidence edges remain durable; medium-confidence edges become suggestions/warnings and low-confidence edges are removed. Missing important concepts remain `suggested_new_topic_relationships`, never substitute weak catalog IDs.
+
+The generator/reviewer and deterministic lint reject generic graph heuristics such as Gradient Descent from ordinary training, CNN from neural-network use, ResNet/Gradient Flow from residual paths, PCA/Covariance from embeddings, and Knowledge Distillation from teacher/student language. Rules are concept-type-aware: architectures prioritize core architectural prerequisites and canonical comparisons; named methods their parent/direct objective; losses real mathematical dependencies; mathematical concepts true dependency chains.
+
+Lint checks invalid IDs, duplicates, self-links, cross-list duplicates, sparsity, and high-confidence rationales. Clearly weak durable relationships are quality-review blocking issues and must be repaired before a draft is Ready. The structured editor explains the strict meanings and shows stored AI rationale/confidence for saved edges. Approved topics are never rewritten automatically; existing drafts gain these rules only when explicitly reviewed or re-reviewed.
+
+## Quality-review calibration
+
+Source-derived evidence and AI-expanded educational explanation remain deliberately separate. A short or limited YouTube segment is a **warning** when the source-derived summary is accurate and the broader material is explicitly labelled AI-expanded; it does not by itself produce **Needs attention**. Blocking source-grounding issues are unsupported claims presented as source-derived, contradictory timestamps/source identity, or missing/misleading provenance.
+
+`Needs attention` is reserved for unresolved technical errors, broken mathematics, invalid taxonomy, misleading attribution, weak durable relationships, missing method-defining content, or contradictory/malformed content. Useful secondary canonical details are warnings. For example, an otherwise correct SimCLR NT-Xent explanation that omits explicit symmetric i→j/j→i wording receives a completeness warning rather than a blocker.
+
+`mathematical_foundation.prerequisites` is independent from the durable topic graph. It contains only tools needed to follow equations. During future generation or an explicit review, generic items such as `cnn` and `gradient-descent` are removed from SimCLR’s mathematical prerequisites and replaced with precise concepts: vectors/dot products, cosine similarity, softmax, cross-entropy, and contrastive-learning intuition. Equivalent policies cover CLIP and Knowledge Distillation. This calibration never automatically changes approved topics, including SimCLR.
+
+## Scalable metadata resolution
+
+Educational authoring and metadata resolution are now separate. Generation and quality review receive only the small taxonomy registry and write the explanatory topic content; they do not receive the full approved-topic catalog or choose durable catalog IDs. The final normal flow is:
+
+```text
+Generate educational draft → quality review/repair → local candidate retrieval
+→ one structured relationship resolver → deterministic guardrails → human review → approval
+```
+
+The taxonomy registry is intentionally small and category-based. Each category records a definition, positive and negative examples, and compatible concept types. It is not a table of topic-specific answers. The approved library stores a compact retrieval document for each topic (`topic_id`, title, one-sentence summary, concept type, category, and selected tags). A dependency-free local TF-IDF/cosine retrieval fallback ranks candidates, so no new embedding model, vector database, or network service is required. `ULTIMATE_ML_METADATA_TOP_K` controls the candidate cap (default 15, bounded to 1–20).
+
+Only those top-K compact candidates are sent in **one** structured relationship-resolution call. The resolver returns prerequisite/related candidates with rationale and confidence plus rejected candidates. High-confidence decisions are durable edges; medium-confidence decisions become suggestions; low confidence is discarded. Retrieval similarity is never itself a relationship. No high-confidence decision cleanly yields `[]` / `[]` and remains approval-ready.
+
+Local guardrails are intentionally universal rather than title-specific: no self, duplicate, overlapping, or nonexistent IDs; sparse maximums; high-confidence rationales; and rejection of stock implementation adjacency such as optimizer→prerequisite, optional CNN/ResNet backbones, residual→gradient-flow, embedding→PCA/covariance, or teacher/student→distillation. The prior title-specific relationship and math-policy table has been retired.
+
+Mathematical prerequisites are separate from the topic graph and use a controlled vocabulary inferred from the equations and their explanations. Architecture/training labels cannot enter this list. Broad topics can record section-level prerequisites, so specialized mathematics (for example covariance) does not become global merely because one subsection uses it. Before a draft becomes Ready, the backend checks that the resolver audit, category/concept type, saved edges/rationales, and controlled math prerequisites agree with the persisted payload; a mismatch is **Needs attention**.
+
+The explicit **Rebuild relationships for topic** action (also available for an active draft) runs only local retrieval, the compact resolver if needed, and deterministic filters. It never regenerates educational prose, questions, source material, or IDs. Approved topics get a local revision backup before the metadata-only save. Results are cached by compact current-topic hash, retrieved candidate hashes, and resolver prompt version; an unchanged rebuild reuses the cached result at $0. Existing topics and paid drafts are never changed automatically.
+
+Generation/quality-review estimates now include the resolver maximum as a separately tracked local usage operation (`metadata_relationship_resolution`). Local retrieval, linting, math normalization, and cached/no-candidate resolutions cost $0. Automated tests use fake providers only.
+
+## Draft action reliability
+
+Draft Queue actions are single-flight local mutations: **Save edits**, **Rebuild relationships**, and **Validate and approve** cannot overlap for one draft. Each action has explicit idle/loading/success/error state and always releases its controls in a `finally` path. The browser applies a 45-second `AbortController` timeout; timeout, network, malformed-response, and backend errors remain visible beside the draft instead of leaving a spinner running.
+
+Errors include the HTTP status, backend message, and available validation field/area. A successful save replaces the browser’s draft state with the returned persisted revision. Rebuild returns the persisted draft as well, including its cache/cost result, and the screen reloads from that response before another action is allowed. Approval saves first, then validates and approves that same persisted revision.
+
+Resolver audit checks remain strict but relationship IDs are canonicalized as sets for comparison, so selector ordering alone cannot cause a mismatch. A rebuild writes `prerequisite_topic_ids`, `related_topic_ids`, their high-confidence justifications, and `metadata_resolution` together in the same SQLite draft payload; it never merges old pre-review relationship fields back afterward. A genuinely changed manual relationship selection remains visible as needing a rebuild rather than silently changing the resolver audit.
+
+## Advanced JSON editor state synchronization
+
+Draft review has one canonical browser payload. The structured editor and **Advanced JSON editor** are views of that same object, not independent draft copies. **Apply advanced JSON** parses and performs a practical local schema check before replacing that canonical payload, immediately re-renders the structured fields (including mathematical prerequisites), marks the draft dirty, and visibly confirms that the JSON is applied locally. It does not make an API call until **Save edits**.
+
+Save serializes that canonical payload directly. The returned persisted draft revision then replaces the canonical payload, refreshes both editing surfaces, records its revision metadata, and clears the dirty state. **Validate & approve** auto-saves a dirty payload first, then validates and approves that exact persisted revision; it cannot validate an earlier view of the form.
+
+Resolver-owned category, relationship, and mathematical-prerequisite metadata remains strict. An edit that differs from the resolver audit is visibly marked stale and must be rebuilt before approval; restoring the exact audited values, such as DINO’s global `Gradients` prerequisite, clears the stale state. JSON parse/schema errors and backend validation errors remain visible locally, and no editor, save, validation, or approval action invokes OpenAI.

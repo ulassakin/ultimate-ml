@@ -1,0 +1,38 @@
+{
+  "content_version": 2,
+  "id": "contrastive-learning_q003",
+  "topic_ids": [
+    "contrastive-learning"
+  ],
+  "question_type": "conceptual",
+  "question_category": "comparison",
+  "difficulty": "intermediate",
+  "question": "How does contrastive learning differ from standard supervised classification?",
+  "direct_answer": "It learns representations by comparing examples rather than predicting fixed class labels.",
+  "expanded_answer": "Supervised classification uses human labels and trains the model to output a class. Contrastive learning usually uses pairwise similarity: it asks whether two examples should be close or far in representation space. That makes contrastive learning especially useful when labels are unavailable or when the goal is to learn general-purpose embeddings rather than a task-specific classifier.",
+  "key_points": [
+    "Uses similarity relations, not class IDs",
+    "Often works without labels",
+    "Optimizes representation quality directly"
+  ],
+  "common_wrong_ideas": [
+    "It is just classification with a different loss",
+    "It cannot use any supervision at all",
+    "It only works for image tasks"
+  ],
+  "related_topic_ids": [],
+  "relationship_warnings": [
+    "Removed unavailable related topic IDs: self-supervised learning, contrastive language-image pretraining (CLIP), feature representations"
+  ],
+  "concept_refresher_topic_id": "contrastive-learning",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T08:08:19.504877+00:00",
+    "user_focus": "",
+    "review_state": "approved",
+    "youtube_import_id": "b00fdfa7-1fcc-4a03-9ef9-0d1fe0b61330"
+  }
+}

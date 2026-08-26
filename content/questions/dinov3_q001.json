@@ -1,0 +1,37 @@
+{
+  "content_version": 2,
+  "id": "dinov3_q001",
+  "topic_ids": [
+    "dinov3"
+  ],
+  "question_type": "conceptual",
+  "question_category": "foundation",
+  "difficulty": "beginner",
+  "question": "What is DINOv3 trying to improve compared with earlier vision representation methods?",
+  "direct_answer": "It aims to learn stronger dense patch features, not just good global image embeddings.",
+  "expanded_answer": "DINOv3 is a self-supervised vision method that is designed so the model learns representations useful at the patch level. That matters because many downstream vision tasks, like detection or segmentation, need spatially informative features rather than only one vector for the whole image.",
+  "key_points": [
+    "Focuses on dense, spatially meaningful features",
+    "Not limited to global image-level embeddings",
+    "Improves transfer to dense downstream tasks"
+  ],
+  "common_wrong_ideas": [
+    "Thinking DINOv3 only improves classification accuracy",
+    "Assuming global embeddings are enough for all vision tasks"
+  ],
+  "related_topic_ids": [],
+  "relationship_warnings": [
+    "Removed unavailable related topic IDs: DINO, self-supervised learning, Vision Transformer (ViT)"
+  ],
+  "concept_refresher_topic_id": "dinov3",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T06:37:57.812216+00:00",
+    "user_focus": "",
+    "review_state": "approved",
+    "youtube_import_id": "b00fdfa7-1fcc-4a03-9ef9-0d1fe0b61330"
+  }
+}

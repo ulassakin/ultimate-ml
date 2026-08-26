@@ -1,0 +1,37 @@
+{
+  "content_version": 2,
+  "id": "dinov3_q004",
+  "topic_ids": [
+    "dinov3"
+  ],
+  "question_type": "conceptual",
+  "question_category": "architecture",
+  "difficulty": "intermediate",
+  "question": "Why does ViT matter for DINOv3’s dense features?",
+  "direct_answer": "Because ViT produces patch tokens that can stay spatially meaningful, which supports dense representations.",
+  "expanded_answer": "A Vision Transformer splits an image into patches and processes them as tokens. That gives DINOv3 access not only to a global image representation but also to patch-level outputs, which is important when the goal is to preserve local spatial information for dense tasks.",
+  "key_points": [
+    "Patch token structure supports locality",
+    "Patch-level outputs are available for downstream use",
+    "Fits dense tasks better than a purely global embedding"
+  ],
+  "common_wrong_ideas": [
+    "Thinking transformers remove all spatial structure",
+    "Assuming only the class token matters"
+  ],
+  "related_topic_ids": [],
+  "relationship_warnings": [
+    "Removed unavailable related topic IDs: Vision Transformer (ViT), DINO, feature representations"
+  ],
+  "concept_refresher_topic_id": "dinov3",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T06:37:57.812216+00:00",
+    "user_focus": "",
+    "review_state": "approved",
+    "youtube_import_id": "b00fdfa7-1fcc-4a03-9ef9-0d1fe0b61330"
+  }
+}

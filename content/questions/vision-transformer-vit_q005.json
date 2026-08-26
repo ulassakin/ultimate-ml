@@ -1,0 +1,37 @@
+{
+  "content_version": 2,
+  "id": "vision-transformer-vit_q005",
+  "topic_ids": [
+    "vision-transformer-vit"
+  ],
+  "question_type": "conceptual",
+  "question_category": "architecture",
+  "difficulty": "beginner",
+  "question": "What is the purpose of the class token in ViT?",
+  "direct_answer": "It provides a learned global token that can aggregate information from all patch tokens for prediction.",
+  "expanded_answer": "The class token is prepended to the token sequence and updated through the transformer layers. Because it attends to the patch tokens, it can collect image-wide information and serve as a compact representation for classification or other downstream tasks.",
+  "key_points": [
+    "It is a learnable token",
+    "It aggregates global information",
+    "Often used for final prediction"
+  ],
+  "common_wrong_ideas": [
+    "The class token is the same as a label token",
+    "Only patch tokens are trained and the class token is fixed",
+    "It replaces positional embeddings"
+  ],
+  "related_topic_ids": [
+    "vision-transformer-vit"
+  ],
+  "concept_refresher_topic_id": "vision-transformer-vit",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-24T06:37:58.794208+00:00",
+    "user_focus": "",
+    "review_state": "approved",
+    "youtube_import_id": "b00fdfa7-1fcc-4a03-9ef9-0d1fe0b61330"
+  }
+}

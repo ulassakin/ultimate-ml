@@ -1,0 +1,40 @@
+{
+  "content_version": 2,
+  "id": "self-supervised-learning_q004",
+  "topic_ids": [
+    "self-supervised-learning"
+  ],
+  "question_type": "conceptual",
+  "question_category": "comparison",
+  "difficulty": "intermediate",
+  "question": "How is self-supervised learning different from supervised learning and classic unsupervised learning?",
+  "direct_answer": "It uses a supervised-style objective, but the labels are created automatically from the data rather than manually annotated.",
+  "expanded_answer": "Supervised learning uses human-provided labels. Classic unsupervised learning typically tries to model data structure directly, such as density estimation or clustering, without a label-like target. Self-supervised learning sits between them: it creates a prediction target from the data, then optimizes a standard loss to learn representations that are useful beyond the proxy task.",
+  "key_points": [
+    "Not human-labeled supervision",
+    "Not purely label-free structure discovery",
+    "Often produces transferable embeddings"
+  ],
+  "common_wrong_ideas": [
+    "Self-supervised learning is just supervised learning with noisy labels",
+    "Unsupervised and self-supervised mean exactly the same thing in every context",
+    "The model never predicts anything in self-supervision"
+  ],
+  "related_topic_ids": [
+    "self-supervised-learning"
+  ],
+  "relationship_warnings": [
+    "Removed unavailable related topic IDs: feature representations"
+  ],
+  "concept_refresher_topic_id": "self-supervised-learning",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-24T15:31:06.413016+00:00",
+    "user_focus": "",
+    "review_state": "approved",
+    "youtube_import_id": "b00fdfa7-1fcc-4a03-9ef9-0d1fe0b61330"
+  }
+}

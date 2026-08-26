@@ -1,0 +1,37 @@
+{
+  "content_version": 2,
+  "id": "dinov3_q006",
+  "topic_ids": [
+    "dinov3"
+  ],
+  "question_type": "conceptual",
+  "question_category": "comparison",
+  "difficulty": "advanced",
+  "question": "How is DINOv3 different from DINO in what it emphasizes?",
+  "direct_answer": "DINOv3 emphasizes dense patch-feature quality more strongly and scales model/data/compute, while DINO mainly established the self-distillation framework.",
+  "expanded_answer": "DINO showed that teacher-student self-distillation can learn strong vision representations without labels. DINOv3 keeps that core idea but pushes harder on dense feature quality, using larger-scale training and gram anchoring so the representations are more useful for spatially detailed transfer tasks.",
+  "key_points": [
+    "Builds on DINO’s self-distillation idea",
+    "Scales model size, data, and compute",
+    "Adds anchoring to improve dense feature stability"
+  ],
+  "common_wrong_ideas": [
+    "Thinking DINOv3 is a completely unrelated method",
+    "Assuming scaling alone is the only change"
+  ],
+  "related_topic_ids": [],
+  "relationship_warnings": [
+    "Removed unavailable related topic IDs: DINO, DINOv3, knowledge distillation, self-supervised learning"
+  ],
+  "concept_refresher_topic_id": "dinov3",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T06:37:57.812216+00:00",
+    "user_focus": "",
+    "review_state": "approved",
+    "youtube_import_id": "b00fdfa7-1fcc-4a03-9ef9-0d1fe0b61330"
+  }
+}

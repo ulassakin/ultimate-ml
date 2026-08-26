@@ -47,6 +47,22 @@ class Database:
                     title TEXT NOT NULL, payload_json TEXT NOT NULL, metadata_json TEXT NOT NULL DEFAULT '{}',
                     created_at TEXT NOT NULL, updated_at TEXT NOT NULL
                 );
+                CREATE TABLE IF NOT EXISTS ai_draft_quality_revisions (
+                    id TEXT PRIMARY KEY, draft_id TEXT NOT NULL, revision_type TEXT NOT NULL,
+                    payload_json TEXT NOT NULL, payload_hash TEXT NOT NULL, source_payload_hash TEXT NOT NULL,
+                    reviewer_prompt_version TEXT, quality_report_json TEXT, created_at TEXT NOT NULL
+                );
+                CREATE INDEX IF NOT EXISTS ai_draft_quality_revision_lookup_idx
+                    ON ai_draft_quality_revisions(draft_id, source_payload_hash, reviewer_prompt_version, revision_type, created_at);
+                CREATE TABLE IF NOT EXISTS topic_retrieval_documents (
+                    topic_id TEXT PRIMARY KEY, content_hash TEXT NOT NULL, document_json TEXT NOT NULL, updated_at TEXT NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS topic_metadata_resolution_cache (
+                    cache_key TEXT PRIMARY KEY, topic_hash TEXT NOT NULL, candidate_hashes_json TEXT NOT NULL,
+                    resolver_prompt_version TEXT NOT NULL, result_json TEXT NOT NULL, created_at TEXT NOT NULL
+                );
+                CREATE INDEX IF NOT EXISTS topic_metadata_resolution_cache_lookup_idx
+                    ON topic_metadata_resolution_cache(topic_hash, resolver_prompt_version);
                 CREATE TABLE IF NOT EXISTS youtube_imports (
                     id TEXT PRIMARY KEY, state TEXT NOT NULL, source_json TEXT NOT NULL,
                     transcript_cache_path TEXT NOT NULL, analysis_json TEXT,
@@ -170,6 +186,84 @@ class Database:
             cursor = db.execute("UPDATE ai_generation_drafts SET payload_json=?,state=COALESCE(?,state),updated_at=? WHERE id=?",
                 (json.dumps(payload), state, now, draft_id))
         return cursor.rowcount > 0
+
+    def upsert_retrieval_document(self, topic_id, content_hash, document, now=None):
+        import json
+        now = now or datetime.now(timezone.utc)
+        with self.connect() as db:
+            db.execute("""INSERT INTO topic_retrieval_documents(topic_id,content_hash,document_json,updated_at) VALUES(?,?,?,?)
+                ON CONFLICT(topic_id) DO UPDATE SET content_hash=excluded.content_hash,document_json=excluded.document_json,updated_at=excluded.updated_at""",
+                (topic_id, content_hash, json.dumps(document), now.isoformat()))
+
+    def get_retrieval_documents(self):
+        import json
+        with self.connect() as db:
+            rows = db.execute("SELECT * FROM topic_retrieval_documents ORDER BY topic_id").fetchall()
+        return [{"topic_id": row["topic_id"], "content_hash": row["content_hash"], "document": json.loads(row["document_json"])} for row in rows]
+
+    def get_metadata_resolution_cache(self, cache_key):
+        import json
+        with self.connect() as db:
+            row = db.execute("SELECT * FROM topic_metadata_resolution_cache WHERE cache_key=?", (cache_key,)).fetchone()
+        if not row:
+            return None
+        result = dict(row)
+        result["candidate_hashes"] = json.loads(result.pop("candidate_hashes_json"))
+        result["result"] = json.loads(result.pop("result_json"))
+        return result
+
+    def set_metadata_resolution_cache(self, cache_key, topic_hash, candidate_hashes, resolver_prompt_version, result, now=None):
+        import json
+        now = now or datetime.now(timezone.utc)
+        with self.connect() as db:
+            db.execute("""INSERT INTO topic_metadata_resolution_cache(cache_key,topic_hash,candidate_hashes_json,resolver_prompt_version,result_json,created_at)
+                VALUES(?,?,?,?,?,?) ON CONFLICT(cache_key) DO UPDATE SET result_json=excluded.result_json,created_at=excluded.created_at""",
+                (cache_key, topic_hash, json.dumps(candidate_hashes), resolver_prompt_version, json.dumps(result), now.isoformat()))
+
+    def create_draft_quality_revision(self, revision_id, draft_id, revision_type, payload, *, source_payload_hash,
+                                      reviewer_prompt_version=None, quality_report=None, now=None):
+        import hashlib
+        import json
+        now = now or datetime.now(timezone.utc)
+        encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+        payload_hash = hashlib.sha256(encoded.encode("utf-8")).hexdigest()
+        with self.connect() as db:
+            db.execute("""INSERT INTO ai_draft_quality_revisions
+                (id,draft_id,revision_type,payload_json,payload_hash,source_payload_hash,reviewer_prompt_version,quality_report_json,created_at)
+                VALUES(?,?,?,?,?,?,?,?,?)""", (revision_id, draft_id, revision_type, json.dumps(payload), payload_hash,
+                source_payload_hash, reviewer_prompt_version, json.dumps(quality_report) if quality_report is not None else None,
+                now.isoformat()))
+        return {"id": revision_id, "draft_id": draft_id, "revision_type": revision_type, "payload_hash": payload_hash,
+                "source_payload_hash": source_payload_hash, "reviewer_prompt_version": reviewer_prompt_version,
+                "quality_report": quality_report, "created_at": now.isoformat()}
+
+    def list_draft_quality_revisions(self, draft_id):
+        import json
+        with self.connect() as db:
+            rows = db.execute("SELECT * FROM ai_draft_quality_revisions WHERE draft_id=? ORDER BY created_at DESC", (draft_id,)).fetchall()
+        return [self._draft_quality_revision(row) for row in rows]
+
+    def get_draft_quality_revision(self, draft_id, revision_id):
+        with self.connect() as db:
+            row = db.execute("SELECT * FROM ai_draft_quality_revisions WHERE draft_id=? AND id=?", (draft_id, revision_id)).fetchone()
+        return self._draft_quality_revision(row) if row else None
+
+    def find_completed_draft_quality_review(self, draft_id, source_payload_hash, reviewer_prompt_version):
+        with self.connect() as db:
+            row = db.execute("""SELECT * FROM ai_draft_quality_revisions WHERE draft_id=? AND source_payload_hash=?
+                AND reviewer_prompt_version=? AND revision_type='quality_review' ORDER BY created_at DESC LIMIT 1""",
+                (draft_id, source_payload_hash, reviewer_prompt_version)).fetchone()
+        return self._draft_quality_revision(row) if row else None
+
+    @staticmethod
+    def _draft_quality_revision(row):
+        import json
+        if not row:
+            return None
+        result = dict(row)
+        result["payload"] = json.loads(result.pop("payload_json"))
+        result["quality_report"] = json.loads(result.pop("quality_report_json")) if result.get("quality_report_json") else None
+        return result
 
     def create_youtube_import(self, import_id, source, transcript_cache_path, state="transcript_ready", now=None):
         import json

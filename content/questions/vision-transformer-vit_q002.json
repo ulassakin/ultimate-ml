@@ -1,0 +1,37 @@
+{
+  "content_version": 2,
+  "id": "vision-transformer-vit_q002",
+  "topic_ids": [
+    "vision-transformer-vit"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mechanism",
+  "difficulty": "beginner",
+  "question": "Why does ViT split an image into patches before applying a transformer?",
+  "direct_answer": "Because transformers expect a sequence of tokens, so patches provide a tokenized representation of the image.",
+  "expanded_answer": "A transformer does not directly consume a 2D image grid in the same way a convolutional network does. Patch splitting turns local regions of the image into discrete units that can be flattened, embedded, and passed as a sequence, making the image compatible with self-attention.",
+  "key_points": [
+    "Patch splitting creates tokens",
+    "Flattened patches are projected into embeddings",
+    "This bridges images and sequence models"
+  ],
+  "common_wrong_ideas": [
+    "Patch splitting is only for reducing image resolution",
+    "The patch size does not matter",
+    "The transformer can only work on text tokens"
+  ],
+  "related_topic_ids": [
+    "vision-transformer-vit"
+  ],
+  "concept_refresher_topic_id": "vision-transformer-vit",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-24T06:37:58.794208+00:00",
+    "user_focus": "",
+    "review_state": "approved",
+    "youtube_import_id": "b00fdfa7-1fcc-4a03-9ef9-0d1fe0b61330"
+  }
+}

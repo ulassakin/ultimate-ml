@@ -1,0 +1,37 @@
+{
+  "content_version": 2,
+  "id": "vision-transformer-vit_q003",
+  "topic_ids": [
+    "vision-transformer-vit"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mechanism",
+  "difficulty": "intermediate",
+  "question": "What role does positional information play in ViT?",
+  "direct_answer": "It tells the model where each patch came from in the original image.",
+  "expanded_answer": "Self-attention by itself is permutation-invariant, so the model would not know which token corresponds to the top-left or bottom-right region. Positional embeddings inject spatial order so the transformer can recover the image layout and reason about structure.",
+  "key_points": [
+    "Self-attention alone does not encode order",
+    "Positional embeddings restore spatial arrangement",
+    "Spatial layout is essential for vision"
+  ],
+  "common_wrong_ideas": [
+    "Attention automatically knows image coordinates",
+    "Positional information is optional and never matters",
+    "It only helps classification, not representation learning"
+  ],
+  "related_topic_ids": [
+    "vision-transformer-vit"
+  ],
+  "concept_refresher_topic_id": "vision-transformer-vit",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-24T06:37:58.794208+00:00",
+    "user_focus": "",
+    "review_state": "approved",
+    "youtube_import_id": "b00fdfa7-1fcc-4a03-9ef9-0d1fe0b61330"
+  }
+}

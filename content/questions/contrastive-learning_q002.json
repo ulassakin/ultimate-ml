@@ -1,0 +1,38 @@
+{
+  "content_version": 2,
+  "id": "contrastive-learning_q002",
+  "topic_ids": [
+    "contrastive-learning"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mechanism",
+  "difficulty": "intermediate",
+  "question": "Why are positive pairs so important in contrastive learning?",
+  "direct_answer": "They define what the model should treat as the same underlying example.",
+  "expanded_answer": "Positive pairs provide the training signal for invariance. If two augmented views or paired modalities come from the same underlying instance, the model is encouraged to map them nearby in embedding space. Without a clear positive-pair definition, the method would not know what structure to preserve, so the representation would not learn the intended semantic similarity.",
+  "key_points": [
+    "Positives define the invariance target",
+    "They come from the same underlying sample or match",
+    "They anchor the objective"
+  ],
+  "common_wrong_ideas": [
+    "Positives are just extra data points",
+    "Any random pair can be positive",
+    "The model learns without specifying what counts as a match"
+  ],
+  "related_topic_ids": [],
+  "relationship_warnings": [
+    "Removed unavailable related topic IDs: contrastive learning, CLIP, SimCLR"
+  ],
+  "concept_refresher_topic_id": "contrastive-learning",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T08:08:19.504877+00:00",
+    "user_focus": "",
+    "review_state": "approved",
+    "youtube_import_id": "b00fdfa7-1fcc-4a03-9ef9-0d1fe0b61330"
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "content_version": 2,
+  "id": "self-supervised-learning_q008",
+  "topic_ids": [
+    "self-supervised-learning"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mechanism",
+  "difficulty": "advanced",
+  "question": "How do teacher-student self-distillation methods like DINO avoid collapse without labels?",
+  "direct_answer": "They train a student to match a teacher whose outputs are stabilized, sharpened, and updated without direct gradient flow from the student.",
+  "expanded_answer": "In DINO-style methods, the teacher is usually an exponential-moving-average copy of the student and is not updated by backpropagating through the student loss. Additional tricks such as centering and temperature sharpening prevent trivial constant outputs. Multi-crop views encourage consistency across scales and crops, so the student learns meaningful invariances rather than collapsing to identical predictions for every input.",
+  "key_points": [
+    "Teacher is stabilized, often by EMA",
+    "No gradients flow through teacher updates",
+    "Centering and sharpening help prevent collapse",
+    "Multi-crop encourages robust invariance"
+  ],
+  "common_wrong_ideas": [
+    "Distillation always needs labels",
+    "The teacher is trained by the same gradients as the student",
+    "Matching outputs automatically avoids collapse with no extra design"
+  ],
+  "related_topic_ids": [],
+  "relationship_warnings": [
+    "Removed unavailable related topic IDs: knowledge distillation, DINO, self-supervised learning"
+  ],
+  "concept_refresher_topic_id": "self-supervised-learning",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-24T15:31:06.413016+00:00",
+    "user_focus": "",
+    "review_state": "approved",
+    "youtube_import_id": "b00fdfa7-1fcc-4a03-9ef9-0d1fe0b61330"
+  }
+}

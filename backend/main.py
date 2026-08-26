@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Literal
+import hashlib
 import json
 import logging
 import os
@@ -17,9 +18,12 @@ from .content import ROOT, load_library
 from .database import Database
 from .ai.prompts import (QUESTION_INSTRUCTIONS, QUESTION_PROMPT_VERSION, TOPIC_INSTRUCTIONS, TOPIC_PROMPT_VERSION,
                          TOPIC_QUALITY_REVIEW_INSTRUCTIONS, TOPIC_QUALITY_REVIEW_PROMPT_VERSION,
-                         YOUTUBE_CONCEPT_INSTRUCTIONS, YOUTUBE_CONCEPT_PROMPT_VERSION)
-from .ai.schemas import QuestionDraftBatch, QuestionDraftItem, RegeneratedSection, TopicDraft, TopicQualityReview
-from .ai.topic_quality import final_quality_report, normalize_topic, taxonomy_context
+                         YOUTUBE_CONCEPT_INSTRUCTIONS, YOUTUBE_CONCEPT_PROMPT_VERSION,
+                         RELATIONSHIP_RESOLVER_INSTRUCTIONS, RELATIONSHIP_RESOLVER_PROMPT_VERSION)
+from .ai.schemas import QuestionDraftBatch, QuestionDraftItem, RegeneratedSection, TopicDraft, TopicQualityReview, RelationshipResolution
+from .ai.topic_quality import (apply_relationship_resolution, canonicalize_relationship_metadata, final_quality_report,
+                               metadata_payload_consistency, normalize_topic, relationship_lint, taxonomy_context)
+from .ai.metadata_resolution import MetadataResolutionService, compact_topic_payload
 from .domain import Difficulty, ExplanationDepth
 from .ai.service import AIService, AIUnavailableError, BudgetExceededError, StructuredOutputError
 from .ai.structured import strict_response_schema
@@ -89,6 +93,11 @@ class RegenerateSectionInput(BaseModel):
     focus: str = ""
 
 
+class ExistingDraftQualityReviewInput(BaseModel):
+    # Normal runs are idempotent; force is an intentional, separately estimated re-review.
+    force: bool = False
+
+
 class YoutubeImportInput(BaseModel):
     video_url: str = ""
     pasted_transcript: str = ""
@@ -144,7 +153,49 @@ def _topic_catalog():
 
 
 def _topic_quality_operations(operation_type: str) -> list[str]:
-    return [operation_type, "youtube_topic_quality_review" if operation_type == "youtube_topic_expansion" else "topic_quality_review"]
+    return [operation_type, "youtube_topic_quality_review" if operation_type == "youtube_topic_expansion" else "topic_quality_review",
+            "metadata_relationship_resolution"]
+
+
+def _metadata_service() -> MetadataResolutionService:
+    # Construct from the active database so isolated test databases remain isolated.
+    return MetadataResolutionService(database)
+
+
+def _resolve_topic_metadata(payload: dict, *, assigned_topic_id: str, metadata: dict | None = None) -> tuple[dict, dict, float, bool, list[dict], list[dict]]:
+    """Local retrieval plus one resolver call; does not change educational fields."""
+    service = _metadata_service()
+    candidates = service.retrieve(payload, library.topics)
+    cache_key, topic_hash, candidate_hashes = service.cache_key(payload, candidates, RELATIONSHIP_RESOLVER_PROMPT_VERSION)
+    cached = database.get_metadata_resolution_cache(cache_key)
+    result = None
+    cost, reused = 0.0, bool(cached)
+    if cached:
+        result = cached["result"]
+    elif not candidates:
+        result = {"prerequisites": [], "related": [], "rejected_candidates": [], "resolver_version": RELATIONSHIP_RESOLVER_PROMPT_VERSION}
+        database.set_metadata_resolution_cache(cache_key, topic_hash, candidate_hashes, RELATIONSHIP_RESOLVER_PROMPT_VERSION, result)
+        reused = True
+    else:
+        request = {"current_topic": compact_topic_payload(payload), "retrieved_candidates": candidates,
+                   "taxonomy": taxonomy_context(), "relationship_definitions": {
+                       "prerequisite": "Material learning dependency; lack of it substantially blocks or confuses understanding.",
+                       "related": "Strong neighbor, extension, alternative, comparison, or central architecture/objective pairing."}}
+        try:
+            resolved, _, cost = ai_service.generate(operation_type="metadata_relationship_resolution",
+                instructions=RELATIONSHIP_RESOLVER_INSTRUCTIONS, input_text=json.dumps(request),
+                schema_name="ultimate_ml_relationship_resolution", schema=strict_response_schema(RelationshipResolution),
+                validate=RelationshipResolution.model_validate, max_output_tokens=1600,
+                metadata={"prompt_version": RELATIONSHIP_RESOLVER_PROMPT_VERSION, "topic_content_hash": topic_hash,
+                          "retrieved_candidate_count": len(candidates), **(metadata or {})})
+        except Exception as exc:
+            _ai_error(exc)
+        result = {**resolved.model_dump(), "resolver_version": RELATIONSHIP_RESOLVER_PROMPT_VERSION}
+        database.set_metadata_resolution_cache(cache_key, topic_hash, candidate_hashes, RELATIONSHIP_RESOLVER_PROMPT_VERSION, result)
+    resolved_payload, warnings, blocking = apply_relationship_resolution(payload, result, candidates=candidates, assigned_topic_id=assigned_topic_id)
+    resolved_payload["metadata_resolution"].update({"cache_key": cache_key, "cached": reused,
+        "topic_hash": topic_hash, "candidate_hashes": candidate_hashes, "resolver_prompt_version": RELATIONSHIP_RESOLVER_PROMPT_VERSION})
+    return resolved_payload, result, cost, reused, warnings, blocking
 
 
 def _queue_status_for_draft(state: str) -> str:
@@ -256,8 +307,8 @@ def _generate_topic_draft(body: TopicDraftInput, *, operation_type="topic_draft"
               "include_mathematics": body.include_mathematics, "include_practical_examples": body.include_examples,
               "include_misconceptions": body.include_misconceptions, "suggest_related_topics": body.suggest_related_topics,
               "concept_type_options": ["broad_concept", "named_method", "architecture", "loss_or_objective", "mathematical_concept", "training_mechanism", "evaluation_concept"],
-              "taxonomy": taxonomy_context(), "topic_catalog": catalog,
-              "relationship_rules": "Only use IDs from topic_catalog with a matching explicit relationship_justification. A prerequisite materially blocks understanding; training details and useful background do not qualify. Leave arrays empty rather than forcing weak relationships. Put missing-but-useful concepts only in suggested_new_topic_relationships.",
+              "taxonomy": taxonomy_context(),
+              "relationship_rules": "Do not select catalog IDs. Leave durable relationship arrays empty; a separate metadata resolver handles sparse graph edges after quality review.",
               "future_source_context": source_context or "None supplied. Do not invent sources."}
     try:
         draft, result, cost = ai_service.generate(operation_type=operation_type, instructions=TOPIC_INSTRUCTIONS,
@@ -269,7 +320,7 @@ def _generate_topic_draft(body: TopicDraftInput, *, operation_type="topic_draft"
     payload, initial_warnings, initial_blocking = normalize_topic(draft.model_dump(), requested_title=body.title,
         assigned_topic_id=assigned_topic_id, catalog=catalog, source_context=source_context)
     review_request = {"requested_title": body.title, "requested_category": body.category, "requested_difficulty": body.difficulty.value,
-        "focus": body.focus, "taxonomy": taxonomy_context(), "topic_catalog": catalog, "candidate": payload,
+        "focus": body.focus, "taxonomy": taxonomy_context(), "candidate": payload,
         "source_context": source_context or "None supplied"}
     review_operation = operation_types[1]
     try:
@@ -289,8 +340,12 @@ def _generate_topic_draft(body: TopicDraftInput, *, operation_type="topic_draft"
             for field in ("architecture", "why_it_matters", "knowledge_type", "related_topics"):
                 if field in base_topic:
                     payload[field] = base_topic[field]
-    quality_report = final_quality_report(reviewed.quality_report.model_dump(), initial_warnings + review_warnings,
-        review_blocking)
+    payload, resolution, resolver_cost, resolver_reused, resolver_warnings, resolver_blocking = _resolve_topic_metadata(
+        payload, assigned_topic_id=assigned_topic_id, metadata={"generated_draft_title": body.title, **(extra_metadata or {})})
+    quality_report = final_quality_report(reviewed.quality_report.model_dump(), initial_warnings + review_warnings + resolver_warnings,
+        review_blocking + resolver_blocking, payload=payload)
+    consistency_blocking = metadata_payload_consistency(payload, quality_report, catalog=catalog, assigned_topic_id=assigned_topic_id)
+    quality_report["blocking_issues_remaining"] += consistency_blocking
     # Initial lint findings were deliberately presented to the repairer. They are
     # history of what the gate caught, not blockers once the corrected topic passes.
     quality_report["blocking_issues_fixed"] = initial_blocking + quality_report["blocking_issues_fixed"]
@@ -302,11 +357,13 @@ def _generate_topic_draft(body: TopicDraftInput, *, operation_type="topic_draft"
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "user_focus": body.focus, "review_state": "draft", **(extra_metadata or {})}
     draft_id = str(uuid4())
-    total_cost = cost + review_cost
-    database.create_draft(draft_id, "topic", payload["title"], payload, {"request_cost_usd": total_cost, "quality_review_cost_usd": review_cost, **(extra_metadata or {})})
+    total_cost = cost + review_cost + resolver_cost
+    database.create_draft(draft_id, "topic", payload["title"], payload, {"request_cost_usd": total_cost, "quality_review_cost_usd": review_cost,
+        "metadata_resolution_cost_usd": resolver_cost, **(extra_metadata or {})})
     return {"id": draft_id, "state": "draft", "payload": payload, "usage": {"input_tokens": result.input_tokens,
             "output_tokens": result.output_tokens, "estimated_cost_usd": total_cost,
             "generation_estimated_cost_usd": cost, "quality_review_estimated_cost_usd": review_cost,
+            "metadata_resolution_estimated_cost_usd": resolver_cost, "metadata_resolution_cached": resolver_reused,
             "maximum_estimated_cost_usd": preflight["maximum_estimated_cost_usd"]}, "budget": ai_service.usage_summary()}
 
 
@@ -324,7 +381,110 @@ def _sanitize_draft_relationships(payload: dict) -> dict:
         if invalid:
             warnings.append({"field": field, "message": f"Removed unavailable topic IDs: {', '.join(invalid)}"})
     copy["relationship_warnings"] = warnings
-    return copy
+    return canonicalize_relationship_metadata(copy)
+
+
+def _payload_hash(payload: dict) -> str:
+    """Hash authoring content, not transient review UI metadata."""
+    copy = json.loads(json.dumps(payload))
+    for field in ("existing_quality_review", "quality_report", "quality_status", "relationship_warnings", "durable_topic_id"):
+        copy.pop(field, None)
+    encoded = json.dumps(copy, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
+
+
+def _draft_quality_state(payload: dict) -> dict:
+    existing = payload.get("existing_quality_review")
+    if isinstance(existing, dict):
+        return existing
+    # Pre-gate drafts remain untouched; this response-only default makes their
+    # upgrade path visible without writing to any already-paid draft.
+    if payload.get("quality_status") == "needs_attention":
+        return {"status": "needs_attention", "reviewer_prompt_version": payload.get("generation_metadata", {}).get("quality_review_prompt_version")}
+    if payload.get("quality_report"):
+        return {"status": "reviewed", "reviewer_prompt_version": payload.get("generation_metadata", {}).get("quality_review_prompt_version")}
+    return {"status": "not_reviewed", "reviewer_prompt_version": None}
+
+
+def _draft_public_quality(draft: dict) -> dict:
+    return {**draft, "quality_review": _draft_quality_state(draft["payload"])}
+
+
+def _existing_review_source_context(payload: dict) -> dict | None:
+    source = payload.get("source_provenance", {}).get("source_derived")
+    if not isinstance(source, dict) or not source.get("video_url") or not source.get("title"):
+        return None
+    return source
+
+
+def _run_existing_draft_quality_review(draft: dict, *, force: bool = False) -> dict:
+    if draft["draft_type"] != "topic" or draft["state"] != "draft":
+        raise HTTPException(409, "Only active topic drafts can be quality-reviewed.")
+    original = json.loads(json.dumps(draft["payload"]))
+    source_hash = _payload_hash(original)
+    current_state = _draft_quality_state(original)
+    reviewer_version = TOPIC_QUALITY_REVIEW_PROMPT_VERSION
+    if not force and current_state.get("status") in {"reviewed", "needs_attention"} and current_state.get("reviewer_prompt_version") == reviewer_version and current_state.get("reviewed_payload_hash") == source_hash:
+        return {"draft": _draft_public_quality(draft), "reused": True, "reason": "This exact repaired revision already passed the current reviewer.", "budget": ai_service.usage_summary()}
+    previous = database.find_completed_draft_quality_review(draft["id"], source_hash, reviewer_version)
+    if not force and previous:
+        return {"draft": _draft_public_quality(draft), "reused": True, "reason": "This exact source revision already has a saved quality review. Restore its repaired revision instead of paying again.", "existing_revision_id": previous["id"], "budget": ai_service.usage_summary()}
+    try:
+        preflight = ai_service.require_budget_for_operations(["topic_quality_review_existing", "metadata_relationship_resolution"])
+    except Exception as exc:
+        _ai_error(exc)
+    database.create_draft_quality_revision(str(uuid4()), draft["id"], "pre_quality_review", original,
+        source_payload_hash=source_hash, reviewer_prompt_version=reviewer_version)
+    reviewing = {**original, "existing_quality_review": {"status": "reviewing", "source_payload_hash": source_hash,
+        "reviewer_prompt_version": reviewer_version, "started_at": datetime.now(timezone.utc).isoformat()}}
+    database.update_draft(draft["id"], reviewing)
+    request = {"mode": "existing_paid_draft_quality_review", "instruction": "Review this existing full draft directly. Do not generate a new topic, questions, or IDs.",
+        "taxonomy": taxonomy_context(), "candidate": original,
+        "source_context": _existing_review_source_context(original) or "No source context supplied."}
+    try:
+        reviewed, result, cost = ai_service.generate(operation_type="topic_quality_review_existing",
+            instructions=TOPIC_QUALITY_REVIEW_INSTRUCTIONS, input_text=json.dumps(request),
+            schema_name="ultimate_ml_topic_quality_review", schema=strict_response_schema(TopicQualityReview),
+            validate=TopicQualityReview.model_validate, max_output_tokens=5000,
+            metadata={"prompt_version": reviewer_version, "draft_id": draft["id"], "source_payload_hash": source_hash,
+                      "existing_paid_draft": True, "forced_re_review": force})
+    except Exception as exc:
+        failed = {**original, "existing_quality_review": {"status": "review_failed", "source_payload_hash": source_hash,
+            "reviewer_prompt_version": reviewer_version, "failed_at": datetime.now(timezone.utc).isoformat(),
+            "message": "Quality review failed. The original draft is preserved; retry when Settings are available."}}
+        database.update_draft(draft["id"], failed)
+        _ai_error(exc)
+    corrected = reviewed.corrected_topic.model_dump()
+    # The review schema intentionally owns topic fields only. Preserve durable
+    # provenance/assets and all other non-authoring fields from the paid draft.
+    authored_fields = set(TopicDraft.model_fields)
+    extras = {key: value for key, value in original.items() if key not in authored_fields and key not in {
+        "existing_quality_review", "quality_report", "quality_status", "relationship_warnings", "durable_topic_id"}}
+    corrected = {**corrected, **extras}
+    corrected, warnings, blocking = normalize_topic(corrected, requested_title=original.get("title", draft["title"]),
+        assigned_topic_id=_slug(original.get("title", draft["title"])), catalog=_topic_catalog(),
+        source_context=_existing_review_source_context(original))
+    corrected, resolution, resolver_cost, resolver_reused, resolver_warnings, resolver_blocking = _resolve_topic_metadata(
+        corrected, assigned_topic_id=_slug(original.get("title", draft["title"])), metadata={"draft_id": draft["id"], "existing_paid_draft": True})
+    report = final_quality_report(reviewed.quality_report.model_dump(), warnings + resolver_warnings, blocking + resolver_blocking, payload=corrected)
+    report["blocking_issues_remaining"] += metadata_payload_consistency(corrected, report, catalog=_topic_catalog(),
+        assigned_topic_id=_slug(original.get("title", draft["title"])))
+    status = "needs_attention" if report["blocking_issues_remaining"] else "reviewed"
+    corrected["quality_report"] = report
+    corrected["quality_status"] = "needs_attention" if status == "needs_attention" else "ready"
+    corrected_hash = _payload_hash(corrected)
+    corrected["existing_quality_review"] = {"status": status, "source_payload_hash": source_hash,
+        "reviewed_payload_hash": corrected_hash, "reviewer_prompt_version": reviewer_version,
+        "reviewed_at": datetime.now(timezone.utc).isoformat(), "forced_re_review": force}
+    revision = database.create_draft_quality_revision(str(uuid4()), draft["id"], "quality_review", corrected,
+        source_payload_hash=source_hash, reviewer_prompt_version=reviewer_version, quality_report=report)
+    database.update_draft(draft["id"], corrected)
+    saved = database.get_draft(draft["id"])
+    return {"draft": _draft_public_quality(saved), "reused": False, "revision": revision,
+        "usage": {"input_tokens": result.input_tokens, "output_tokens": result.output_tokens, "estimated_cost_usd": cost + resolver_cost,
+                  "quality_review_estimated_cost_usd": cost, "metadata_resolution_estimated_cost_usd": resolver_cost,
+                  "metadata_resolution_cached": resolver_reused,
+                  "maximum_estimated_cost_usd": preflight["maximum_estimated_cost_usd"]}, "budget": ai_service.usage_summary()}
 
 
 def _validate_topic_draft_payload(payload: dict) -> dict:
@@ -337,9 +497,15 @@ def _validate_topic_draft_payload(payload: dict) -> dict:
         invalid = [item for item in getattr(draft, field) if item not in library.topics]
         if invalid:
             errors.append({"field": field, "message": f"Unknown topic IDs: {', '.join(invalid)}"})
+    relationship_errors, relationship_warnings = relationship_lint(payload, catalog=_topic_catalog(), assigned_topic_id=_slug(draft.title))
+    errors.extend({"field": "relationships", "message": item["message"]} for item in relationship_errors)
     if draft.category not in taxonomy_context():
         errors.append({"field": "category", "message": "Choose a category from the local taxonomy."})
-    return {"valid": not errors, "errors": errors, "warnings": payload.get("relationship_warnings", [])}
+    if payload.get("quality_status") == "ready" and payload.get("metadata_resolution"):
+        consistency = metadata_payload_consistency(payload, payload.get("quality_report", {}), catalog=_topic_catalog(),
+            assigned_topic_id=_slug(draft.title))
+        errors.extend({"field": "metadata", "message": item["message"]} for item in consistency)
+    return {"valid": not errors, "errors": errors, "warnings": payload.get("relationship_warnings", []) + relationship_warnings}
 
 
 def _reload_library():
@@ -531,6 +697,50 @@ def editable_topic(topic_id: str):
 @app.put("/api/topics/{topic_id}")
 def edit_topic(topic_id: str, body: TopicEditInput):
     return _save_edited_topic(topic_id, body.payload, body.edit_source)
+
+
+def _metadata_rebuild_estimate(payload: dict) -> dict:
+    service = _metadata_service()
+    candidates = service.retrieve(payload, library.topics)
+    cache_key, _, _ = service.cache_key(payload, candidates, RELATIONSHIP_RESOLVER_PROMPT_VERSION)
+    cached = bool(database.get_metadata_resolution_cache(cache_key)) or not candidates
+    estimate = ai_service.estimate_operations(["metadata_relationship_resolution"])
+    return {**estimate, "candidate_count": len(candidates), "resolver_prompt_version": RELATIONSHIP_RESOLVER_PROMPT_VERSION,
+            "cached": cached, "maximum_estimated_cost_usd": 0 if cached else estimate["maximum_estimated_cost_usd"]}
+
+
+@app.get("/api/topics/{topic_id}/metadata-rebuild-estimate")
+def topic_metadata_rebuild_estimate(topic_id: str):
+    if topic_id not in library.topics:
+        raise HTTPException(404, "Topic not found")
+    return _metadata_rebuild_estimate(public(library.topics[topic_id]))
+
+
+@app.post("/api/topics/{topic_id}/rebuild-relationships")
+def rebuild_topic_relationships(topic_id: str):
+    if topic_id not in library.topics:
+        raise HTTPException(404, "Topic not found")
+    existing = library.topics[topic_id]
+    payload = public(existing)
+    estimate = _metadata_rebuild_estimate(payload)
+    if not estimate["cached"]:
+        try:
+            ai_service.require_budget_for_operations(["metadata_relationship_resolution"])
+        except Exception as exc:
+            _ai_error(exc)
+    rebuilt, _, cost, cached, warnings, blocking = _resolve_topic_metadata(payload, assigned_topic_id=topic_id,
+        metadata={"topic_id": topic_id, "metadata_only_rebuild": True})
+    report = rebuilt.get("quality_report")
+    if isinstance(report, dict):
+        report = final_quality_report(report, warnings, blocking, payload=rebuilt)
+        report["blocking_issues_remaining"] += metadata_payload_consistency(rebuilt, report, catalog=_topic_catalog(), assigned_topic_id=topic_id)
+        rebuilt["quality_report"] = report
+        rebuilt["quality_status"] = "needs_attention" if report["blocking_issues_remaining"] else "ready"
+    # This is an explicit metadata-only revision; educational prose, provenance,
+    # questions, and the durable ID are copied unchanged.
+    result = _save_edited_topic(topic_id, rebuilt, "metadata-rebuild")
+    return {"topic": result, "usage": {"estimated_cost_usd": cost, "maximum_estimated_cost_usd": estimate["maximum_estimated_cost_usd"],
+            "cached": cached}, "warnings": warnings, "budget": ai_service.usage_summary()}
 
 
 @app.get("/api/topics/{topic_id}/revisions")
@@ -967,7 +1177,104 @@ def get_draft(draft_id: str):
         raise HTTPException(404, "Draft not found")
     if draft["draft_type"] == "question":
         draft["payload"] = _question_candidate_status(draft["payload"])
-    return draft
+    return _draft_public_quality(draft) if draft["draft_type"] == "topic" else draft
+
+
+@app.get("/api/ai/topic-drafts")
+def list_topic_drafts():
+    """A cross-source queue view; deriving legacy status performs no writes."""
+    return {"drafts": [_draft_public_quality(item) for item in database.list_drafts_by_type("topic") if item["state"] == "draft"],
+            "budget": ai_service.usage_summary()}
+
+
+@app.get("/api/ai/drafts/{draft_id}/quality-review-estimate")
+def existing_draft_quality_review_estimate(draft_id: str):
+    draft = database.get_draft(draft_id)
+    if not draft:
+        raise HTTPException(404, "Draft not found")
+    if draft["draft_type"] != "topic" or draft["state"] != "draft":
+        raise HTTPException(409, "Only active topic drafts can be quality-reviewed.")
+    estimate = ai_service.estimate_operations(["topic_quality_review_existing", "metadata_relationship_resolution"])
+    return {**estimate, "quality_review": _draft_quality_state(draft["payload"]),
+        "original_generation_estimated_cost_usd": draft["metadata"].get("request_cost_usd"),
+        "reviewer_prompt_version": TOPIC_QUALITY_REVIEW_PROMPT_VERSION,
+        "original_generation_will_not_repeat": True}
+
+
+@app.post("/api/ai/drafts/{draft_id}/quality-review")
+def quality_review_existing_draft(draft_id: str, body: ExistingDraftQualityReviewInput):
+    draft = database.get_draft(draft_id)
+    if not draft:
+        raise HTTPException(404, "Draft not found")
+    return _run_existing_draft_quality_review(draft, force=body.force)
+
+
+@app.get("/api/ai/drafts/{draft_id}/metadata-rebuild-estimate")
+def draft_metadata_rebuild_estimate(draft_id: str):
+    draft = database.get_draft(draft_id)
+    if not draft:
+        raise HTTPException(404, "Draft not found")
+    if draft["draft_type"] != "topic" or draft["state"] != "draft":
+        raise HTTPException(409, "Only active topic drafts can rebuild metadata.")
+    return _metadata_rebuild_estimate(draft["payload"])
+
+
+@app.post("/api/ai/drafts/{draft_id}/rebuild-relationships")
+def rebuild_draft_relationships(draft_id: str):
+    draft = database.get_draft(draft_id)
+    if not draft:
+        raise HTTPException(404, "Draft not found")
+    if draft["draft_type"] != "topic" or draft["state"] != "draft":
+        raise HTTPException(409, "Only active topic drafts can rebuild metadata.")
+    original = json.loads(json.dumps(draft["payload"]))
+    estimate = _metadata_rebuild_estimate(original)
+    if not estimate["cached"]:
+        try:
+            ai_service.require_budget_for_operations(["metadata_relationship_resolution"])
+        except Exception as exc:
+            _ai_error(exc)
+    rebuilt, _, cost, cached, warnings, blocking = _resolve_topic_metadata(original, assigned_topic_id=_slug(draft["title"]),
+        metadata={"draft_id": draft_id, "metadata_only_rebuild": True})
+    report = rebuilt.get("quality_report")
+    if isinstance(report, dict):
+        report = final_quality_report(report, warnings, blocking, payload=rebuilt)
+        report["blocking_issues_remaining"] += metadata_payload_consistency(rebuilt, report, catalog=_topic_catalog(), assigned_topic_id=_slug(draft["title"]))
+        rebuilt["quality_report"] = report
+        rebuilt["quality_status"] = "needs_attention" if report["blocking_issues_remaining"] else "ready"
+    database.create_draft_quality_revision(str(uuid4()), draft_id, "metadata_rebuild", original,
+        source_payload_hash=_payload_hash(original), reviewer_prompt_version=RELATIONSHIP_RESOLVER_PROMPT_VERSION)
+    database.update_draft(draft_id, rebuilt)
+    return {"draft": _draft_public_quality(database.get_draft(draft_id)), "usage": {"estimated_cost_usd": cost,
+            "maximum_estimated_cost_usd": estimate["maximum_estimated_cost_usd"], "cached": cached}, "warnings": warnings,
+            "budget": ai_service.usage_summary()}
+
+
+@app.get("/api/ai/drafts/{draft_id}/quality-revisions")
+def quality_revisions(draft_id: str):
+    if not database.get_draft(draft_id):
+        raise HTTPException(404, "Draft not found")
+    revisions = database.list_draft_quality_revisions(draft_id)
+    return {"revisions": [{key: value for key, value in item.items() if key != "payload"} for item in revisions]}
+
+
+@app.get("/api/ai/drafts/{draft_id}/quality-revisions/{revision_id}")
+def quality_revision(draft_id: str, revision_id: str):
+    revision = database.get_draft_quality_revision(draft_id, revision_id)
+    if not revision:
+        raise HTTPException(404, "Quality revision not found")
+    return revision
+
+
+@app.post("/api/ai/drafts/{draft_id}/quality-revisions/{revision_id}/restore")
+def restore_quality_revision(draft_id: str, revision_id: str):
+    draft = database.get_draft(draft_id)
+    revision = database.get_draft_quality_revision(draft_id, revision_id)
+    if not draft or not revision:
+        raise HTTPException(404, "Draft or quality revision not found")
+    if draft["draft_type"] != "topic" or draft["state"] != "draft":
+        raise HTTPException(409, "Only active topic drafts can be restored.")
+    database.update_draft(draft_id, revision["payload"])
+    return _draft_public_quality(database.get_draft(draft_id))
 
 
 @app.put("/api/ai/drafts/{draft_id}")

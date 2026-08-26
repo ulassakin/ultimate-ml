@@ -1,0 +1,37 @@
+{
+  "content_version": 2,
+  "id": "vision-transformer-vit_q001",
+  "topic_ids": [
+    "vision-transformer-vit"
+  ],
+  "question_type": "conceptual",
+  "question_category": "foundation",
+  "difficulty": "beginner",
+  "question": "What is the basic idea of Vision Transformer (ViT) compared with a CNN?",
+  "direct_answer": "ViT treats an image as a sequence of patch tokens and processes them with transformer self-attention instead of convolution.",
+  "expanded_answer": "Instead of sliding filters over a 2D grid, ViT first splits the image into fixed-size patches, embeds each patch, and feeds the resulting token sequence into transformer encoder blocks. This makes the model operate on tokens with attention, letting each patch interact with every other patch in a data-dependent way.",
+  "key_points": [
+    "Images are converted into patch tokens",
+    "Tokens are processed by transformer encoder blocks",
+    "Self-attention replaces convolution as the main mixing mechanism"
+  ],
+  "common_wrong_ideas": [
+    "ViT still relies on convolution in the main backbone",
+    "The image is processed pixel-by-pixel like an RNN",
+    "Attention only mixes nearby patches"
+  ],
+  "related_topic_ids": [
+    "vision-transformer-vit"
+  ],
+  "concept_refresher_topic_id": "vision-transformer-vit",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-24T06:37:58.794208+00:00",
+    "user_focus": "",
+    "review_state": "approved",
+    "youtube_import_id": "b00fdfa7-1fcc-4a03-9ef9-0d1fe0b61330"
+  }
+}

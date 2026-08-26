@@ -1,0 +1,37 @@
+{
+  "content_version": 2,
+  "id": "dinov3_q003",
+  "topic_ids": [
+    "dinov3"
+  ],
+  "question_type": "conceptual",
+  "question_category": "intuition",
+  "difficulty": "intermediate",
+  "question": "Why are different augmented views useful in DINOv3-style training?",
+  "direct_answer": "They force the model to keep what is shared across views and ignore superficial changes.",
+  "expanded_answer": "If two crops of the same image look different, the only stable signal is the underlying content. Matching predictions across views encourages the network to represent semantic structure that survives changes in crop, resize, and color, rather than memorizing pixel-level details.",
+  "key_points": [
+    "Keeps shared semantic content",
+    "Suppresses augmentation-specific noise",
+    "Builds invariance to crop/resize/color changes"
+  ],
+  "common_wrong_ideas": [
+    "Thinking augmentations are just data augmentation for more samples",
+    "Assuming the model should become sensitive to every visual change"
+  ],
+  "related_topic_ids": [],
+  "relationship_warnings": [
+    "Removed unavailable related topic IDs: DINO, self-supervised learning, contrastive learning"
+  ],
+  "concept_refresher_topic_id": "dinov3",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T06:37:57.812216+00:00",
+    "user_focus": "",
+    "review_state": "approved",
+    "youtube_import_id": "b00fdfa7-1fcc-4a03-9ef9-0d1fe0b61330"
+  }
+}

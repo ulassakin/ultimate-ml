@@ -1,0 +1,40 @@
+{
+  "content_version": 2,
+  "id": "vision-transformer-vit_q010",
+  "topic_ids": [
+    "vision-transformer-vit"
+  ],
+  "question_type": "conceptual",
+  "question_category": "application",
+  "difficulty": "intermediate",
+  "question": "How does ViT support transfer learning in vision?",
+  "direct_answer": "It can learn a reusable visual representation that is fine-tuned or reused on new tasks.",
+  "expanded_answer": "After pretraining, the transformer’s patch-token representations and class token can serve as a general-purpose backbone. Those learned features often transfer to classification, detection, segmentation, and other downstream problems, much like pretrained CNN backbones, but with attention-based representations.",
+  "key_points": [
+    "Pretrained features can be reused",
+    "Works as a backbone for downstream tasks",
+    "Fine-tuning adapts the learned representation"
+  ],
+  "common_wrong_ideas": [
+    "Transfer learning only works with CNNs",
+    "A ViT must be trained from scratch for every task",
+    "The pretrained representation is only useful for the original dataset"
+  ],
+  "related_topic_ids": [
+    "vision-transformer-vit"
+  ],
+  "relationship_warnings": [
+    "Removed unavailable related topic IDs: transfer learning"
+  ],
+  "concept_refresher_topic_id": "vision-transformer-vit",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-24T06:37:58.794208+00:00",
+    "user_focus": "",
+    "review_state": "approved",
+    "youtube_import_id": "b00fdfa7-1fcc-4a03-9ef9-0d1fe0b61330"
+  }
+}

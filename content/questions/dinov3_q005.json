@@ -1,0 +1,37 @@
+{
+  "content_version": 2,
+  "id": "dinov3_q005",
+  "topic_ids": [
+    "dinov3"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mechanism",
+  "difficulty": "advanced",
+  "question": "What is gram anchoring in DINOv3 doing conceptually?",
+  "direct_answer": "It regularizes patch tokens so their pairwise relationships stay aligned between student and teacher.",
+  "expanded_answer": "Gram anchoring matches the student’s patch-token Gram matrix to the teacher’s. A Gram matrix summarizes similarity structure among patch features, so this loss helps preserve dense spatial relationships and stabilizes the learned feature geometry during self-supervised training.",
+  "key_points": [
+    "Matches patch-token similarity structure",
+    "Preserves spatial relationships between patches",
+    "Helps stabilize dense feature learning"
+  ],
+  "common_wrong_ideas": [
+    "Thinking it only matches individual token values",
+    "Assuming it is mainly about classification logits"
+  ],
+  "related_topic_ids": [],
+  "relationship_warnings": [
+    "Removed unavailable related topic IDs: gram anchoring, DINOv3, Vision Transformer (ViT)"
+  ],
+  "concept_refresher_topic_id": "dinov3",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T06:37:57.812216+00:00",
+    "user_focus": "",
+    "review_state": "approved",
+    "youtube_import_id": "b00fdfa7-1fcc-4a03-9ef9-0d1fe0b61330"
+  }
+}

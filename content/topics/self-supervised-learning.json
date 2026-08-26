@@ -1,0 +1,379 @@
+{
+  "title": "self-supervised learning",
+  "category": "representation_learning",
+  "difficulty": "intermediate",
+  "concept_type": "broad_concept",
+  "tags": [
+    "self-supervised learning",
+    "representation learning",
+    "unlabeled data",
+    "pretraining",
+    "contrastive learning",
+    "masked prediction",
+    "learned features"
+  ],
+  "one_sentence_summary": "Self-supervised learning trains models on automatically generated targets so they can learn useful representations from unlabeled data.",
+  "quick_recall": "Create a learning task from the data itself, optimize a proxy objective, and reuse the learned representation for downstream tasks.",
+  "big_picture": "Self-supervised learning sits between supervised learning and fully unsupervised discovery. Instead of requiring human labels, it constructs a training signal from the structure, context, or transformations present in the data. The model is not learning arbitrary human labels; it is learning representations that capture reusable patterns. In practice, this lets us scale representation learning to large unlabeled datasets and then adapt the learned features to tasks such as classification, detection, retrieval, or clustering.",
+  "why_it_exists": "Labels are expensive, slow, inconsistent, or unavailable for many domains. Yet raw data is often abundant. Self-supervised learning exists to exploit that abundance by turning the data into its own source of supervision. The goal is not only to solve the proxy task, but to learn internal features that transfer well to downstream tasks where labels matter.",
+  "intuition": "If a model can predict missing parts of a signal, match two augmented views of the same object, or identify whether two pieces of data belong together, it must encode meaningful structure. That structure often aligns with semantics such as objects, shapes, styles, topics, or relationships. The proxy task acts like a puzzle whose solution requires understanding the data deeply enough to build a useful representation.",
+  "core_explanation": "The core idea is to define a pretext task from unlabeled data. Examples include predicting masked tokens, distinguishing matching from non-matching pairs, or recovering a transformed view. During training, the model receives an input and a target generated from that same input or from another sample in the dataset. Because the target is automatically available, no human annotation is needed. The encoder learns parameters that map inputs into a latent space where relevant information is organized in a way that supports the proxy task. After pretraining, the representation can be reused either by freezing the encoder and training a small head or by fine-tuning the whole model on a labeled downstream task.",
+  "mechanism": "A typical self-supervised pipeline has four pieces: data, view generation or target construction, an encoder, and a loss. First, start with unlabeled examples x. Then create a supervision signal y automatically. For example, y may be a masked patch, another augmented view, the identity of a positive pair, or a discrete code assigned by clustering. The encoder f_θ maps x to a representation z = f_θ(x). A prediction head g_φ uses z to solve the proxy task. Training minimizes a loss L_SSL(θ,φ) = E_{x∼data}[ℓ(y(x), g_φ(f_θ(x)))]. The key design choice is the proxy task: it should be hard enough that trivial shortcuts are avoided, but aligned enough with downstream utility that the learned features generalize.",
+  "ml_relevance": "Self-supervised learning is a major strategy for pretraining modern models when labels are scarce or expensive. In vision, it helps models learn object- and scene-level features from images alone. In language, masked prediction learns contextual token representations. In multimodal settings, matching image and text views can align different data types. The ML value is twofold: it reduces dependence on labeling pipelines and often yields representations that transfer better than training from scratch on small labeled datasets. It is especially important in large-scale foundation model training, where unlabeled corpora are much easier to obtain than curated labels.",
+  "practical_example": "Consider image pretraining. Given an unlabeled image, we can create two augmented views by cropping, color jittering, or blurring. The model must produce representations of both views that agree, or it may need to predict masked patches from visible patches. To succeed, the encoder cannot rely only on pixel-level quirks; it has to learn higher-level structure such as parts, textures, and object identity. Later, if we want to classify images into categories with only a small labeled dataset, we attach a classifier to the pretrained encoder and fine-tune it. The pretrained features usually make learning faster and more data-efficient than starting from random initialization.",
+  "mathematical_foundation": {
+    "overview": "The math of self-supervised learning is mostly the math of optimization over a proxy objective. The central question is how to build a loss that forces representations to capture informative, transferable structure. Different SSL methods differ mainly in how they define positive pairs, negatives, masked targets, or predictive codes.",
+    "prerequisites": [
+      "Optimization basics"
+    ],
+    "sections": [
+      {
+        "title": "Encoder and proxy loss",
+        "explanation": "Let x be an unlabeled example, f_θ an encoder, and z = f_θ(x) a learned representation. A self-supervised method defines an automatically generated target y and minimizes a loss over the prediction of that target. The symbols mean: x is the raw data, θ are trainable parameters, z is the latent feature vector, and y is a label constructed from the data rather than a human. The purpose is to train z to retain information that matters for the proxy task. In ML terms, this is the same optimization structure as supervised learning, but the labels come from the data pipeline itself.",
+        "equations": [
+          {
+            "latex": "z = f_\\theta(x)",
+            "explanation": "The encoder f_θ transforms an input x into a representation z. The symbols x and z denote input and latent feature vector, while θ are model parameters. The intuition is that z should be a compact but informative summary of x. In ML, this is the learned embedding used for transfer."
+          },
+          {
+            "latex": "\\mathcal{L}_{SSL}(\\theta,\\phi) = \\mathbb{E}_{x\\sim data}\\big[\\ell(y(x),\\, g_\\phi(f_\\theta(x)))\\big]",
+            "explanation": "This says we minimize the expected proxy loss over the data distribution. Here \\mathcal{L}_{SSL} is the self-supervised objective, φ are parameters of the prediction head g_φ, and ℓ is a task-specific loss comparing the automatic target y(x) to the model prediction. The expectation means we train on many examples from the dataset. The intuition is that better proxy performance should push the encoder toward more useful features. In ML, this is the general template shared by masked prediction, contrastive learning, and many other SSL methods."
+          }
+        ],
+        "prerequisites": [
+          "Expectations",
+          "Optimization basics",
+          "Contrastive learning intuition"
+        ]
+      },
+      {
+        "title": "Contrastive learning objective",
+        "explanation": "Contrastive methods learn representations by bringing positive pairs close together and pushing negative pairs apart, when the method uses negatives. A positive pair might be two augmentations of the same image; negatives are other samples in the batch or memory bank. The idea is that representations should be invariant to nuisance transformations but sensitive to content that distinguishes different underlying examples. This is one common SSL family, but it is not universal across all self-supervised methods.",
+        "equations": [
+          {
+            "latex": "\\mathcal{L}_{NT-Xent} = -\\log \\frac{\\exp(\\mathrm{sim}(z_i,z_i^+)/\\tau)}{\\sum_{j} \\exp(\\mathrm{sim}(z_i,z_j)/\\tau)}",
+            "explanation": "This loss encourages the representation z_i of an anchor example to be similar to its positive partner z_i^+ and dissimilar to other candidates z_j. The function sim(·,·) measures similarity, often cosine similarity, and τ is a temperature controlling how sharply the model focuses on hard comparisons. The numerator rewards matching the positive pair, while the denominator normalizes over competitors. Intuitively, the model learns to cluster semantically related views together. In ML, this can produce embeddings useful for retrieval and classification without labels."
+          }
+        ],
+        "prerequisites": [
+          "Norms",
+          "Cosine similarity",
+          "Temperature scaling",
+          "Contrastive learning intuition",
+          "Cross-entropy"
+        ]
+      },
+      {
+        "title": "Masked prediction as reconstruction",
+        "explanation": "Another major SSL family hides part of the input and trains the model to recover it. This works because the missing content can often be inferred only by understanding context. For sequences, the missing element may be a token; for images, it may be a patch. The model must encode relationships among visible parts, which often leads to richer features than predicting low-level pixels alone. The equation below expresses a generic reconstruction loss.",
+        "equations": [
+          {
+            "latex": "\\mathcal{L}_{mask} = \\sum_{k\\in M} \\|\\hat{x}_k - x_k\\|^2",
+            "explanation": "Here M is the set of masked positions, x_k is the true content at position k, and \\hat{x}_k is the model's reconstruction. The loss sums squared errors over masked elements. The intuition is that the model must infer hidden information from context, which forces it to learn structure in the data. In ML, this underlies masked language modeling and masked image modeling, both of which learn contextual representations from unlabeled corpora."
+          }
+        ],
+        "prerequisites": []
+      },
+      {
+        "title": "Why representations do not collapse",
+        "explanation": "A central mathematical concern in SSL is preventing trivial solutions. For example, if every input mapped to the same vector, some objectives could become useless. Methods avoid collapse by using negatives, reconstruction constraints, architectural asymmetry, stop-gradient tricks, or variance/covariance regularization. The connection to covariance is that useful representations should spread information across dimensions instead of collapsing into one direction. Some methods explicitly encourage feature decorrelation or variance across embedding dimensions.",
+        "equations": [
+          {
+            "latex": "\\mathrm{Cov}(z)=\\mathbb{E}\\big[(z-\\mu)(z-\\mu)^\\top\\big]",
+            "explanation": "This is the covariance matrix of the representation z, where \\mu = \\mathbb{E}[z] is the mean embedding. Covariance measures how embedding dimensions vary together. In SSL, a representation with richer covariance structure is often preferable to one with near-zero variance or highly redundant dimensions. The intuition is that the embedding space should preserve multiple independent factors of variation, which improves downstream usefulness and relates to PCA-style dimensional structure."
+          }
+        ],
+        "prerequisites": [
+          "Vectors and matrices",
+          "Variance",
+          "Covariance",
+          "Gradients"
+        ]
+      }
+    ]
+  },
+  "common_misconceptions": [
+    "Self-supervised learning means the data has no supervision at all. In fact, the supervision is created automatically from the data itself.",
+    "The proxy task is the real goal. Usually the proxy task is only a training device; the important outcome is transferable representations.",
+    "Any unlabeled objective is self-supervised. Not all unsupervised objectives create a meaningful learning signal that transfers well.",
+    "More difficult proxy tasks are always better. If the task is poorly aligned with downstream structure, the learned features may not help.",
+    "Self-supervised learning and unsupervised learning are identical. They overlap, but SSL usually refers to objectives with an explicit generated target or pretext structure.",
+    "A good SSL model must always use contrastive learning. Contrastive methods are common, but masked prediction, predictive coding, and clustering-based methods are also self-supervised."
+  ],
+  "limitations": [
+    "Proxy-task design is crucial and can be brittle; a poor objective may teach shortcuts rather than useful semantics.",
+    "Some methods require large batch sizes, careful augmentation design, or substantial compute.",
+    "Representations learned on one data domain may not transfer well to another without adaptation.",
+    "Self-supervised models can still encode dataset biases present in the unlabeled data.",
+    "Evaluation is indirect: strong proxy performance does not always guarantee strong downstream performance.",
+    "The method may learn invariances that are helpful for some tasks but harmful for others."
+  ],
+  "mental_models": [
+    "Build a puzzle that can only be solved by understanding the data.",
+    "Turn unlabeled data into labeled data by manufacturing the labels from context.",
+    "Learn features that are useful because they compress the right information, not because they memorize the proxy task.",
+    "Treat the proxy objective as a training scaffold that disappears after pretraining.",
+    "Aim for embeddings where similar underlying content is nearby and irrelevant variation is suppressed."
+  ],
+  "prerequisite_topic_ids": [],
+  "related_topic_ids": [
+    "contrastive-language-image-pretraining-clip",
+    "simclr"
+  ],
+  "relationship_justifications": [
+    {
+      "topic_id": "contrastive-language-image-pretraining-clip",
+      "relationship": "related",
+      "reason": "CLIP is a central contrastive self-supervised-style representation learning method in a multimodal setting, making it a strong conceptual comparison to self-supervised learning more broadly.",
+      "confidence": "high"
+    },
+    {
+      "topic_id": "simclr",
+      "relationship": "related",
+      "reason": "SimCLR is a canonical self-supervised method: it instantiates self-supervised learning through contrastive learning on augmented views, making it a direct and informative neighbor.",
+      "confidence": "high"
+    }
+  ],
+  "suggested_new_topic_relationships": [
+    {
+      "title": "Masked language modeling",
+      "relationship": "related",
+      "reason": "Canonical self-supervised method in language and a direct example of masked prediction."
+    },
+    {
+      "title": "Data augmentation",
+      "relationship": "related",
+      "reason": "Many self-supervised objectives rely on augmentations to generate meaningful positive pairs or target views."
+    },
+    {
+      "title": "Representation learning",
+      "relationship": "related",
+      "reason": "Self-supervised learning is a major strategy for learning transferable representations, but it is broader than representation learning itself."
+    },
+    {
+      "title": "Vision Transformer (ViT)",
+      "relationship": "related",
+      "reason": "Medium-confidence relationship, not saved as a durable edge: ViT is a major architecture frequently used with self-supervised pretraining, so it is a close architecture-and-training pairing rather than just a generic backbone mention."
+    }
+  ],
+  "deep_dive": "Self-supervised learning is best understood as a way to make representation learning scalable. The central engineering challenge is not just obtaining labels, but deciding what kind of information the encoder should keep. A model can easily learn shortcuts if the proxy task is too simple; for example, it may detect artifacts from augmentations rather than semantics. Good SSL methods therefore balance two pressures: the task must be solvable from the data, but not solvable in a trivial way.\n\nThis balance explains why SSL methods vary so much. Contrastive learning builds a discriminative geometry: it says that two views of the same underlying sample should be close, while unrelated samples should be separated. Masked prediction builds a contextual completion objective: it says that missing information should be inferable from surrounding structure. Clustering-based methods build pseudo-labels from the model’s own feature space and then refine them iteratively. Despite their differences, they all create a training signal without human annotation.\n\nA useful way to think about SSL is through information preservation. The representation should retain information that supports the proxy task and, ideally, information that is stable across nuisance changes. If the encoder becomes too invariant, it may forget task-relevant details. If it becomes too sensitive, it may overfit to superficial patterns. The art of SSL is choosing an objective and data transformation pipeline that lands in the middle.\n\nIn practical ML workflows, SSL often serves as pretraining. You first learn a general-purpose encoder from unlabeled data, then adapt it to a target task with much less labeled data than would otherwise be needed. This is especially valuable in vision, speech, medical imaging, robotics, and any domain where labels are sparse or expensive. The learned representation may also be used directly for retrieval, clustering, anomaly detection, or linear evaluation.\n\nThe biggest conceptual shift is that the model is no longer waiting for humans to tell it what to predict. Instead, the data itself defines the learning signal. That does not remove the need for design; it moves the design problem into the objective, the transformations, and the choice of what counts as a positive example, a missing token, or a useful reconstruction target.",
+  "sources": [
+    {
+      "title": "How AI Taught Itself to See [DINOv3]",
+      "type": "youtube",
+      "url": "https://www.youtube.com/watch?v=oGTasd3cliM"
+    }
+  ],
+  "source_provenance": {
+    "source_derived": {
+      "kind": "youtube",
+      "video_id": "oGTasd3cliM",
+      "title": "How AI Taught Itself to See [DINOv3]",
+      "channel": "Jia-Bin Huang",
+      "attribution": "YouTube transcript retrieved locally",
+      "concept": "self-supervised learning",
+      "source_evidence_summary": "The segment frames the central challenge as learning image features from unlabeled images by creating a supervision signal without human labels.",
+      "timestamp_seconds": [
+        271,
+        285
+      ],
+      "video_url": "https://www.youtube.com/watch?v=oGTasd3cliM"
+    },
+    "ai_expanded": "The educational explanation was AI-expanded from the selected source concept and requires human review."
+  },
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "topic-authoring-v1",
+    "generated_at": "2026-08-23T13:13:53.138794+00:00",
+    "user_focus": "Build a deeper ML learning topic from this source concept: Key paradigm for scaling representation learning when labels are expensive or unavailable..",
+    "review_state": "approved",
+    "youtube_import_id": "b00fdfa7-1fcc-4a03-9ef9-0d1fe0b61330",
+    "youtube_concept": "self-supervised learning"
+  },
+  "metadata_resolution": {
+    "resolver_version": "relationship-resolver-v1",
+    "resolved_category": "representation_learning",
+    "resolved_concept_type": "broad_concept",
+    "candidate_topic_ids": [
+      "simclr",
+      "gradient-descent",
+      "contrastive-language-image-pretraining-clip",
+      "vision-transformer-vit",
+      "knowledge-distillation",
+      "pca",
+      "gradient-flow",
+      "cnn",
+      "resnet",
+      "covariance"
+    ],
+    "durable_edges": {
+      "prerequisites": [],
+      "related": [
+        "contrastive-language-image-pretraining-clip",
+        "simclr"
+      ]
+    },
+    "math_prerequisites": {
+      "global": [
+        "Optimization basics"
+      ],
+      "sections": {
+        "Encoder and proxy loss": [
+          "Expectations",
+          "Optimization basics",
+          "Contrastive learning intuition"
+        ],
+        "Contrastive learning objective": [
+          "Norms",
+          "Cosine similarity",
+          "Temperature scaling",
+          "Contrastive learning intuition",
+          "Cross-entropy"
+        ],
+        "Masked prediction as reconstruction": [],
+        "Why representations do not collapse": [
+          "Vectors and matrices",
+          "Variance",
+          "Covariance",
+          "Gradients"
+        ]
+      }
+    },
+    "rejected_candidates": [
+      {
+        "topic_id": "gradient-descent",
+        "reason": "Generic optimization/training machinery; not a material dependency for understanding self-supervised learning."
+      },
+      {
+        "topic_id": "gradient-flow",
+        "reason": "Generic backpropagation signal propagation; does not materially block understanding of the self-supervised objective or pretext-task idea."
+      },
+      {
+        "topic_id": "cnn",
+        "reason": "A possible vision backbone, but generic implementation adjacency and not a core conceptual neighbor for self-supervised learning."
+      },
+      {
+        "topic_id": "resnet",
+        "reason": "A possible backbone and generic implementation adjacency; explicitly disallowed as a residual-path/backbone style neighbor."
+      },
+      {
+        "topic_id": "pca",
+        "reason": "Too indirect a classical dimensionality-reduction comparison to be a strong neighbor for the self-supervised learning concept."
+      },
+      {
+        "topic_id": "covariance",
+        "reason": "A mathematical statistic with only loose relevance; not a meaningful prerequisite or central related concept here."
+      }
+    ],
+    "cache_key": "79a5c681b69cecca7678ab73ed71066f4dc4287c694735d233080829a5c37037",
+    "cached": true,
+    "topic_hash": "a27918c745b37db0ef0015f248cb1ad68aeb0292026f186eeb6c7c8109356ca2",
+    "candidate_hashes": [
+      {
+        "topic_id": "simclr",
+        "content_hash": "6441999aeabe57e0844710030ffe7a4c3a5839aef8ee0108bc99eeae4008968b"
+      },
+      {
+        "topic_id": "gradient-descent",
+        "content_hash": "ff7889d00f5b43c6e7a9bfcf0cc0e68b86e19f95ff6ea69acd674f884ff4d809"
+      },
+      {
+        "topic_id": "contrastive-language-image-pretraining-clip",
+        "content_hash": "e364ed1fd90ab1beedc8e773f44416c5791e54d56e5484ffe1d982cfc5184546"
+      },
+      {
+        "topic_id": "vision-transformer-vit",
+        "content_hash": "7e41f7e3ba2cd27088933004e42d5652fd0f9c67cf2af8e4946d9e0f8804e825"
+      },
+      {
+        "topic_id": "knowledge-distillation",
+        "content_hash": "8120276d5353d2bcd2523cbcf3e02fa972b257f5e0d70f9d79db898438d350fa"
+      },
+      {
+        "topic_id": "pca",
+        "content_hash": "18a3d51156eaddb500c431024994f701904d0692db32aab74ed41f547375dc96"
+      },
+      {
+        "topic_id": "gradient-flow",
+        "content_hash": "653037ce52b50a2fc78b414a23634f5252f477b02a27718ee451ea641eca6a89"
+      },
+      {
+        "topic_id": "cnn",
+        "content_hash": "25f9a6494d2b283b45cc732f27c29bf4169b5ed20e95589e0852ba674887555a"
+      },
+      {
+        "topic_id": "resnet",
+        "content_hash": "518a168ebf54c89dce7fface3a33b59d6938840960127568b6427cbeb75907a9"
+      },
+      {
+        "topic_id": "covariance",
+        "content_hash": "c311f6eb54169369f59beb349893e547e9495a1ad83f69ad874dffb11fee2f5d"
+      }
+    ],
+    "resolver_prompt_version": "relationship-resolver-v1"
+  },
+  "quality_report": {
+    "blocking_issues_fixed": [
+      {
+        "area": "taxonomy",
+        "message": "Reclassified to representation_learning, which is the correct taxonomy bucket for self-supervised learning as a training paradigm for learning embeddings and representations."
+      },
+      {
+        "area": "relationships",
+        "message": "Removed the prerequisite on Gradient Descent, which is a generic optimization method and not a material prerequisite for understanding the concept."
+      },
+      {
+        "area": "mathematics",
+        "message": "Kept the proxy-loss notation valid and separated the controlled mathematical prerequisites from the ML-method prerequisites."
+      },
+      {
+        "area": "technical_correctness",
+        "message": "Qualified contrastive learning so negatives are described as method-dependent rather than universal across all self-supervised learning."
+      },
+      {
+        "area": "schema",
+        "message": "Normalized the topic structure to a coherent canonical draft and kept catalog relationship fields empty for resolver handling."
+      }
+    ],
+    "blocking_issues_remaining": [],
+    "warnings": [
+      {
+        "area": "source_grounding",
+        "message": "The source evidence is narrow (one YouTube segment about learning image features from unlabeled images) while the draft expands into broad SSL families such as masked prediction, clustering-based methods, and multimodal settings; this is acceptable but should be treated as AI-expanded content rather than source-derived fact."
+      },
+      {
+        "area": "provenance",
+        "message": "The source provenance is adequate for the core concept but does not directly substantiate every named submethod discussed in the expanded draft."
+      },
+      {
+        "area": "named_method_completeness",
+        "message": "The draft discusses contrastive and masked-prediction families, but it is still a broad concept page rather than a fully method-specific treatment of any one canonical SSL method."
+      },
+      {
+        "area": "mathematics",
+        "message": "Removed 'Covariance' from global because it is not supported by its equations."
+      },
+      {
+        "area": "source_grounding",
+        "message": "Source segment is brief; the broader explanation is explicitly marked AI-expanded."
+      }
+    ],
+    "confidence": "high"
+  },
+  "quality_status": "ready",
+  "existing_quality_review": {
+    "status": "reviewed",
+    "source_payload_hash": "b62c00d2761fbf9619268bec1705f8e86a2fc00ad967c5df52708498b1c6fa8e",
+    "reviewed_payload_hash": "959be6a5611caf92f1231a6fa5bb95e48af77b845b695100b47ae6eef139a45c",
+    "reviewer_prompt_version": "topic-quality-review-v4",
+    "reviewed_at": "2026-08-24T15:05:51.122816+00:00",
+    "forced_re_review": true
+  },
+  "id": "self-supervised-learning",
+  "content_version": 2,
+  "knowledge_type": [
+    "conceptual"
+  ]
+}

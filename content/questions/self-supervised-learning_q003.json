@@ -1,0 +1,40 @@
+{
+  "content_version": 2,
+  "id": "self-supervised-learning_q003",
+  "topic_ids": [
+    "self-supervised-learning"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mechanism",
+  "difficulty": "intermediate",
+  "question": "How does a self-supervised model learn without human labels?",
+  "direct_answer": "It trains on a target generated automatically from the input or from another sample in the dataset.",
+  "expanded_answer": "A self-supervised pipeline defines a target signal from the data itself. For example, the model may predict a masked token, identify whether two views come from the same image, or align an input with a transformed version of itself. Since the target is constructed automatically, the model still receives a supervised-style loss even though no person annotated the data.",
+  "key_points": [
+    "Target is auto-generated",
+    "Training still uses a loss function",
+    "Can use same sample or paired samples"
+  ],
+  "common_wrong_ideas": [
+    "No labels means no target at all",
+    "The model just clusters data with no objective",
+    "Self-supervision cannot use pairwise relationships"
+  ],
+  "related_topic_ids": [
+    "self-supervised-learning"
+  ],
+  "relationship_warnings": [
+    "Removed unavailable related topic IDs: contrastive learning, knowledge distillation"
+  ],
+  "concept_refresher_topic_id": "self-supervised-learning",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-24T15:31:06.413016+00:00",
+    "user_focus": "",
+    "review_state": "approved",
+    "youtube_import_id": "b00fdfa7-1fcc-4a03-9ef9-0d1fe0b61330"
+  }
+}

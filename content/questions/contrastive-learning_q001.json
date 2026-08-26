@@ -1,0 +1,39 @@
+{
+  "content_version": 2,
+  "id": "contrastive-learning_q001",
+  "topic_ids": [
+    "contrastive-learning"
+  ],
+  "question_type": "conceptual",
+  "question_category": "foundation",
+  "difficulty": "beginner",
+  "question": "What is contrastive learning trying to achieve in representation space?",
+  "direct_answer": "It tries to make matching examples close together and mismatched examples far apart in embedding space.",
+  "expanded_answer": "Contrastive learning learns an embedding geometry where positive pairs, such as two views of the same image, have high similarity, while negatives or competing examples have lower similarity. The goal is not to classify directly, but to shape representations so that semantically related items cluster together and unrelated items separate. Those learned embeddings can then be reused for retrieval, clustering, probing, or fine-tuning.",
+  "key_points": [
+    "Learns geometry in embedding space",
+    "Pulls positive pairs together",
+    "Pushes mismatched examples apart",
+    "Useful for reusable representations"
+  ],
+  "common_wrong_ideas": [
+    "It is only about classification loss",
+    "It requires a specific backbone architecture",
+    "It always needs labels"
+  ],
+  "related_topic_ids": [],
+  "relationship_warnings": [
+    "Removed unavailable related topic IDs: self-supervised learning, feature representations, SimCLR"
+  ],
+  "concept_refresher_topic_id": "contrastive-learning",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T08:08:19.504877+00:00",
+    "user_focus": "",
+    "review_state": "approved",
+    "youtube_import_id": "b00fdfa7-1fcc-4a03-9ef9-0d1fe0b61330"
+  }
+}

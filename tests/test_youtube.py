@@ -29,6 +29,10 @@ class FakeYoutubeProvider:
             from backend.ai.schemas import TopicDraft
             corrected={key:value for key,value in candidate.items() if key in TopicDraft.model_fields}
             return ProviderResult({"corrected_topic": corrected, "quality_report": {"confidence":"high"}}, 10, 15)
+        if kwargs["schema_name"] == "ultimate_ml_relationship_resolution":
+            request=json.loads(kwargs["input_text"])
+            assert "topic_catalog" not in request
+            return ProviderResult({"prerequisites":[],"related":[],"rejected_candidates":[]}, 5, 5)
         if kwargs["schema_name"] == "ultimate_ml_question_draft":
             return ProviderResult({"questions": [{"question_category": "intuition", "difficulty": "intermediate",
                 "question": "Why can a learning rate that is too large destabilize gradient descent?", "direct_answer": "It can overshoot useful descent directions.",
@@ -91,7 +95,7 @@ def test_video_expansion_and_questions_are_drafts_with_video_usage(tmp_path, mon
     assert questions.status_code == 200
     assert questions.json()["payload"]["generation_metadata"]["youtube_import_id"] == imported["id"]
     usage = client.get(f"/api/youtube/imports/{imported['id']}").json()["usage"]["events"]
-    assert {event["operation_type"] for event in usage} == {"youtube_concept_extraction", "youtube_topic_expansion", "youtube_topic_quality_review", "youtube_question_generation"}
+    assert {event["operation_type"] for event in usage} == {"youtube_concept_extraction", "youtube_topic_expansion", "youtube_topic_quality_review", "metadata_relationship_resolution", "youtube_question_generation"}
 
 
 def test_existing_video_draft_survives_queue_projection_without_payload_change(tmp_path, monkeypatch):

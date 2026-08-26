@@ -1,0 +1,40 @@
+{
+  "content_version": 2,
+  "id": "self-supervised-learning_q005",
+  "topic_ids": [
+    "self-supervised-learning"
+  ],
+  "question_type": "conceptual",
+  "question_category": "intuition",
+  "difficulty": "intermediate",
+  "question": "Why are learned feature representations more useful than raw pixels for downstream vision tasks?",
+  "direct_answer": "Because good representations organize the input by semantic or task-relevant structure instead of by raw coordinate values.",
+  "expanded_answer": "Raw pixels contain all image information, but much of it is irrelevant or poorly aligned with the task. A learned representation can compress away nuisance variation while preserving what matters, such as object identity, shape, or correspondence across views. That makes classification, detection, segmentation, and retrieval easier for a small downstream head or a fine-tuned model.",
+  "key_points": [
+    "Representations can remove nuisance variation",
+    "They capture task-relevant structure",
+    "They improve transfer and downstream efficiency"
+  ],
+  "common_wrong_ideas": [
+    "Raw pixels are always enough if the model is big enough",
+    "A feature representation is only a compressed image",
+    "Good features must be handcrafted"
+  ],
+  "related_topic_ids": [
+    "self-supervised-learning"
+  ],
+  "relationship_warnings": [
+    "Removed unavailable related topic IDs: feature representations, transfer learning"
+  ],
+  "concept_refresher_topic_id": "self-supervised-learning",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-24T15:31:06.413016+00:00",
+    "user_focus": "",
+    "review_state": "approved",
+    "youtube_import_id": "b00fdfa7-1fcc-4a03-9ef9-0d1fe0b61330"
+  }
+}

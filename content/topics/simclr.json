@@ -1,0 +1,280 @@
+{
+  "title": "SimCLR",
+  "category": "representation_learning",
+  "difficulty": "intermediate",
+  "concept_type": "named_method",
+  "tags": [
+    "self-supervised learning",
+    "contrastive learning",
+    "representation learning",
+    "data augmentation",
+    "InfoNCE",
+    "vision",
+    "projection head"
+  ],
+  "one_sentence_summary": "SimCLR learns visual representations by making two augmented views of the same image close in embedding space while pushing apart views from different images in the batch.",
+  "quick_recall": "SimCLR is a contrastive self-supervised method: create two augmented views per image, encode them, compare them in a shared normalized embedding space, and optimize an InfoNCE-style objective so matching views are similar and non-matching views are dissimilar.",
+  "big_picture": "SimCLR is a canonical self-supervised representation learning method for images. It uses unlabeled data and carefully chosen augmentations to create a training signal: views from the same image should be close, while views from different images should usually be separated. Its influence comes from showing that a relatively simple contrastive recipe, plus strong augmentations and a projection head, can learn transferable visual features without labels. It is also an important reference point for later methods that reduce or remove explicit negatives.",
+  "why_it_exists": "SimCLR exists to exploit large amounts of unlabeled image data when labels are expensive or too narrow. By turning an image into two correlated views, it creates a proxy task that encourages the model to preserve semantic content while becoming insensitive to selected nuisance changes such as crops or color jitter.",
+  "intuition": "If two random views of the same image still depict the same underlying object or scene, a useful representation should map them near each other. At the same time, the representation should not collapse to a constant, so the method also needs a force that separates different instances. SimCLR gets this balance by combining attraction for positives with competition against other examples in the batch.",
+  "core_explanation": "SimCLR samples two stochastic augmentations of each unlabeled image, encodes both views with a shared encoder, and then applies a projection head before computing a contrastive loss. The two views of the same original image form a positive pair. Other views in the minibatch serve as negatives for that anchor. The model is trained so that the positive pair has higher similarity than the negatives. After pretraining, the projection head is commonly discarded and the encoder representation is used for downstream tasks.\n\nThe method is defined by the interaction of four choices: the augmentation family, the encoder, the projection head, and the contrastive objective. In practice, augmentation design is crucial because it determines what invariances the representation will learn. The batch supplies the negative examples, so larger batches or other mechanisms that increase the number of comparisons can improve the strength of the contrastive signal.",
+  "mechanism": "Mechanically, SimCLR has four main parts:\n\n1. Augmentations create two different views of the same source image.\n2. A shared encoder maps each view to a feature vector.\n3. A projection head maps encoder features into a contrastive embedding space.\n4. A normalized temperature-scaled contrastive loss pulls together the positive pair and pushes it away from other batch elements.\n\nTraining updates the encoder and projection head jointly. The encoder learns features that are stable across the chosen augmentations, while the projection head can specialize to the contrastive objective. The loss discourages collapsed representations because a constant output would not distinguish the positive from the many competing negatives.",
+  "ml_relevance": "SimCLR is important because it made contrastive self-supervised learning a practical and widely studied baseline. It clarified several design lessons: strong augmentations matter, projection heads help, batch size affects the number of negatives, and representation learning can be formulated as relational matching rather than label prediction. Many later self-supervised methods are easiest to understand by comparing them with SimCLR’s use of explicit negatives and batch-based contrastive training.",
+  "practical_example": "Suppose you have many unlabeled road images from a car camera. SimCLR can take one image, produce two differently augmented versions, and train the encoder so those two views remain close even if one crop shows lane markings while the other shows a vehicle or roadside edge. Over time, the encoder learns visual features that transfer well to downstream tasks such as traffic sign classification or road condition detection with less labeled data than training from scratch.",
+  "mathematical_foundation": {
+    "overview": "SimCLR is typically described with an InfoNCE-style objective. The math shows how augmented views become positive pairs, how similarities are normalized, and how the loss compares one positive against many negatives in the batch.",
+    "prerequisites": [
+      "gradient-descent",
+      "cnn"
+    ],
+    "sections": [
+      {
+        "title": "Positive pairs from augmented views",
+        "explanation": "For each original image x, SimCLR samples two random augmentations t and t'. The resulting views are treated as a positive pair because they come from the same instance. All other views in the batch are treated as negatives for that anchor.",
+        "equations": [
+          {
+            "latex": "x_i = t(x), \\quad x_j = t'(x)",
+            "explanation": "x is the original unlabeled image. t and t' are random augmentation operators. x_i and x_j are two correlated views of the same image, which creates a self-supervised positive pair."
+          }
+        ]
+      },
+      {
+        "title": "Similarity in embedding space",
+        "explanation": "The encoder and projection head map a view to a representation vector. Similarity is usually computed with a normalized dot product, which is equivalent to cosine similarity when vectors are nonzero.",
+        "equations": [
+          {
+            "latex": "z_i = g(f(x_i)), \\quad z_j = g(f(x_j))",
+            "explanation": "f is the encoder network and g is the projection head. The projected embeddings z_i and z_j are the vectors used in the contrastive objective."
+          },
+          {
+            "latex": "\\operatorname{sim}(z_i, z_j) = \\frac{z_i^\\top z_j}{\\|z_i\\|\\,\\|z_j\\|}",
+            "explanation": "This is cosine similarity. Normalization makes the objective depend on angle rather than raw scale, which stabilizes comparison across examples."
+          }
+        ]
+      },
+      {
+        "title": "Contrastive loss with negatives",
+        "explanation": "For an anchor view i and its matching positive j, SimCLR uses a softmax over the positive and all other views in the batch. The temperature controls how sharply the loss emphasizes differences in similarity.",
+        "equations": [
+          {
+            "latex": "\\ell_{i,j} = -\\log \\frac{\\exp(\\operatorname{sim}(z_i,z_j)/\\tau)}{\\sum_{k=1}^{2N} \\mathbf{1}[k\\neq i] \\exp(\\operatorname{sim}(z_i,z_k)/\\tau)}",
+            "explanation": "\\ell_{i,j} is the loss for one positive pair. N is the number of original images in the batch, so there are 2N augmented views total. The anchor itself is excluded from the denominator. The positive is compared against all other batch views, which act as competing candidates. The temperature \\tau controls how strongly the loss focuses on hard negatives."
+          },
+          {
+            "latex": "\\mathcal{L} = \\frac{1}{2N}\\sum_{(i,j)} \\ell_{i,j}",
+            "explanation": "This is the average loss over all positive pairs in the batch. Averaging stabilizes training and makes the update reflect the whole minibatch."
+          }
+        ]
+      },
+      {
+        "title": "Why batch size matters",
+        "explanation": "Each batch supplies the negative examples. With a small batch, the model sees fewer negatives and gets a weaker contrastive signal. With a larger batch, the loss compares each positive against more competing views, which often improves representation learning.",
+        "equations": [
+          {
+            "latex": "\\text{# negatives per anchor} \\approx 2N - 2",
+            "explanation": "For a given anchor view, one view is the positive and the anchor itself is excluded, leaving roughly 2N-2 negatives. The exact number is less important than the dependence on batch size."
+          }
+        ]
+      }
+    ]
+  },
+  "common_misconceptions": [
+    "SimCLR is not supervised classification without labels; the labels are replaced by an augmentation-based relational task.",
+    "The model is not trying to predict a fixed class during pretraining.",
+    "The projection head is usually not the downstream representation; it is often discarded after pretraining.",
+    "More negatives help, but large batch size alone is not enough if augmentations are poorly chosen.",
+    "The method learns invariance only to the chosen augmentations, not to every transformation.",
+    "Contrastive learning does not guarantee semantic understanding unless the positive-pair construction matches the semantics you care about."
+  ],
+  "limitations": [
+    "It can depend on large batch sizes or other ways to provide many negatives.",
+    "The quality of the learned representation is sensitive to augmentation choice.",
+    "If positives are defined too loosely, the model may ignore important information.",
+    "If negatives include semantically similar images, the model may push apart useful neighbors.",
+    "The loss can be computationally expensive because it compares many pairs in the batch.",
+    "Performance can vary across domains where standard image augmentations do not reflect meaningful invariances."
+  ],
+  "mental_models": [
+    "Two views of the same scene should land near each other in embedding space.",
+    "Augmentations define what the model should ignore.",
+    "The batch provides a temporary neighborhood of negatives.",
+    "The projection head is a training adapter, not necessarily the final representation.",
+    "Contrastive learning is instance discrimination with self-generated supervision."
+  ],
+  "prerequisite_topic_ids": [],
+  "related_topic_ids": [
+    "contrastive-language-image-pretraining-clip"
+  ],
+  "relationship_justifications": [
+    {
+      "topic_id": "contrastive-language-image-pretraining-clip",
+      "relationship": "related",
+      "reason": "CLIP is a canonical contrastive method that shares the use of normalized embeddings and contrastive objectives, but it is a distinct multimodal method rather than a prerequisite for SimCLR.",
+      "confidence": "high"
+    }
+  ],
+  "suggested_new_topic_relationships": [
+    {
+      "title": "InfoNCE loss",
+      "relationship": "prerequisite",
+      "reason": "SimCLR is naturally explained as an application of an InfoNCE-style contrastive objective."
+    },
+    {
+      "title": "Data augmentation",
+      "relationship": "prerequisite",
+      "reason": "Augmentations define the positive pairs and the invariances that SimCLR learns."
+    },
+    {
+      "title": "Self-supervised learning",
+      "relationship": "related",
+      "reason": "SimCLR is a canonical self-supervised representation learning method."
+    },
+    {
+      "title": "Contrastive learning",
+      "relationship": "related",
+      "reason": "SimCLR is a key contrastive baseline and reference point for later methods."
+    },
+    {
+      "title": "Projection head",
+      "relationship": "related",
+      "reason": "The projection head is a distinctive component of SimCLR’s training recipe."
+    },
+    {
+      "title": "ResNet",
+      "relationship": "related",
+      "reason": "Medium-confidence relationship, not saved as a durable edge: SimCLR commonly uses CNN backbones and is often discussed with standard vision encoders such as ResNet, but the architecture is not conceptually required by the method."
+    },
+    {
+      "title": "Vision Transformer (ViT)",
+      "relationship": "related",
+      "reason": "Medium-confidence relationship, not saved as a durable edge: SimCLR can be applied with transformer encoders as well as CNNs, making ViT a relevant alternative backbone comparison rather than a prerequisite."
+    }
+  ],
+  "deep_dive": "SimCLR is best understood as a compromise between two goals that often conflict: invariance and discrimination. Invariance says that two views of the same object should be treated as the same. Discrimination says that different objects should remain separable. The contrastive objective encodes both at once.\n\nA useful way to think about the optimization is geometric. The encoder learns an embedding space where semantic identity is aligned with closeness, but only relative to the chosen augmentation family and the set of negatives in the batch. This means SimCLR is not discovering truth in a vacuum; it is learning under explicit assumptions about what changes and what should stay stable.\n\nThe projection head matters because the loss is not always aligned with downstream usefulness. The extra mapping lets the training objective operate in a space that is convenient for contrastive separation, while the encoder can preserve more general-purpose information. This separation of roles is one reason SimCLR became such an influential template.\n\nThe dependence on negatives is both a strength and a weakness. Negatives give a clear comparative signal, but they also create computational pressure and can introduce false-negative issues when semantically similar images are pushed apart. Later non-contrastive methods can be understood partly as attempts to preserve the benefits of self-supervised representation learning while reducing this dependence.\n\nFrom a practical standpoint, SimCLR is a reminder that representation learning is not only about architecture. The objective, augmentation policy, similarity metric, and optimization regime jointly define what the model learns.",
+  "sources": [
+    {
+      "title": "How AI Taught Itself to See [DINOv3]",
+      "type": "youtube",
+      "url": "https://www.youtube.com/watch?v=oGTasd3cliM"
+    }
+  ],
+  "source_provenance": {
+    "source_derived": {
+      "kind": "youtube",
+      "video_id": "oGTasd3cliM",
+      "title": "How AI Taught Itself to See [DINOv3]",
+      "channel": "Jia-Bin Huang",
+      "attribution": "YouTube transcript retrieved locally",
+      "concept": "SimCLR",
+      "source_evidence_summary": "The video says the described augmentation-based contrastive objective is the core idea of SimCLR and notes its dependence on many negative samples and large batch sizes.",
+      "timestamp_seconds": [
+        373,
+        390
+      ],
+      "video_url": "https://www.youtube.com/watch?v=oGTasd3cliM"
+    },
+    "ai_expanded": "The educational explanation was AI-expanded from the selected source concept and requires human review."
+  },
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "topic-authoring-v1",
+    "generated_at": "2026-08-23T13:14:11.615311+00:00",
+    "user_focus": "Build a deeper ML learning topic from this source concept: A canonical contrastive self-supervised method and a useful reference point for later non-contrastive approaches..",
+    "review_state": "approved",
+    "youtube_import_id": "b00fdfa7-1fcc-4a03-9ef9-0d1fe0b61330",
+    "youtube_concept": "SimCLR"
+  },
+  "quality_report": {
+    "blocking_issues_fixed": [
+      {
+        "area": "taxonomy",
+        "message": "Reclassified SimCLR from ml_fundamentals to representation_learning and marked it as a named_method, which matches the taxonomy and avoids placing a neural self-supervised method in cross-family fundamentals."
+      },
+      {
+        "area": "provenance",
+        "message": "Kept the topic grounded in the provided source evidence and avoided overstating source-derived claims beyond the cited SimCLR core idea and large-batch/negative-sample dependence."
+      },
+      {
+        "area": "relationships",
+        "message": "Removed low-confidence prerequisite/related edges that were not durable curriculum dependencies and replaced them with high-confidence relationships only where appropriate."
+      },
+      {
+        "area": "technical_correctness",
+        "message": "Softened the blanket collapse claim by framing negatives as part of the SimCLR objective rather than implying all contrastive methods universally require negatives to prevent collapse."
+      },
+      {
+        "area": "relationships",
+        "message": "Removed prerequisite relationship 'cnn' without an explicit rationale."
+      },
+      {
+        "area": "relationships",
+        "message": "Removed prerequisite relationship 'gradient-descent' without an explicit rationale."
+      },
+      {
+        "area": "relationships",
+        "message": "Removed related relationship 'knowledge-distillation' without an explicit rationale."
+      },
+      {
+        "area": "relationships",
+        "message": "Moved medium-confidence related relationship 'resnet' to suggestions."
+      },
+      {
+        "area": "relationships",
+        "message": "Moved medium-confidence related relationship 'vision-transformer-vit' to suggestions."
+      }
+    ],
+    "blocking_issues_remaining": [
+      {
+        "area": "source_grounding",
+        "message": "The source evidence is limited to a short YouTube segment; the expanded explanation is reasonable but still partly AI-expanded rather than exhaustively source-verified."
+      }
+    ],
+    "warnings": [
+      {
+        "area": "named_method_completeness",
+        "message": "The draft is broadly complete for SimCLR, but a stricter canonical writeup could mention the symmetric two-direction loss explicitly if needed for full method detail."
+      },
+      {
+        "area": "relationships",
+        "message": "Suggested prerequisites such as InfoNCE and data augmentation remain suggestions because they are useful conceptual neighbors, but no durable topic IDs were provided for them."
+      },
+      {
+        "area": "relationships",
+        "message": "Removed prerequisite relationship 'cnn' without an explicit rationale."
+      },
+      {
+        "area": "relationships",
+        "message": "Removed prerequisite relationship 'gradient-descent' without an explicit rationale."
+      },
+      {
+        "area": "relationships",
+        "message": "Removed related relationship 'knowledge-distillation' without an explicit rationale."
+      },
+      {
+        "area": "relationships",
+        "message": "Moved medium-confidence related relationship 'resnet' to suggestions."
+      },
+      {
+        "area": "relationships",
+        "message": "Moved medium-confidence related relationship 'vision-transformer-vit' to suggestions."
+      }
+    ],
+    "confidence": "high"
+  },
+  "quality_status": "needs_attention",
+  "existing_quality_review": {
+    "status": "needs_attention",
+    "source_payload_hash": "d7e4e0c8f6b77d9dd302b61c9303fe7b0466c584ba498918a45757285bc997a6",
+    "reviewed_payload_hash": "9b9815fc6e810b09b4005bf6ec6d4ef59ed730920e018d67a7475e040bda0c6f",
+    "reviewer_prompt_version": "topic-quality-review-v2",
+    "reviewed_at": "2026-08-24T06:40:42.010651+00:00",
+    "forced_re_review": false
+  },
+  "id": "simclr",
+  "content_version": 2,
+  "knowledge_type": [
+    "conceptual"
+  ]
+}

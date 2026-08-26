@@ -1,0 +1,40 @@
+{
+  "content_version": 2,
+  "id": "self-supervised-learning_q006",
+  "topic_ids": [
+    "self-supervised-learning"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mechanism",
+  "difficulty": "intermediate",
+  "question": "What is contrastive learning trying to do in self-supervised learning?",
+  "direct_answer": "It pulls representations of related examples together and pushes unrelated examples apart.",
+  "expanded_answer": "Contrastive learning defines positive pairs, such as two augmented views of the same image, and negative pairs, such as different images. The model is trained so positives have high similarity and negatives have low similarity. This encourages the encoder to keep information that identifies or links semantically related examples while discarding superficial differences caused by augmentation.",
+  "key_points": [
+    "Uses positive and negative pairs",
+    "Optimizes similarity relationships",
+    "Often relies on data augmentations"
+  ],
+  "common_wrong_ideas": [
+    "It only compares class labels",
+    "It memorizes each image individually",
+    "Negatives are optional in every contrastive method"
+  ],
+  "related_topic_ids": [
+    "self-supervised-learning"
+  ],
+  "relationship_warnings": [
+    "Removed unavailable related topic IDs: contrastive learning, SimCLR"
+  ],
+  "concept_refresher_topic_id": "self-supervised-learning",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-24T15:31:06.413016+00:00",
+    "user_focus": "",
+    "review_state": "approved",
+    "youtube_import_id": "b00fdfa7-1fcc-4a03-9ef9-0d1fe0b61330"
+  }
+}

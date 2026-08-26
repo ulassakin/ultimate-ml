@@ -1,0 +1,39 @@
+{
+  "content_version": 2,
+  "id": "contrastive-learning_q004",
+  "topic_ids": [
+    "contrastive-learning"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mechanism",
+  "difficulty": "intermediate",
+  "question": "What role do negatives play in many contrastive methods?",
+  "direct_answer": "They act as competing examples that the model should separate from the positive pair.",
+  "expanded_answer": "Negatives prevent trivial collapse by giving the model alternative points that should not be mapped too close to the anchor. The objective increases similarity for the positive pair while decreasing similarity to negatives, which sharpens the embedding geometry. Some methods rely heavily on many negatives, while others reduce or remove explicit negatives and use different anti-collapse mechanisms.",
+  "key_points": [
+    "Negatives are competing examples",
+    "They discourage collapse",
+    "They sharpen representation separation",
+    "Not all contrastive-style methods use explicit negatives"
+  ],
+  "common_wrong_ideas": [
+    "Negatives are always labels",
+    "More negatives always guarantee better representations",
+    "All self-supervised methods require negatives"
+  ],
+  "related_topic_ids": [],
+  "relationship_warnings": [
+    "Removed unavailable related topic IDs: contrastive learning, SimCLR, DINO"
+  ],
+  "concept_refresher_topic_id": "contrastive-learning",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T08:08:19.504877+00:00",
+    "user_focus": "",
+    "review_state": "approved",
+    "youtube_import_id": "b00fdfa7-1fcc-4a03-9ef9-0d1fe0b61330"
+  }
+}

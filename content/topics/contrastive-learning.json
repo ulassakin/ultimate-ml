@@ -1,0 +1,387 @@
+{
+  "title": "Contrastive learning",
+  "category": "representation_learning",
+  "difficulty": "intermediate",
+  "concept_type": "named_method",
+  "tags": [
+    "representation learning",
+    "self-supervised learning",
+    "contrastive loss",
+    "InfoNCE",
+    "augmentation",
+    "embedding space",
+    "metric learning"
+  ],
+  "one_sentence_summary": "Contrastive learning trains representations by making positive pairs more similar than competing or mismatched examples, with the exact use of negatives depending on the method.",
+  "quick_recall": "Pull positives together and, when the method uses them, push negatives apart to learn embeddings that preserve semantically relevant identity across augmentations.",
+  "big_picture": "Contrastive learning is a representation-learning framework that turns data into supervision by comparing pairs or sets of examples. Rather than predicting labels directly, the model learns whether two views correspond to the same underlying sample. This makes it a general-purpose way to learn embeddings that organize semantic similarity geometrically.",
+  "why_it_exists": "It is useful when labels are scarce, expensive, or too narrow to capture the structure we want. By using augmentations or other pair construction rules, contrastive learning creates a self-supervised signal that can produce transferable embeddings for retrieval, clustering, linear probing, and fine-tuning.",
+  "intuition": "If two augmented views still show the same underlying object, their representations should be close. If they come from different samples, their representations should usually be farther apart. The method teaches the model to ignore nuisance changes and preserve identity-bearing information.",
+  "core_explanation": "A contrastive method typically uses an encoder, a way to construct positive pairs, and a similarity-based objective. The encoder can be a CNN, transformer, or other backbone; the key idea is the training signal in embedding space, not the architecture itself.\n\nIn a basic setup, two views of the same sample are encoded into embeddings and compared against embeddings from other samples. The objective rewards high similarity for the positive pair and lower similarity for competing pairs. This makes the model learn a geometry where semantically matching items are near one another.\n\nMany contrastive methods are used as self-supervised pretraining. After training, the embeddings can support linear probing, nearest-neighbor retrieval, clustering, or downstream fine-tuning.",
+  "mechanism": "A common objective is an InfoNCE-style softmax loss over candidates. For anchor embedding z_i and positive z_j, with comparison set {z_k}, the model maximizes the relative score of the positive pair.\n\nThis can be implemented with one-directional or symmetric losses depending on the method. For example, SimCLR uses a symmetric i→j and j→i formulation, while other methods may use different pairing schemes or memory queues.\n\nThe temperature parameter τ controls how sharply the similarity distribution is peaked. Lower τ makes the loss focus more strongly on harder competitors. In methods such as CLIP, embeddings are typically L2-normalized, the loss is applied symmetrically in both image→text and text→image directions, and a learned logit scale acts like an inverse temperature.",
+  "ml_relevance": "Contrastive learning is central in modern representation learning because it provides a broadly applicable self-supervised pretraining recipe. It is effective when tasks depend on similarity, when labels are limited, and when we want reusable embeddings.\n\nThe exact augmentation or positive-pair strategy matters because it defines the invariances the model should learn. For images, this can include crops, flips, color jitter, or blur. For text, it may involve dropout-based views or other perturbations. For audio, time- and frequency-domain masking are common. The method is therefore highly domain-dependent even though the core idea is shared.\n\nContrastive learning is not limited to vision. It also appears in language, audio, graphs, and multimodal systems, where it is often used to align or structure representations.",
+  "practical_example": "Suppose you pretrain an image encoder on unlabeled photos. For each photo, create two random crops and feed them through the same encoder. The model is trained so that the two crops from the same photo have similar embeddings, while crops from different photos are less similar. After pretraining, you can freeze the encoder for a classifier, use it for retrieval, or fine-tune it on a downstream task.",
+  "mathematical_foundation": {
+    "overview": "Contrastive learning learns a representation f_θ(x)=z and optimizes a similarity-based objective so that positive pairs have higher similarity than competing candidates. The equations below show the standard embedding, similarity, and softmax-style contrastive loss.",
+    "prerequisites": [],
+    "sections": [
+      {
+        "title": "Embedding and similarity",
+        "explanation": "The encoder maps each input to an embedding, and the method compares embeddings using a similarity function.",
+        "equations": [
+          {
+            "latex": "z = f_\\theta(x)",
+            "explanation": "x is an input sample, such as an image or sentence. f_\\theta is the encoder with parameters θ. z is the learned embedding used by the contrastive objective."
+          },
+          {
+            "latex": "\\mathrm{sim}(z_a, z_b) = \\frac{z_a^\\top z_b}{\\lVert z_a \\rVert\\,\\lVert z_b \\rVert}",
+            "explanation": "This is cosine similarity. It measures directional alignment while removing dependence on vector scale."
+          }
+        ],
+        "prerequisites": [
+          "Cosine similarity"
+        ]
+      },
+      {
+        "title": "Contrastive softmax loss",
+        "explanation": "The positive pair competes against other candidates in a normalized softmax.",
+        "equations": [
+          {
+            "latex": "p(j\\mid i) = \\frac{\\exp(\\mathrm{sim}(z_i, z_j)/\\tau)}{\\sum_k \\exp(\\mathrm{sim}(z_i, z_k)/\\tau)}",
+            "explanation": "Given anchor i, this is the probability assigned to candidate j being the correct match. τ is the temperature."
+          },
+          {
+            "latex": "\\mathcal{L}_i = -\\log p(j\\mid i)",
+            "explanation": "Minimizing this loss increases the relative score of the positive pair compared with the other candidates."
+          }
+        ],
+        "prerequisites": [
+          "Softmax",
+          "Temperature scaling",
+          "Cross-entropy"
+        ]
+      },
+      {
+        "title": "Symmetric pairing and anti-collapse intuition",
+        "explanation": "Some methods use both directions of a matched pair and rely on normalization, batch composition, or other method-specific mechanisms to avoid trivial collapse.",
+        "equations": [
+          {
+            "latex": "\\mathcal{L} = \\frac{1}{2}(\\mathcal{L}_{i\\to j}+\\mathcal{L}_{j\\to i})",
+            "explanation": "This symmetric form is common in methods such as SimCLR and CLIP, where both directions of the pair contribute to the training signal."
+          }
+        ],
+        "prerequisites": []
+      }
+    ]
+  },
+  "common_misconceptions": [
+    "Contrastive learning is not the same as supervised classification, though some objectives can be written in classification-like form.",
+    "The choice of augmentations or pair construction rules determines what counts as a positive.",
+    "More negatives are not automatically better; false negatives and noisy negatives can hurt learning.",
+    "The method is not tied to images and can be used for text, audio, graphs, and multimodal data.",
+    "Not every contrastive method relies on explicit negatives in the same way; anti-collapse can also involve architecture or objective design."
+  ],
+  "limitations": [
+    "Performance depends strongly on the quality of positive-pair construction or augmentations.",
+    "False negatives can degrade learning when semantically similar examples are treated as different.",
+    "Training can be sensitive to batch size, temperature, normalization, and candidate-set composition.",
+    "Poorly chosen augmentations may remove information needed for downstream tasks.",
+    "The learned space may be excellent for retrieval or probing but still require fine-tuning for direct prediction."
+  ],
+  "mental_models": [
+    "A positive pair is two views of the same identity.",
+    "The loss is a competition in which the positive must score higher than alternatives.",
+    "Augmentations define the invariances the model is encouraged to learn.",
+    "The embedding space is a geometry for semantic similarity, not just compression.",
+    "Contrastive learning learns by comparing alternatives rather than predicting a fixed label."
+  ],
+  "prerequisite_topic_ids": [
+    "self-supervised-learning"
+  ],
+  "related_topic_ids": [
+    "contrastive-language-image-pretraining-clip",
+    "simclr"
+  ],
+  "relationship_justifications": [
+    {
+      "topic_id": "self-supervised-learning",
+      "relationship": "prerequisite",
+      "reason": "Contrastive learning is a major self-supervised learning family; understanding the broader paradigm clarifies why labels are not required and how pretext targets are constructed.",
+      "confidence": "high"
+    },
+    {
+      "topic_id": "contrastive-language-image-pretraining-clip",
+      "relationship": "related",
+      "reason": "CLIP is a central multimodal contrastive method and a strong comparison point for how contrastive objectives extend beyond vision to image-text alignment.",
+      "confidence": "high"
+    },
+    {
+      "topic_id": "simclr",
+      "relationship": "related",
+      "reason": "SimCLR is a canonical instance of contrastive learning, making the abstract objective concrete through paired augmentations and in-batch negatives.",
+      "confidence": "high"
+    }
+  ],
+  "suggested_new_topic_relationships": [
+    {
+      "title": "Metric learning",
+      "relationship": "related",
+      "reason": "Contrastive objectives shape distances in embedding space and are closely related to metric learning."
+    },
+    {
+      "title": "Data augmentation",
+      "relationship": "related",
+      "reason": "View construction and augmentations are central in many contrastive methods, especially vision SSL, but they are not a universal prerequisite across all contrastive setups."
+    },
+    {
+      "title": "InfoNCE loss",
+      "relationship": "related",
+      "reason": "InfoNCE is a standard contrastive objective form and helps distinguish the generic framework from a specific loss."
+    },
+    {
+      "title": "Representation collapse",
+      "relationship": "related",
+      "reason": "Collapse is a key failure mode often discussed when analyzing contrastive objectives and anti-collapse mechanisms."
+    },
+    {
+      "title": "DINO",
+      "relationship": "related",
+      "reason": "Medium-confidence relationship, not saved as a durable edge: DINO is a close self-supervised vision alternative often compared with contrastive methods because it learns representations without explicit negative pairs."
+    }
+  ],
+  "deep_dive": "Contrastive learning is best understood as a framework with three coupled parts: pair construction, similarity geometry, and optimization. Pair construction decides what should be treated as a match, and that choice encodes the domain assumptions. Similarity geometry determines how the model scores candidate matches in embedding space. Optimization then adjusts the encoder so that the chosen positives outrank the competing candidates.\n\nA key reason the method works well is that the training signal is relational. The representation of one example is learned relative to other examples in the same batch or memory bank, rather than against a fixed target label. This makes batch composition, temperature, and negative quality important. If negatives are informative, the signal can be strong; if they are false or trivial, learning can become noisy.\n\nThe anti-collapse story is also method-dependent. Some contrastive methods use explicit negatives, while others rely on normalization, architectural asymmetry, stop-gradient tricks, or other design choices. So it is safer to say that contrastive learning often prevents collapse through the combination of its objective and method-specific mechanisms, rather than claiming that negatives are universally required in every variant.\n\nIn practice, the method is a way to build invariances. The augmentations or pair rules tell the model what variation should be ignored, but if they are too aggressive the model can lose task-relevant detail. That is why good contrastive learning is partly a design problem: the objective is simple, but the semantic meaning of the pairs has to match the domain well.",
+  "sources": [
+    {
+      "title": "How AI Taught Itself to See [DINOv3]",
+      "type": "youtube",
+      "url": "https://www.youtube.com/watch?v=oGTasd3cliM"
+    }
+  ],
+  "source_provenance": {
+    "source_derived": {
+      "kind": "youtube",
+      "video_id": "oGTasd3cliM",
+      "title": "How AI Taught Itself to See [DINOv3]",
+      "channel": "Jia-Bin Huang",
+      "attribution": "YouTube transcript retrieved locally",
+      "concept": "Contrastive learning",
+      "source_evidence_summary": "Describes using two augmented views, pulling matching embeddings together and pushing non-matching ones apart.",
+      "timestamp_seconds": [
+        321,
+        338,
+        356,
+        369
+      ],
+      "video_url": "https://www.youtube.com/watch?v=oGTasd3cliM"
+    },
+    "ai_expanded": "The educational explanation was AI-expanded from the selected source concept and requires human review."
+  },
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "topic-authoring-v1",
+    "generated_at": "2026-08-23T09:40:16.253990+00:00",
+    "user_focus": "Build a deeper ML learning topic from this source concept: Central representation-learning objective; helps understand how invariances are learned from augmented data..",
+    "review_state": "approved",
+    "youtube_import_id": "b00fdfa7-1fcc-4a03-9ef9-0d1fe0b61330",
+    "youtube_concept": "Contrastive learning"
+  },
+  "metadata_resolution": {
+    "resolver_version": "relationship-resolver-v1",
+    "resolved_category": "representation_learning",
+    "resolved_concept_type": "named_method",
+    "candidate_topic_ids": [
+      "simclr",
+      "contrastive-language-image-pretraining-clip",
+      "vision-transformer-vit",
+      "dinov3",
+      "self-supervised-learning",
+      "dino",
+      "gradient-descent",
+      "pca",
+      "knowledge-distillation",
+      "gradient-flow",
+      "resnet",
+      "cnn",
+      "covariance"
+    ],
+    "durable_edges": {
+      "prerequisites": [
+        "self-supervised-learning"
+      ],
+      "related": [
+        "contrastive-language-image-pretraining-clip",
+        "simclr"
+      ]
+    },
+    "math_prerequisites": {
+      "global": [],
+      "sections": {
+        "Embedding and similarity": [
+          "Cosine similarity"
+        ],
+        "Contrastive softmax loss": [
+          "Softmax",
+          "Temperature scaling",
+          "Cross-entropy"
+        ],
+        "Symmetric pairing and anti-collapse intuition": []
+      }
+    },
+    "rejected_candidates": [
+      {
+        "topic_id": "vision-transformer-vit",
+        "reason": "ViT is an architecture that can serve as a backbone for contrastive learning, but backbone choice alone is generic implementation adjacency and not a conceptual neighbor of the method itself."
+      },
+      {
+        "topic_id": "dinov3",
+        "reason": "DINOv3 is related through self-supervised vision representation learning, but it is more specialized than the core contrastive-learning concept and is less central than DINO as a comparison point."
+      },
+      {
+        "topic_id": "gradient-descent",
+        "reason": "Optimization by gradient descent is generic to many ML methods and does not materially block understanding of contrastive learning."
+      },
+      {
+        "topic_id": "pca",
+        "reason": "PCA is not a strong conceptual neighbor or prerequisite for contrastive learning; similarity here would be too weak and largely based on embedding-space intuition."
+      },
+      {
+        "topic_id": "knowledge-distillation",
+        "reason": "The teacher-student wording alone is insufficient; this is not a direct conceptual neighbor to contrastive learning without additional method-specific overlap."
+      },
+      {
+        "topic_id": "gradient-flow",
+        "reason": "This is generic backpropagation mechanics rather than a prerequisite or strong related concept for contrastive learning."
+      },
+      {
+        "topic_id": "resnet",
+        "reason": "Residual-path or gradient-flow associations are generic architecture-adjacency and not specific to contrastive learning."
+      },
+      {
+        "topic_id": "cnn",
+        "reason": "CNN is only a possible backbone choice, which is generic implementation adjacency and not a conceptual relationship to contrastive learning."
+      },
+      {
+        "topic_id": "covariance",
+        "reason": "Covariance is too remote mathematically and does not provide a material dependency for understanding contrastive learning."
+      }
+    ],
+    "cache_key": "08eeb9e1379e29d5da02376d40d43ecbb969cba949353081212cb91d26ff102d",
+    "cached": false,
+    "topic_hash": "d45785b11d377d351895e58723c9f9e2a69b467c2be11b5202ecb40f517a3b5f",
+    "candidate_hashes": [
+      {
+        "topic_id": "simclr",
+        "content_hash": "6441999aeabe57e0844710030ffe7a4c3a5839aef8ee0108bc99eeae4008968b"
+      },
+      {
+        "topic_id": "contrastive-language-image-pretraining-clip",
+        "content_hash": "e364ed1fd90ab1beedc8e773f44416c5791e54d56e5484ffe1d982cfc5184546"
+      },
+      {
+        "topic_id": "vision-transformer-vit",
+        "content_hash": "7e41f7e3ba2cd27088933004e42d5652fd0f9c67cf2af8e4946d9e0f8804e825"
+      },
+      {
+        "topic_id": "dinov3",
+        "content_hash": "602447edca251d21bef7a9689863acce85a8c5f0fdd4e1a46050302514f4854b"
+      },
+      {
+        "topic_id": "self-supervised-learning",
+        "content_hash": "48e987ff01593fbbc95865a06ecec823a105f1094535ddadde0e44b9d25c3a82"
+      },
+      {
+        "topic_id": "dino",
+        "content_hash": "995b328cfbb01791037f17299686e09c85db1c12d8d4601e84e7471f609c507c"
+      },
+      {
+        "topic_id": "gradient-descent",
+        "content_hash": "ff7889d00f5b43c6e7a9bfcf0cc0e68b86e19f95ff6ea69acd674f884ff4d809"
+      },
+      {
+        "topic_id": "pca",
+        "content_hash": "18a3d51156eaddb500c431024994f701904d0692db32aab74ed41f547375dc96"
+      },
+      {
+        "topic_id": "knowledge-distillation",
+        "content_hash": "8120276d5353d2bcd2523cbcf3e02fa972b257f5e0d70f9d79db898438d350fa"
+      },
+      {
+        "topic_id": "gradient-flow",
+        "content_hash": "653037ce52b50a2fc78b414a23634f5252f477b02a27718ee451ea641eca6a89"
+      },
+      {
+        "topic_id": "resnet",
+        "content_hash": "518a168ebf54c89dce7fface3a33b59d6938840960127568b6427cbeb75907a9"
+      },
+      {
+        "topic_id": "cnn",
+        "content_hash": "25f9a6494d2b283b45cc732f27c29bf4169b5ed20e95589e0852ba674887555a"
+      },
+      {
+        "topic_id": "covariance",
+        "content_hash": "c311f6eb54169369f59beb349893e547e9495a1ad83f69ad874dffb11fee2f5d"
+      }
+    ],
+    "resolver_prompt_version": "relationship-resolver-v1"
+  },
+  "quality_report": {
+    "blocking_issues_fixed": [
+      {
+        "area": "taxonomy",
+        "message": "Changed category from ml_fundamentals to representation_learning to match the supplied taxonomy and the topic’s actual scope."
+      },
+      {
+        "area": "schema",
+        "message": "Changed concept_type from a broad concept to named_method, which better fits contrastive learning as a defined family of methods/objectives."
+      },
+      {
+        "area": "mathematics",
+        "message": "Removed the incorrect prerequisite Gradient Descent from mathematical_foundation.prerequisites and replaced it with controlled mathematical tools needed to read the equations."
+      },
+      {
+        "area": "mathematics",
+        "message": "Fixed malformed equation text and clarified the loss notation and symmetric objective description."
+      },
+      {
+        "area": "overclaims",
+        "message": "Qualified collapse claims so the topic does not imply that explicit negatives are universally required in all contrastive methods."
+      }
+    ],
+    "blocking_issues_remaining": [],
+    "warnings": [
+      {
+        "area": "named_method_completeness",
+        "message": "The draft is accurate at a framework level, but it remains somewhat generic and does not fully specialize to one canonical variant such as SimCLR or CLIP."
+      },
+      {
+        "area": "source_grounding",
+        "message": "The source evidence is limited to a short YouTube segment about contrastive learning; several broader statements are AI-expanded and should be treated as such."
+      },
+      {
+        "area": "provenance",
+        "message": "Provenance is present, but the source appears to be a broader educational video rather than a primary paper or canonical method reference."
+      },
+      {
+        "area": "source_grounding",
+        "message": "Source segment is brief; the broader explanation is explicitly marked AI-expanded."
+      }
+    ],
+    "confidence": "high"
+  },
+  "quality_status": "ready",
+  "existing_quality_review": {
+    "status": "reviewed",
+    "source_payload_hash": "3b33c9d537c78eae8df61b432943eb967e50643c5c817d6c180874d4f2df8d55",
+    "reviewed_payload_hash": "d1d91da5aad9b158562dade7b359878e2fa4b6e65f6f32a23eb739daaef6130b",
+    "reviewer_prompt_version": "topic-quality-review-v4",
+    "reviewed_at": "2026-08-26T07:53:19.471906+00:00",
+    "forced_re_review": false
+  },
+  "id": "contrastive-learning",
+  "content_version": 2,
+  "knowledge_type": [
+    "conceptual"
+  ]
+}

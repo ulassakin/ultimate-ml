@@ -1,0 +1,38 @@
+{
+  "content_version": 2,
+  "id": "self-supervised-learning_q007",
+  "topic_ids": [
+    "self-supervised-learning"
+  ],
+  "question_type": "conceptual",
+  "question_category": "comparison",
+  "difficulty": "intermediate",
+  "question": "How is CLIP related to self-supervised contrastive learning?",
+  "direct_answer": "CLIP uses a contrastive objective, but its pairs are image-text matches rather than two views of the same image.",
+  "expanded_answer": "CLIP aligns embeddings from two modalities. Matched image-text pairs are pulled together and mismatched pairs are pushed apart. This is conceptually similar to contrastive self-supervision because it learns shared representations without manual class labels, but the supervision comes from naturally paired multimodal data instead of augmentation of a single example.",
+  "key_points": [
+    "Uses contrastive alignment",
+    "Pairs are image-text, not image-image",
+    "Learns general-purpose embeddings from paired data"
+  ],
+  "common_wrong_ideas": [
+    "CLIP is fully supervised in the usual label sense",
+    "CLIP does not use contrastive learning",
+    "Self-supervision can only use single-modality data"
+  ],
+  "related_topic_ids": [],
+  "relationship_warnings": [
+    "Removed unavailable related topic IDs: contrastive learning, contrastive language-image pretraining (CLIP), self-supervised learning"
+  ],
+  "concept_refresher_topic_id": "self-supervised-learning",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-24T15:31:06.413016+00:00",
+    "user_focus": "",
+    "review_state": "approved",
+    "youtube_import_id": "b00fdfa7-1fcc-4a03-9ef9-0d1fe0b61330"
+  }
+}

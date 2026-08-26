@@ -1,0 +1,40 @@
+{
+  "content_version": 2,
+  "id": "vision-transformer-vit_q008",
+  "topic_ids": [
+    "vision-transformer-vit"
+  ],
+  "question_type": "conceptual",
+  "question_category": "application",
+  "difficulty": "intermediate",
+  "question": "Why are ViT-style backbones useful in self-supervised learning methods like DINO?",
+  "direct_answer": "Because patch tokens give a strong representation space where the model can learn global and local visual structure without labels.",
+  "expanded_answer": "DINO and related methods operate on transformer tokens rather than CNN feature maps. ViT’s tokenization makes it natural to compare views, transfer knowledge from teacher to student, and learn representations that can be reused across tasks. The patch tokens also make it easier to study and improve dense features.",
+  "key_points": [
+    "ViT provides patch-level representations",
+    "Useful for teacher-student self-supervision",
+    "Supports reusable visual features"
+  ],
+  "common_wrong_ideas": [
+    "Self-supervised methods require convolution",
+    "ViT only works for labeled classification",
+    "Patch tokens are too coarse for representation learning"
+  ],
+  "related_topic_ids": [
+    "vision-transformer-vit"
+  ],
+  "relationship_warnings": [
+    "Removed unavailable related topic IDs: DINO, self-supervised learning"
+  ],
+  "concept_refresher_topic_id": "vision-transformer-vit",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-24T06:37:58.794208+00:00",
+    "user_focus": "",
+    "review_state": "approved",
+    "youtube_import_id": "b00fdfa7-1fcc-4a03-9ef9-0d1fe0b61330"
+  }
+}
