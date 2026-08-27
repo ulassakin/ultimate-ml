@@ -107,20 +107,13 @@
   ],
   "prerequisite_topic_ids": [],
   "related_topic_ids": [
-    "contrastive-language-image-pretraining-clip",
-    "resnet"
+    "contrastive-language-image-pretraining-clip"
   ],
   "relationship_justifications": [
     {
       "topic_id": "contrastive-language-image-pretraining-clip",
       "relationship": "related",
       "reason": "CLIP commonly uses ViT as an image encoder, so the two topics are closely connected in multimodal representation learning.",
-      "confidence": "high"
-    },
-    {
-      "topic_id": "resnet",
-      "relationship": "related",
-      "reason": "ResNet is a major convolutional baseline commonly compared against ViT in vision representation learning.",
       "confidence": "high"
     }
   ],

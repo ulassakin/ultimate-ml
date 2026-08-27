@@ -1,0 +1,32 @@
+{
+  "content_version": 2,
+  "id": "eigenvalues-and-eigenvectors_q007",
+  "topic_ids": [
+    "eigenvalues-and-eigenvectors"
+  ],
+  "question_type": "conceptual",
+  "question_category": "misconception",
+  "difficulty": "intermediate",
+  "question": "Does every real matrix have real eigenvectors?",
+  "direct_answer": "No.",
+  "expanded_answer": "Some real matrices, such as a nontrivial 2D rotation, have no real direction that maps back onto itself. In those cases, real eigenvectors may not exist, and complex eigenvalues/eigenvectors or another viewpoint is needed.",
+  "key_points": [
+    "Real matrices may lack real eigenvectors",
+    "Rotations are a key example",
+    "Complex eigenpairs may appear"
+  ],
+  "common_wrong_ideas": [
+    "Assuming every matrix has a real eigenvector",
+    "Expecting rotation matrices to preserve a real line"
+  ],
+  "concept_refresher_topic_id": "eigenvalues-and-eigenvectors",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T16:35:35.040173+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

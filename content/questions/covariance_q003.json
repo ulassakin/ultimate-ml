@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "covariance_q003",
+  "topic_ids": [
+    "covariance"
+  ],
+  "question_type": "conceptual",
+  "question_category": "intuition",
+  "difficulty": "beginner",
+  "question": "Why do same-sign deviations produce positive covariance?",
+  "direct_answer": "Because their product is positive when both deviations have the same sign.",
+  "expanded_answer": "If both centered deviations are positive, the product is positive. If both are negative, the product is also positive. This is why variables that tend to rise and fall together produce positive covariance.",
+  "key_points": [
+    "Positive times positive is positive",
+    "Negative times negative is positive",
+    "Same-direction deviations contribute positively"
+  ],
+  "common_wrong_ideas": [
+    "Only positive deviations matter",
+    "Negative deviations always make covariance negative"
+  ],
+  "related_topic_ids": [],
+  "concept_refresher_topic_id": "covariance",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T14:42:43.067191+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

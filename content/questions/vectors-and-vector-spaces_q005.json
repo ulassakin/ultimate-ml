@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "vectors-and-vector-spaces_q005",
+  "topic_ids": [
+    "vectors-and-vector-spaces"
+  ],
+  "question_type": "conceptual",
+  "question_category": "comparison",
+  "difficulty": "intermediate",
+  "question": "What is the difference between a basis and a spanning set?",
+  "direct_answer": "A basis spans the space with no redundant vectors.",
+  "expanded_answer": "A spanning set may contain extra vectors, but a basis is a minimal spanning set whose vectors are linearly independent. That means none of them can be written as a combination of the others. A basis gives unique coordinates for vectors in the space, which is why it is the cleanest way to describe dimensionality.",
+  "key_points": [
+    "Basis spans the space",
+    "Basis vectors are linearly independent",
+    "A basis has no redundant vectors"
+  ],
+  "common_wrong_ideas": [
+    "Any spanning set is a basis",
+    "A basis must be orthogonal",
+    "A basis is unique for a given vector space"
+  ],
+  "concept_refresher_topic_id": "vectors-and-vector-spaces",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T18:05:04.216480+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

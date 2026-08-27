@@ -20,9 +20,7 @@
     "Smaller learning rates always converge to better minima",
     "Learning rate only matters for SGD, not full-batch GD"
   ],
-  "related_topic_ids": [
-    "gradient-flow"
-  ],
+  "related_topic_ids": [],
   "concept_refresher_topic_id": "gradient-descent",
   "generation_metadata": {
     "generated_by_ai": true,

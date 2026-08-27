@@ -21,38 +21,6 @@ class MathematicalFoundationDraft(BaseModel):
     sections: list[MathSectionDraft] = []
 
 
-class SuggestedRelationship(BaseModel):
-    title: str
-    relationship: Literal["prerequisite", "related"]
-    reason: str
-
-
-class ExistingTopicRelationship(BaseModel):
-    """An explicit reason is required before a catalog ID becomes a durable edge."""
-    topic_id: str
-    relationship: Literal["prerequisite", "related"]
-    reason: str = Field(min_length=12)
-    confidence: Literal["high", "medium", "low"]
-
-
-class ResolvedRelationship(BaseModel):
-    """One resolver decision; its enclosing list gives the relationship kind."""
-    topic_id: str
-    reason: str = Field(min_length=12)
-    confidence: Literal["high", "medium", "low"]
-
-
-class RejectedRelationshipCandidate(BaseModel):
-    topic_id: str
-    reason: str = Field(min_length=3)
-
-
-class RelationshipResolution(BaseModel):
-    prerequisites: list[ResolvedRelationship] = []
-    related: list[ResolvedRelationship] = []
-    rejected_candidates: list[RejectedRelationshipCandidate] = []
-
-
 class TopicDraft(BaseModel):
     title: str
     category: str
@@ -72,15 +40,11 @@ class TopicDraft(BaseModel):
     common_misconceptions: list[str] = []
     limitations: list[str] = []
     mental_models: list[str] = []
-    prerequisite_topic_ids: list[str] = []
-    related_topic_ids: list[str] = []
-    relationship_justifications: list[ExistingTopicRelationship] = []
-    suggested_new_topic_relationships: list[SuggestedRelationship] = []
     deep_dive: str = ""
 
 
 class QualityIssue(BaseModel):
-    area: Literal["technical_correctness", "taxonomy", "difficulty", "tags", "relationships", "mathematics", "named_method_completeness", "source_grounding", "provenance", "overclaims", "schema"]
+    area: Literal["technical_correctness", "taxonomy", "difficulty", "tags", "mathematics", "named_method_completeness", "source_grounding", "provenance", "overclaims", "schema"]
     message: str = Field(min_length=1)
 
 
@@ -104,7 +68,6 @@ class QuestionDraftItem(BaseModel):
     expanded_answer: str
     key_points: list[str] = []
     common_wrong_ideas: list[str] = []
-    related_topic_ids: list[str] = []
 
 
 class QuestionDraftBatch(BaseModel):

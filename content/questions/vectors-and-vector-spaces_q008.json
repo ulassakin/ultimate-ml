@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "vectors-and-vector-spaces_q008",
+  "topic_ids": [
+    "vectors-and-vector-spaces"
+  ],
+  "question_type": "conceptual",
+  "question_category": "foundation",
+  "difficulty": "beginner",
+  "question": "What do norm and dot product measure conceptually?",
+  "direct_answer": "The norm measures size, and the dot product measures alignment.",
+  "expanded_answer": "The norm tells you how long or large a vector is, while the dot product tells you how much two vectors point in the same direction. These ideas are central in ML because they support distance, similarity, optimization, and retrieval using embeddings.",
+  "key_points": [
+    "Norm = size or length",
+    "Dot product = alignment or similarity",
+    "Both are fundamental for geometry in ML"
+  ],
+  "common_wrong_ideas": [
+    "The dot product always measures distance",
+    "The norm only matters in 3D",
+    "A larger dot product always means a larger vector"
+  ],
+  "concept_refresher_topic_id": "vectors-and-vector-spaces",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T18:05:04.216480+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

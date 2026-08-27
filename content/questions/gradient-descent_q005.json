@@ -20,9 +20,7 @@
     "The gradient itself is the update direction for minimization",
     "Subtracting works only because of a convention, not a mathematical reason"
   ],
-  "related_topic_ids": [
-    "gradient-flow"
-  ],
+  "related_topic_ids": [],
   "concept_refresher_topic_id": "gradient-descent",
   "generation_metadata": {
     "generated_by_ai": true,

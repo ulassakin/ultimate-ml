@@ -21,9 +21,7 @@
     "The gradient is just the size of the loss",
     "Moving opposite the gradient guarantees the best overall step"
   ],
-  "related_topic_ids": [
-    "gradient-flow"
-  ],
+  "related_topic_ids": [],
   "concept_refresher_topic_id": "gradient-descent",
   "generation_metadata": {
     "generated_by_ai": true,

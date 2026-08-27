@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "vectors-and-vector-spaces_q006",
+  "topic_ids": [
+    "vectors-and-vector-spaces"
+  ],
+  "question_type": "conceptual",
+  "question_category": "foundation",
+  "difficulty": "beginner",
+  "question": "What does the dimension of a vector space tell you?",
+  "direct_answer": "It is the number of vectors in a basis.",
+  "expanded_answer": "Dimension measures how many independent directions are needed to describe the space. In \\\\(\n\\mathbb{R}^2\\\\) the dimension is 2, and in \\\\(\n\\mathbb{R}^3\\\\) it is 3. In ML, higher-dimensional spaces give models more axes along which data can vary, but they can also make learning and generalization harder.",
+  "key_points": [
+    "Equal to basis size",
+    "Counts independent directions",
+    "Higher dimension means more representational axes"
+  ],
+  "common_wrong_ideas": [
+    "Dimension is the same as the number of data points",
+    "Dimension is the same as the magnitude of vectors",
+    "Every coordinate system gives a different dimension"
+  ],
+  "concept_refresher_topic_id": "vectors-and-vector-spaces",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T18:05:04.216480+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

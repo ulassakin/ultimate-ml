@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "vectors-and-vector-spaces_q007",
+  "topic_ids": [
+    "vectors-and-vector-spaces"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mechanism",
+  "difficulty": "intermediate",
+  "question": "Why are subspaces important in machine learning?",
+  "direct_answer": "They capture lower-dimensional structure inside larger feature spaces.",
+  "expanded_answer": "A subspace is a subset that is itself a vector space, often geometrically a line or plane through the origin. In ML, data may lie near a lower-dimensional subspace even when embedded in a high-dimensional space. This is one reason techniques like PCA and other dimensionality-reduction methods can work well.",
+  "key_points": [
+    "A subspace is closed under vector operations",
+    "Often looks like a line or plane through the origin",
+    "Explains low-dimensional structure in high-dimensional data"
+  ],
+  "common_wrong_ideas": [
+    "Any cluster of points is a subspace",
+    "A subspace can be shifted away from the origin and still be a vector space",
+    "A subspace must use fewer coordinates"
+  ],
+  "concept_refresher_topic_id": "vectors-and-vector-spaces",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T18:05:04.216480+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "content_version": 2,
+  "id": "eigenvalues-and-eigenvectors_q009",
+  "topic_ids": [
+    "eigenvalues-and-eigenvectors"
+  ],
+  "question_type": "conceptual",
+  "question_category": "research_relevance",
+  "difficulty": "intermediate",
+  "question": "Why are eigenvalues and eigenvectors especially important for covariance matrices in PCA?",
+  "direct_answer": "They reveal the principal directions of variation and how much variance lies along each one.",
+  "expanded_answer": "A covariance matrix is symmetric, so its eigenvectors can be chosen orthogonal and its eigenvalues are real. In PCA, the eigenvectors give the directions where the data spreads out the most, and the eigenvalues tell you how much variance each direction captures.",
+  "key_points": [
+    "Covariance matrices are symmetric",
+    "Eigenvectors become principal directions",
+    "Eigenvalues measure variance captured"
+  ],
+  "common_wrong_ideas": [
+    "Thinking PCA uses eigenvectors because of algebra alone rather than data geometry",
+    "Confusing variance with mean or covariance with correlation"
+  ],
+  "concept_refresher_topic_id": "eigenvalues-and-eigenvectors",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T16:35:35.040173+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

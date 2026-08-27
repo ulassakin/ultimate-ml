@@ -1,0 +1,32 @@
+{
+  "content_version": 2,
+  "id": "mean-variance-and-standard-deviation_q010",
+  "topic_ids": [
+    "mean-variance-and-standard-deviation"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mathematical_intuition",
+  "difficulty": "beginner",
+  "question": "Why is standard deviation in the same units as the original data while variance is not?",
+  "direct_answer": "Because standard deviation is the square root of squared units.",
+  "expanded_answer": "Variance uses squared deviations, so its units are the square of the original units. Taking the square root removes that square, bringing the measure back to the data’s original units and making it easier to interpret.",
+  "key_points": [
+    "Variance has squared units",
+    "Square root restores original units",
+    "Improves interpretability"
+  ],
+  "common_wrong_ideas": [
+    "Variance and standard deviation always have the same units",
+    "Standard deviation is just a renamed variance"
+  ],
+  "concept_refresher_topic_id": "mean-variance-and-standard-deviation",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T18:06:08.791270+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

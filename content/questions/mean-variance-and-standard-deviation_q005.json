@@ -1,0 +1,32 @@
+{
+  "content_version": 2,
+  "id": "mean-variance-and-standard-deviation_q005",
+  "topic_ids": [
+    "mean-variance-and-standard-deviation"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mechanism",
+  "difficulty": "intermediate",
+  "question": "Why do larger departures from the mean influence variance more than smaller departures?",
+  "direct_answer": "Because deviations are squared before averaging.",
+  "expanded_answer": "Squaring makes each deviation grow faster than linearly as it gets larger. This means a few large outliers can raise variance a lot, which is useful when you want spread to reflect extreme variation rather than just average distance.",
+  "key_points": [
+    "Squared deviations grow faster",
+    "Outliers matter more",
+    "Spread reflects extreme values too"
+  ],
+  "common_wrong_ideas": [
+    "Variance treats all deviations equally",
+    "Only the number of points, not their size, affects variance"
+  ],
+  "concept_refresher_topic_id": "mean-variance-and-standard-deviation",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T18:06:08.791270+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

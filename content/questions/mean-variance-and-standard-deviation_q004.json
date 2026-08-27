@@ -1,0 +1,32 @@
+{
+  "content_version": 2,
+  "id": "mean-variance-and-standard-deviation_q004",
+  "topic_ids": [
+    "mean-variance-and-standard-deviation"
+  ],
+  "question_type": "conceptual",
+  "question_category": "comparison",
+  "difficulty": "intermediate",
+  "question": "How are variance and standard deviation related, and why do we use both?",
+  "direct_answer": "Standard deviation is the square root of variance; variance is easier for math, while standard deviation is easier to interpret.",
+  "expanded_answer": "Variance is convenient in derivations and optimization because squaring gives smooth algebraic behavior. Standard deviation is easier to read because it is expressed in the original units, so it feels more directly interpretable in practice.",
+  "key_points": [
+    "Std is sqrt of variance",
+    "Variance is mathematically convenient",
+    "Std is easier to interpret"
+  ],
+  "common_wrong_ideas": [
+    "They measure unrelated things",
+    "Standard deviation is always more precise than variance"
+  ],
+  "concept_refresher_topic_id": "mean-variance-and-standard-deviation",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T18:06:08.791270+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

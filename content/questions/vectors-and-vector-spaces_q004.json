@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "vectors-and-vector-spaces_q004",
+  "topic_ids": [
+    "vectors-and-vector-spaces"
+  ],
+  "question_type": "conceptual",
+  "question_category": "foundation",
+  "difficulty": "intermediate",
+  "question": "What does it mean for vectors to span a space?",
+  "direct_answer": "Their linear combinations can produce every vector in that space.",
+  "expanded_answer": "The span of a set of vectors is the collection of all vectors you can make by taking linear combinations of them. If a set spans a space, then it is enough to represent any vector in that space. This is why basis vectors are so important: they are a compact generating set.",
+  "key_points": [
+    "Span = all linear combinations",
+    "A spanning set can represent every vector in the space",
+    "Useful for understanding representation power"
+  ],
+  "common_wrong_ideas": [
+    "Spanning means vectors are similar to each other",
+    "A spanning set must be minimal",
+    "Span is only about geometric area, not representability"
+  ],
+  "concept_refresher_topic_id": "vectors-and-vector-spaces",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T18:05:04.216480+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

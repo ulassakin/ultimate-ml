@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "covariance_q004",
+  "topic_ids": [
+    "covariance"
+  ],
+  "question_type": "conceptual",
+  "question_category": "intuition",
+  "difficulty": "beginner",
+  "question": "Why do opposite-sign deviations produce negative covariance?",
+  "direct_answer": "Because a positive deviation times a negative deviation is negative.",
+  "expanded_answer": "When one variable is above its mean and the other is below its mean, their centered deviations have opposite signs. Multiplying them gives a negative product, so such pairs contribute negatively to covariance.",
+  "key_points": [
+    "Opposite signs yield negative products",
+    "This reflects opposite movement relative to the mean",
+    "Many such pairs push covariance below zero"
+  ],
+  "common_wrong_ideas": [
+    "Negative covariance means the variables are unrelated",
+    "One negative pair always determines the whole covariance"
+  ],
+  "related_topic_ids": [],
+  "concept_refresher_topic_id": "covariance",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T14:42:43.067191+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

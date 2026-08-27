@@ -18,7 +18,7 @@ def simclr_payload():
         "one_sentence_summary":"Contrastive visual representation learning.", "quick_recall":"Augment, encode, project, and contrast views.",
         "core_explanation":"SimCLR uses augmentations, a projection head, and a contrastive NT-Xent objective to learn representations.",
         "mechanism":"Two augmented views are encoded, projected, and optimized with a contrastive loss.",
-        "mathematical_foundation":{"overview":"A contrastive objective.", "prerequisites":["gradient-descent","cnn"], "sections":[
+        "mathematical_foundation":{"overview":"A contrastive objective.", "prerequisites":["gradient-descent","cnn","Softmax","Contrastive learning intuition"], "sections":[
             {"title":"NT-Xent", "explanation":"A softmax contrastive loss.", "equations":[{"latex":r"\ell_{i,j}=-s_{i,j}/\tau", "explanation":"A positive is contrasted with batch candidates."}]}]},
         "sources":[{"title":"Short video", "type":"youtube", "url":"https://www.youtube.com/watch?v=abc123"}],
         "source_provenance":{"source_derived":{"kind":"youtube", "video_url":"https://www.youtube.com/watch?v=abc123", "video_id":"abc123", "title":"Short video", "source_evidence_summary":"The video introduces SimCLR contrastive training.", "timestamp_seconds":[12,24]}, "ai_expanded":"The educational explanation was AI-expanded from the selected concept and requires human review."}}
@@ -78,6 +78,6 @@ def test_existing_short_source_review_stays_reviewed_with_warnings_and_no_genera
     result=TestClient(main.app).post("/api/ai/drafts/simclr/quality-review", json={})
     assert result.status_code == 200
     payload=database.get_draft("simclr")["payload"]
-    assert payload["existing_quality_review"]["status"] == "reviewed"
+    assert payload["quality_review_state"] == "reviewed"
     assert payload["quality_report"]["blocking_issues_remaining"] == []
-    assert reviewer.calls == ["ultimate_ml_topic_quality_review", "ultimate_ml_relationship_resolution"]
+    assert reviewer.calls == ["ultimate_ml_topic_quality_review"]

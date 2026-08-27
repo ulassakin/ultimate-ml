@@ -1,0 +1,34 @@
+{
+  "content_version": 2,
+  "id": "eigenvalues-and-eigenvectors_q001",
+  "topic_ids": [
+    "eigenvalues-and-eigenvectors"
+  ],
+  "question_type": "conceptual",
+  "question_category": "foundation",
+  "difficulty": "beginner",
+  "question": "What is the defining equation for an eigenvector and eigenvalue?",
+  "direct_answer": "Av = λv for a nonzero vector v.",
+  "expanded_answer": "A vector v is an eigenvector of a square matrix A if applying A leaves v pointing along the same line through the origin, possibly scaled or flipped. The scalar λ is the eigenvalue that tells you the scaling factor.",
+  "key_points": [
+    "Eigenvectors are nonzero vectors",
+    "The matrix must be square",
+    "The equation is Av = λv",
+    "λ describes scaling and possible flipping"
+  ],
+  "common_wrong_ideas": [
+    "Thinking any vector is an eigenvector",
+    "Forgetting that v must be nonzero",
+    "Confusing eigenvalues with vectors"
+  ],
+  "concept_refresher_topic_id": "eigenvalues-and-eigenvectors",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T16:35:35.040173+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "simclr_q005",
+  "topic_ids": [
+    "simclr"
+  ],
+  "question_type": "conceptual",
+  "question_category": "application",
+  "difficulty": "beginner",
+  "question": "Why is the encoder representation from SimCLR used after pretraining, rather than the projection head output?",
+  "direct_answer": "Because the encoder learns the reusable visual features, while the projection head is more tied to the contrastive training objective.",
+  "expanded_answer": "The projection head mainly helps optimization during pretraining. The encoder output is usually better for transfer because it captures the underlying visual structure in a form that generalizes to downstream tasks. In practice, the head is discarded and only the encoder features are kept for classification, retrieval, or other tasks.",
+  "key_points": [
+    "Encoder features are the reusable representation",
+    "Projection head is training-specific",
+    "Downstream tasks typically use the encoder output"
+  ],
+  "common_wrong_ideas": [
+    "The projection head always contains the most useful features",
+    "The encoder is thrown away after training",
+    "Both outputs are equivalent for transfer in all cases"
+  ],
+  "concept_refresher_topic_id": "simclr",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T18:05:38.792675+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

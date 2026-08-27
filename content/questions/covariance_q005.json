@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "covariance_q005",
+  "topic_ids": [
+    "covariance"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mechanism",
+  "difficulty": "intermediate",
+  "question": "Why does covariance depend on the units of the variables?",
+  "direct_answer": "Because it is computed from raw centered values, so scaling a variable changes the covariance.",
+  "expanded_answer": "Covariance is not unitless. If you measure one feature in centimeters instead of meters, its deviations get scaled, and the covariance changes by that scale factor. This is why covariance is useful for describing shared variation but not ideal for comparing strength across differently scaled variables.",
+  "key_points": [
+    "Covariance changes under rescaling",
+    "It depends on the measurement units",
+    "This is why correlation is often used for comparison"
+  ],
+  "common_wrong_ideas": [
+    "Covariance is standardized like correlation",
+    "Changing units does not affect covariance"
+  ],
+  "related_topic_ids": [],
+  "concept_refresher_topic_id": "covariance",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T14:42:43.067191+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

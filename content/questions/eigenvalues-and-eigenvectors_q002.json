@@ -1,0 +1,32 @@
+{
+  "content_version": 2,
+  "id": "eigenvalues-and-eigenvectors_q002",
+  "topic_ids": [
+    "eigenvalues-and-eigenvectors"
+  ],
+  "question_type": "conceptual",
+  "question_category": "intuition",
+  "difficulty": "beginner",
+  "question": "What is the geometric meaning of an eigenvector?",
+  "direct_answer": "It is a direction that a linear transformation does not rotate away from itself.",
+  "expanded_answer": "An eigenvector marks a direction that stays on the same line after the transformation. The vector may get longer, shorter, or reversed, but its direction is preserved up to sign.",
+  "key_points": [
+    "Direction is preserved",
+    "Only magnitude or orientation along the line may change",
+    "No rotation off the line"
+  ],
+  "common_wrong_ideas": [
+    "Believing the vector must stay exactly unchanged",
+    "Assuming every transformation has obvious real eigenvectors"
+  ],
+  "concept_refresher_topic_id": "eigenvalues-and-eigenvectors",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T16:35:35.040173+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

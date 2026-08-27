@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "simclr_q002",
+  "topic_ids": [
+    "simclr"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mechanism",
+  "difficulty": "intermediate",
+  "question": "Why are two augmented views of the same image treated as a positive pair in SimCLR?",
+  "direct_answer": "Because they should represent the same underlying content despite different visual perturbations.",
+  "expanded_answer": "SimCLR assumes that useful representations should be invariant to certain image transformations, such as crops, color jitter, or flips. If two augmented views come from the same source image, the model should map them to similar embeddings because they share semantic content even though their pixels differ. This is what lets the encoder learn invariances that are helpful for later vision tasks.",
+  "key_points": [
+    "Augmentations change appearance but preserve content",
+    "Positive pairs teach invariance",
+    "Shared semantic identity is the reason they are matched"
+  ],
+  "common_wrong_ideas": [
+    "The views are positive because they are visually identical",
+    "Any two random images can be used as positives",
+    "Augmentations are just data augmentation for robustness, not part of the learning signal"
+  ],
+  "concept_refresher_topic_id": "simclr",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T18:05:38.792675+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

@@ -5,25 +5,24 @@ from backend.content import ContentError, load_library
 
 def test_seed_content_is_valid_and_connected():
     library = load_library()
-    assert "resnet" in library.topics
-    assert library.questions["resnet_q001"]["concept_refresher_topic_id"] == "resnet"
+    assert "dino" in library.topics
+    assert library.questions["dinov3_q001"]["concept_refresher_topic_id"] == "dinov3"
 
 
 def test_v2_math_content_and_v1_content_load_together():
     library = load_library()
-    assert library.topics["resnet"]["content_version"] == 1
-    pca = library.topics["pca"]
-    assert pca["prerequisite_topic_ids"] == ["covariance"]
-    equation = pca["mathematical_foundation"]["sections"][0]["equations"][0]
+    assert library.topics["knowledge-distillation"]["content_version"] == 1
+    vectors = library.topics["vectors-and-vector-spaces"]
+    assert vectors["prerequisite_topic_ids"] == []
+    equation = vectors["mathematical_foundation"]["sections"][0]["equations"][0]
     assert equation["latex"] and equation["explanation"]
-    assert library.questions["pca_q001"]["direct_answer"]
+    assert library.questions["dinov3_q001"]["direct_answer"]
 
-def test_missing_reference_is_reported(tmp_path: Path):
+def test_legacy_relationship_metadata_is_tolerated(tmp_path: Path):
     (tmp_path / "topics").mkdir(); (tmp_path / "questions").mkdir()
     topic = {"id":"one","title":"One","category":"fundamentals","difficulty":"beginner","quick_recall":"q","core_explanation":"c","related_topics":["missing"]}
     (tmp_path / "topics" / "one.json").write_text(json.dumps(topic))
-    with pytest.raises(ContentError, match="missing related topic 'missing'"):
-        load_library(tmp_path)
+    assert load_library(tmp_path).topics["one"]["related_topics"] == ["missing"]
 
 
 def test_malformed_equation_is_reported(tmp_path: Path):

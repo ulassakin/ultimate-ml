@@ -1,0 +1,32 @@
+{
+  "content_version": 2,
+  "id": "mean-variance-and-standard-deviation_q008",
+  "topic_ids": [
+    "mean-variance-and-standard-deviation"
+  ],
+  "question_type": "conceptual",
+  "question_category": "misconception",
+  "difficulty": "beginner",
+  "question": "Does a larger variance always mean a worse dataset or model?",
+  "direct_answer": "No. It just means the values are more spread out.",
+  "expanded_answer": "Variance is not inherently good or bad. Sometimes high spread is expected and meaningful, while in other cases it may indicate instability or noise. The interpretation depends on the task and the feature.",
+  "key_points": [
+    "Variance is descriptive, not moral",
+    "Context matters",
+    "High variance can be useful or problematic"
+  ],
+  "common_wrong_ideas": [
+    "Large variance is always an error",
+    "Low variance is always better"
+  ],
+  "concept_refresher_topic_id": "mean-variance-and-standard-deviation",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T18:06:08.791270+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

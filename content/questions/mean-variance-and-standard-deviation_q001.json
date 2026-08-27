@@ -1,0 +1,32 @@
+{
+  "content_version": 2,
+  "id": "mean-variance-and-standard-deviation_q001",
+  "topic_ids": [
+    "mean-variance-and-standard-deviation"
+  ],
+  "question_type": "conceptual",
+  "question_category": "foundation",
+  "difficulty": "beginner",
+  "question": "What does the mean tell you about a dataset?",
+  "direct_answer": "It gives the dataset’s center.",
+  "expanded_answer": "The mean is the arithmetic average, so it summarizes where the values are centered overall. In machine learning, it is often used as a baseline for normalization and for understanding whether a feature is shifted high or low relative to typical values.",
+  "key_points": [
+    "Arithmetic center",
+    "Baseline for comparison",
+    "Used in normalization and centering"
+  ],
+  "common_wrong_ideas": [
+    "The mean describes spread, not center",
+    "The mean is always a typical individual value"
+  ],
+  "concept_refresher_topic_id": "mean-variance-and-standard-deviation",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T18:06:08.791270+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

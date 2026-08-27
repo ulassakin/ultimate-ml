@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "vectors-and-vector-spaces_q002",
+  "topic_ids": [
+    "vectors-and-vector-spaces"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mechanism",
+  "difficulty": "beginner",
+  "question": "Why do vector spaces require both addition and scalar multiplication?",
+  "direct_answer": "Because they define the arithmetic that stays inside the space.",
+  "expanded_answer": "A vector space is not just a set of vectors; it is a set where you can add vectors and scale them while remaining in the same set. This closure makes linear operations meaningful and lets us build combinations of features, embeddings, and model states without leaving the representation space.",
+  "key_points": [
+    "Addition combines vectors",
+    "Scalar multiplication rescales vectors",
+    "Closure makes linear reasoning possible"
+  ],
+  "common_wrong_ideas": [
+    "Any set of vectors is automatically a vector space",
+    "Only addition is needed for a vector space",
+    "Scalar multiplication can produce vectors outside the space and still count"
+  ],
+  "concept_refresher_topic_id": "vectors-and-vector-spaces",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T18:05:04.216480+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

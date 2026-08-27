@@ -1,0 +1,32 @@
+{
+  "content_version": 2,
+  "id": "mean-variance-and-standard-deviation_q009",
+  "topic_ids": [
+    "mean-variance-and-standard-deviation"
+  ],
+  "question_type": "conceptual",
+  "question_category": "research_relevance",
+  "difficulty": "intermediate",
+  "question": "Why do ML practitioners care about variance beyond just the mean?",
+  "direct_answer": "Because models often need both central tendency and uncertainty or variability.",
+  "expanded_answer": "The mean tells you where values are centered, but variance tells you how reliable or stable that center is in practice. In machine learning, variability affects optimization, feature normalization, uncertainty reasoning, and how sensitive a representation is to noise or outliers.",
+  "key_points": [
+    "Mean is not enough",
+    "Variance relates to stability",
+    "Important for optimization and uncertainty"
+  ],
+  "common_wrong_ideas": [
+    "If you know the mean, you know the whole distribution",
+    "Variance matters only in statistics, not ML"
+  ],
+  "concept_refresher_topic_id": "mean-variance-and-standard-deviation",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T18:06:08.791270+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

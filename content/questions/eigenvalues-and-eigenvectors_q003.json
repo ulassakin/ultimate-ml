@@ -1,0 +1,32 @@
+{
+  "content_version": 2,
+  "id": "eigenvalues-and-eigenvectors_q003",
+  "topic_ids": [
+    "eigenvalues-and-eigenvectors"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mechanism",
+  "difficulty": "intermediate",
+  "question": "What does the eigenvalue tell you about what happens to an eigenvector?",
+  "direct_answer": "It tells you the scaling factor along that direction.",
+  "expanded_answer": "If λ is greater than 1, the eigenvector is stretched; if it is between 0 and 1, it is shrunk; if it is negative, the vector is flipped and scaled. So the eigenvalue encodes how the transformation acts along that special direction.",
+  "key_points": [
+    "Magnitude of λ gives stretch or shrink",
+    "Negative λ means flip",
+    "It describes action along the eigenvector direction"
+  ],
+  "common_wrong_ideas": [
+    "Treating λ as a probability",
+    "Thinking λ only measures length and never sign"
+  ],
+  "concept_refresher_topic_id": "eigenvalues-and-eigenvectors",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T16:35:35.040173+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

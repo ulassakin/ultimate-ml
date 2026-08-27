@@ -1,0 +1,32 @@
+{
+  "content_version": 2,
+  "id": "mean-variance-and-standard-deviation_q007",
+  "topic_ids": [
+    "mean-variance-and-standard-deviation"
+  ],
+  "question_type": "conceptual",
+  "question_category": "application",
+  "difficulty": "intermediate",
+  "question": "Why are mean, variance, and standard deviation useful in feature scaling?",
+  "direct_answer": "They help center features and put them on comparable scales.",
+  "expanded_answer": "Many ML algorithms are sensitive to feature scale. Subtracting the mean centers a feature, and dividing by standard deviation gives it roughly unit spread, so one feature does not dominate just because it has larger units or magnitude.",
+  "key_points": [
+    "Centering by mean",
+    "Scaling by standard deviation",
+    "Prevents one feature from dominating"
+  ],
+  "common_wrong_ideas": [
+    "Scaling changes labels only",
+    "These statistics are irrelevant if the model is neural"
+  ],
+  "concept_refresher_topic_id": "mean-variance-and-standard-deviation",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T18:06:08.791270+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

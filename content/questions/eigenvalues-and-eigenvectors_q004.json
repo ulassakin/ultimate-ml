@@ -1,0 +1,32 @@
+{
+  "content_version": 2,
+  "id": "eigenvalues-and-eigenvectors_q004",
+  "topic_ids": [
+    "eigenvalues-and-eigenvectors"
+  ],
+  "question_type": "conceptual",
+  "question_category": "misconception",
+  "difficulty": "beginner",
+  "question": "Why is the zero vector not considered an eigenvector?",
+  "direct_answer": "Because it has no direction.",
+  "expanded_answer": "The defining property of an eigenvector is that it represents a preserved direction under the transformation. The zero vector is always mapped to zero, but it does not define a line or direction, so it is excluded.",
+  "key_points": [
+    "Eigenvectors encode directions",
+    "The zero vector has no direction",
+    "Zero is trivially mapped to zero but still not an eigenvector"
+  ],
+  "common_wrong_ideas": [
+    "Thinking zero should count because A0 = 0",
+    "Missing the role of direction in the definition"
+  ],
+  "concept_refresher_topic_id": "eigenvalues-and-eigenvectors",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T16:35:35.040173+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

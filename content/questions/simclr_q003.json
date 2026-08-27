@@ -1,0 +1,34 @@
+{
+  "content_version": 2,
+  "id": "simclr_q003",
+  "topic_ids": [
+    "simclr"
+  ],
+  "question_type": "conceptual",
+  "question_category": "architecture",
+  "difficulty": "intermediate",
+  "question": "Why does SimCLR use a projection head instead of training the encoder directly on the contrastive loss alone?",
+  "direct_answer": "The projection head lets SimCLR optimize the contrastive objective in a space that is separate from the encoder features used downstream.",
+  "expanded_answer": "SimCLR applies a small projection network on top of the encoder before computing the contrastive loss. This extra head can absorb features that are useful for the contrastive objective but not necessarily ideal for transfer. After pretraining, the projection head is usually discarded and the encoder output is used as the learned representation. This often improves downstream performance compared with forcing the encoder itself to serve both roles.",
+  "key_points": [
+    "Contrastive loss is applied after the encoder",
+    "Projection head isolates objective-specific information",
+    "Encoder features are kept for downstream use",
+    "Head is often discarded after pretraining"
+  ],
+  "common_wrong_ideas": [
+    "The projection head is only a cosmetic addition",
+    "It is used because the encoder cannot learn otherwise",
+    "The head is always kept for downstream tasks"
+  ],
+  "concept_refresher_topic_id": "simclr",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T18:05:38.792675+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

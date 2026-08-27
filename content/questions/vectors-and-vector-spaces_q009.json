@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "vectors-and-vector-spaces_q009",
+  "topic_ids": [
+    "vectors-and-vector-spaces"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mechanism",
+  "difficulty": "intermediate",
+  "question": "Why is cosine similarity often used for embeddings?",
+  "direct_answer": "It compares direction while reducing sensitivity to scale.",
+  "expanded_answer": "Cosine similarity normalizes vectors by their norms, so it focuses on whether two embeddings point in the same direction rather than how large they are. This is useful when magnitude is less meaningful than semantic orientation, such as in retrieval, clustering, and comparing learned representations.",
+  "key_points": [
+    "Uses normalized dot product",
+    "Less sensitive to vector magnitude",
+    "Common for embeddings and retrieval"
+  ],
+  "common_wrong_ideas": [
+    "Cosine similarity is identical to Euclidean distance",
+    "Magnitude never matters in embeddings",
+    "Cosine similarity cannot be negative"
+  ],
+  "concept_refresher_topic_id": "vectors-and-vector-spaces",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T18:05:04.216480+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

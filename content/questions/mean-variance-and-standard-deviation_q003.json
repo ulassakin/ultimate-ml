@@ -1,0 +1,32 @@
+{
+  "content_version": 2,
+  "id": "mean-variance-and-standard-deviation_q003",
+  "topic_ids": [
+    "mean-variance-and-standard-deviation"
+  ],
+  "question_type": "conceptual",
+  "question_category": "foundation",
+  "difficulty": "beginner",
+  "question": "What does standard deviation tell you?",
+  "direct_answer": "It tells you the typical spread around the mean in the original units.",
+  "expanded_answer": "Standard deviation is the square root of variance, so it converts squared spread back into the same units as the data. That makes it easier to interpret how far values usually lie from the mean.",
+  "key_points": [
+    "Spread around the mean",
+    "Same units as the data",
+    "Square root of variance"
+  ],
+  "common_wrong_ideas": [
+    "Standard deviation is a different kind of center",
+    "Standard deviation is unitless by definition"
+  ],
+  "concept_refresher_topic_id": "mean-variance-and-standard-deviation",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T18:06:08.791270+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

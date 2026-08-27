@@ -64,8 +64,7 @@ class AIService:
                 "connectivity_test": (100, 32), "youtube_concept_extraction": (5000, 1600),
                 "youtube_topic_expansion": (5000, 5000), "youtube_question_generation": (3000, 2600),
                 "topic_quality_review": (6000, 5000), "youtube_topic_quality_review": (6500, 5000),
-                "topic_quality_review_existing": (6500, 5000),
-                "metadata_relationship_resolution": (2600, 1600)}
+                "topic_quality_review_existing": (6500, 5000)}
         input_tokens, output_tokens = caps[operation_type]
         return estimate_cost(settings.model, input_tokens, output_tokens, override=settings.pricing_override)
 

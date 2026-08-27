@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "covariance_q007",
+  "topic_ids": [
+    "covariance"
+  ],
+  "question_type": "conceptual",
+  "question_category": "misconception",
+  "difficulty": "intermediate",
+  "question": "Does covariance tell you whether one variable causes the other?",
+  "direct_answer": "No. Covariance only shows association, not causation.",
+  "expanded_answer": "Two variables can have high covariance because they share a common cause, because of a direct relationship, or even by coincidence in finite data. Covariance alone does not identify direction, mechanism, or causal effect.",
+  "key_points": [
+    "Covariance is about association",
+    "It does not imply causation",
+    "A third variable can explain the relationship"
+  ],
+  "common_wrong_ideas": [
+    "If covariance is positive, one variable causes the other",
+    "If covariance is zero, there is no relationship of any kind"
+  ],
+  "related_topic_ids": [],
+  "concept_refresher_topic_id": "covariance",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T14:42:43.067191+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

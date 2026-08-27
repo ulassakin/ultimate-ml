@@ -1,0 +1,34 @@
+{
+  "content_version": 2,
+  "id": "simclr_q001",
+  "topic_ids": [
+    "simclr"
+  ],
+  "question_type": "conceptual",
+  "question_category": "foundation",
+  "difficulty": "beginner",
+  "question": "What is SimCLR trying to learn from unlabeled images?",
+  "direct_answer": "A representation where two augmented views of the same image are close, while views from different images are far apart.",
+  "expanded_answer": "SimCLR learns visual features by treating two stochastic augmentations of the same image as a positive pair and other images in the minibatch as negatives. The training objective encourages the model to place the positive pair near each other in embedding space and separate it from the negatives. This produces an encoder that can be reused for downstream tasks after pretraining.",
+  "key_points": [
+    "Learns representations without labels",
+    "Same-image views are positives",
+    "Different images act as negatives",
+    "Goal is useful embeddings for downstream tasks"
+  ],
+  "common_wrong_ideas": [
+    "It tries to reconstruct the original image pixel by pixel",
+    "It learns class labels during pretraining",
+    "It only makes all images close together"
+  ],
+  "concept_refresher_topic_id": "simclr",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T18:05:38.792675+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

@@ -11,10 +11,9 @@ def test_vertical_slice_api(tmp_path, monkeypatch):
     client = TestClient(main.app)
     summary = client.get("/api/progress/summary").json()
     assert summary["due_today"] == summary["total_questions"]
-    topic = client.get("/api/topics/resnet").json()
-    assert topic["architecture"]["images"]
-    pca = client.get("/api/topics/pca").json()
-    assert pca["prerequisite_topic_details"] == [{"id": "covariance", "title": "Covariance"}]
+    topic = client.get("/api/topics/dino").json()
+    assert topic["title"] == "DINO"
+    assert topic["content_version"] == 2
     due = client.get("/api/review/due").json()
     assert due[0]["concept_refresher"]["quick_recall"]
     response = client.post(f"/api/review/{due[0]['id']}", json={"rating":"good","answer":"identity path"})
@@ -52,10 +51,13 @@ def test_ai_topic_draft_uses_fake_provider_and_stays_a_draft(tmp_path, monkeypat
     assert draft["state"] == "draft"
     assert draft["payload"]["generation_metadata"]["review_state"] == "draft"
     assert draft["payload"]["difficulty"] == "intermediate"
-    assert draft["payload"]["prerequisite_topic_ids"] == []
-    assert draft["payload"]["related_topic_ids"] == []
-    assert draft["payload"]["quality_status"] == "ready"
-    assert draft["payload"]["suggested_new_topic_relationships"][0]["title"] == "Expectation"
+    assert "prerequisite_topic_ids" not in draft["payload"]
+    assert "related_topic_ids" not in draft["payload"]
+    assert draft["payload"]["quality_status"] == "not_reviewed"
+    assert draft["payload"]["quality_review_state"] == "not_run"
+    assert "quality_report" not in draft["payload"]
+    assert "quality_review_prompt_version" not in draft["payload"]["generation_metadata"]
+    assert "suggested_new_topic_relationships" not in draft["payload"]
     assert fake_db.get_draft(draft["id"])["state"] == "draft"
 
 

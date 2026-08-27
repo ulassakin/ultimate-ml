@@ -54,15 +54,6 @@ class Database:
                 );
                 CREATE INDEX IF NOT EXISTS ai_draft_quality_revision_lookup_idx
                     ON ai_draft_quality_revisions(draft_id, source_payload_hash, reviewer_prompt_version, revision_type, created_at);
-                CREATE TABLE IF NOT EXISTS topic_retrieval_documents (
-                    topic_id TEXT PRIMARY KEY, content_hash TEXT NOT NULL, document_json TEXT NOT NULL, updated_at TEXT NOT NULL
-                );
-                CREATE TABLE IF NOT EXISTS topic_metadata_resolution_cache (
-                    cache_key TEXT PRIMARY KEY, topic_hash TEXT NOT NULL, candidate_hashes_json TEXT NOT NULL,
-                    resolver_prompt_version TEXT NOT NULL, result_json TEXT NOT NULL, created_at TEXT NOT NULL
-                );
-                CREATE INDEX IF NOT EXISTS topic_metadata_resolution_cache_lookup_idx
-                    ON topic_metadata_resolution_cache(topic_hash, resolver_prompt_version);
                 CREATE TABLE IF NOT EXISTS youtube_imports (
                     id TEXT PRIMARY KEY, state TEXT NOT NULL, source_json TEXT NOT NULL,
                     transcript_cache_path TEXT NOT NULL, analysis_json TEXT,
@@ -187,38 +178,12 @@ class Database:
                 (json.dumps(payload), state, now, draft_id))
         return cursor.rowcount > 0
 
-    def upsert_retrieval_document(self, topic_id, content_hash, document, now=None):
-        import json
-        now = now or datetime.now(timezone.utc)
+    def delete_draft(self, draft_id):
+        """Remove one draft and its private draft revisions, never usage/history."""
         with self.connect() as db:
-            db.execute("""INSERT INTO topic_retrieval_documents(topic_id,content_hash,document_json,updated_at) VALUES(?,?,?,?)
-                ON CONFLICT(topic_id) DO UPDATE SET content_hash=excluded.content_hash,document_json=excluded.document_json,updated_at=excluded.updated_at""",
-                (topic_id, content_hash, json.dumps(document), now.isoformat()))
-
-    def get_retrieval_documents(self):
-        import json
-        with self.connect() as db:
-            rows = db.execute("SELECT * FROM topic_retrieval_documents ORDER BY topic_id").fetchall()
-        return [{"topic_id": row["topic_id"], "content_hash": row["content_hash"], "document": json.loads(row["document_json"])} for row in rows]
-
-    def get_metadata_resolution_cache(self, cache_key):
-        import json
-        with self.connect() as db:
-            row = db.execute("SELECT * FROM topic_metadata_resolution_cache WHERE cache_key=?", (cache_key,)).fetchone()
-        if not row:
-            return None
-        result = dict(row)
-        result["candidate_hashes"] = json.loads(result.pop("candidate_hashes_json"))
-        result["result"] = json.loads(result.pop("result_json"))
-        return result
-
-    def set_metadata_resolution_cache(self, cache_key, topic_hash, candidate_hashes, resolver_prompt_version, result, now=None):
-        import json
-        now = now or datetime.now(timezone.utc)
-        with self.connect() as db:
-            db.execute("""INSERT INTO topic_metadata_resolution_cache(cache_key,topic_hash,candidate_hashes_json,resolver_prompt_version,result_json,created_at)
-                VALUES(?,?,?,?,?,?) ON CONFLICT(cache_key) DO UPDATE SET result_json=excluded.result_json,created_at=excluded.created_at""",
-                (cache_key, topic_hash, json.dumps(candidate_hashes), resolver_prompt_version, json.dumps(result), now.isoformat()))
+            db.execute("DELETE FROM ai_draft_quality_revisions WHERE draft_id=?", (draft_id,))
+            cursor = db.execute("DELETE FROM ai_generation_drafts WHERE id=?", (draft_id,))
+        return cursor.rowcount > 0
 
     def create_draft_quality_revision(self, revision_id, draft_id, revision_type, payload, *, source_payload_hash,
                                       reviewer_prompt_version=None, quality_report=None, now=None):
@@ -407,6 +372,12 @@ class Database:
         now = datetime.now(timezone.utc).isoformat()
         with self.connect() as db:
             db.execute("UPDATE youtube_draft_queue_items SET status=?,updated_at=? WHERE draft_id=?", (status, now, draft_id))
+
+    def detach_queue_item_for_draft(self, draft_id, status="discarded"):
+        """Keep video import history while removing a deleted draft reference."""
+        now = datetime.now(timezone.utc).isoformat()
+        with self.connect() as db:
+            db.execute("UPDATE youtube_draft_queue_items SET draft_id=NULL,status=?,updated_at=? WHERE draft_id=?", (status, now, draft_id))
 
     def next_pending_queue_item(self, youtube_import_id):
         with self.connect() as db:

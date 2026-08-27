@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "simclr_q004",
+  "topic_ids": [
+    "simclr"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mechanism",
+  "difficulty": "intermediate",
+  "question": "How do the negatives in a SimCLR batch shape the learned representation?",
+  "direct_answer": "They push the anchor away from other images, making the representation more discriminative.",
+  "expanded_answer": "In SimCLR, every other view in the minibatch acts as a negative for a given anchor, except the matching positive view. The loss rewards the model when the anchor is more similar to its positive than to these negatives. This competition creates embeddings that separate distinct images while keeping augmented versions of the same image together. The batch therefore supplies the contrast needed to define the representation geometry.",
+  "key_points": [
+    "Other batch elements serve as negatives",
+    "Negatives create separation between different images",
+    "The model learns relative similarity, not absolute labels"
+  ],
+  "common_wrong_ideas": [
+    "Negatives mean images with wrong labels",
+    "Negatives are ignored during training",
+    "More negatives always change the model in the same way as more positives"
+  ],
+  "concept_refresher_topic_id": "simclr",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T18:05:38.792675+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

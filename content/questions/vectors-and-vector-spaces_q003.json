@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "vectors-and-vector-spaces_q003",
+  "topic_ids": [
+    "vectors-and-vector-spaces"
+  ],
+  "question_type": "conceptual",
+  "question_category": "intuition",
+  "difficulty": "beginner",
+  "question": "What does a linear combination mean intuitively?",
+  "direct_answer": "It is a vector built by scaling and adding other vectors.",
+  "expanded_answer": "A linear combination asks what you can form from a set of vectors if you are allowed to weight each one by a scalar and sum the results. In ML, this is the core idea behind mixing features, combining basis directions, and expressing embeddings as coordinates in a learned space.",
+  "key_points": [
+    "Scale vectors by coefficients",
+    "Add the scaled vectors together",
+    "Describes what can be constructed from a set of vectors"
+  ],
+  "common_wrong_ideas": [
+    "A linear combination is the same as elementwise multiplication",
+    "The coefficients must all be 1",
+    "Only two vectors can be combined linearly"
+  ],
+  "concept_refresher_topic_id": "vectors-and-vector-spaces",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T18:05:04.216480+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

@@ -21,9 +21,7 @@
     "Mini-batch SGD is inferior because it is less exact",
     "Noise directly improves the model without any tradeoff"
   ],
-  "related_topic_ids": [
-    "gradient-flow"
-  ],
+  "related_topic_ids": [],
   "concept_refresher_topic_id": "gradient-descent",
   "generation_metadata": {
     "generated_by_ai": true,

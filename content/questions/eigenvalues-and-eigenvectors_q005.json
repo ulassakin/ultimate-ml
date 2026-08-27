@@ -1,0 +1,32 @@
+{
+  "content_version": 2,
+  "id": "eigenvalues-and-eigenvectors_q005",
+  "topic_ids": [
+    "eigenvalues-and-eigenvectors"
+  ],
+  "question_type": "conceptual",
+  "question_category": "application",
+  "difficulty": "beginner",
+  "question": "In the matrix [[2, 0], [0, 1/2]], which coordinate axes are eigenvector directions?",
+  "direct_answer": "The x-axis and y-axis.",
+  "expanded_answer": "This matrix scales x-coordinates by 2 and y-coordinates by 1/2. So vectors along the x-axis and y-axis stay on their own lines, making those axes eigenvector directions.",
+  "key_points": [
+    "Diagonal matrices often preserve coordinate axes",
+    "x-axis corresponds to eigenvalue 2",
+    "y-axis corresponds to eigenvalue 1/2"
+  ],
+  "common_wrong_ideas": [
+    "Assuming only diagonal entries matter numerically without geometric meaning",
+    "Thinking every diagonal matrix has the same eigenvectors"
+  ],
+  "concept_refresher_topic_id": "eigenvalues-and-eigenvectors",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T16:35:35.040173+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

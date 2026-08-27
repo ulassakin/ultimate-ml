@@ -7,6 +7,7 @@ import logging
 import os
 import re
 import tempfile
+from threading import Lock
 from uuid import uuid4
 
 from fastapi import FastAPI, HTTPException, Query
@@ -18,12 +19,9 @@ from .content import ROOT, load_library
 from .database import Database
 from .ai.prompts import (QUESTION_INSTRUCTIONS, QUESTION_PROMPT_VERSION, TOPIC_INSTRUCTIONS, TOPIC_PROMPT_VERSION,
                          TOPIC_QUALITY_REVIEW_INSTRUCTIONS, TOPIC_QUALITY_REVIEW_PROMPT_VERSION,
-                         YOUTUBE_CONCEPT_INSTRUCTIONS, YOUTUBE_CONCEPT_PROMPT_VERSION,
-                         RELATIONSHIP_RESOLVER_INSTRUCTIONS, RELATIONSHIP_RESOLVER_PROMPT_VERSION)
-from .ai.schemas import QuestionDraftBatch, QuestionDraftItem, RegeneratedSection, TopicDraft, TopicQualityReview, RelationshipResolution
-from .ai.topic_quality import (apply_relationship_resolution, canonicalize_relationship_metadata, final_quality_report,
-                               metadata_payload_consistency, normalize_topic, relationship_lint, taxonomy_context)
-from .ai.metadata_resolution import MetadataResolutionService, compact_topic_payload
+                         YOUTUBE_CONCEPT_INSTRUCTIONS, YOUTUBE_CONCEPT_PROMPT_VERSION)
+from .ai.schemas import QuestionDraftBatch, QuestionDraftItem, RegeneratedSection, TopicDraft, TopicQualityReview
+from .ai.topic_quality import LEGACY_RELATIONSHIP_FIELDS, canonical_category, final_quality_report, normalize_topic, taxonomy_context
 from .domain import Difficulty, ExplanationDepth
 from .ai.service import AIService, AIUnavailableError, BudgetExceededError, StructuredOutputError
 from .ai.structured import strict_response_schema
@@ -38,6 +36,8 @@ database = Database(ROOT / "data" / "ultimate_ml.db")
 ai_service = AIService(database)
 youtube_service = YoutubeService(ROOT / "data" / "youtube_cache")
 logger = logging.getLogger("ultimate_ml.local")
+_draft_lifecycle_lock = Lock()
+_draft_lifecycle_actions: set[str] = set()
 
 
 class ReviewInput(BaseModel):
@@ -64,7 +64,6 @@ class TopicDraftInput(BaseModel):
     include_mathematics: bool = True
     include_examples: bool = True
     include_misconceptions: bool = True
-    suggest_related_topics: bool = True
     allow_duplicate: bool = False
 
 
@@ -152,60 +151,58 @@ def _topic_catalog():
              "summary": topic.get("one_sentence_summary", "")} for topic in library.topics.values()]
 
 
+def _topic_authoring_operations(operation_type: str) -> list[str]:
+    """Generation is deliberately authoring-only; review is an explicit later action."""
+    return [operation_type]
+
+
 def _topic_quality_operations(operation_type: str) -> list[str]:
-    return [operation_type, "youtube_topic_quality_review" if operation_type == "youtube_topic_expansion" else "topic_quality_review",
-            "metadata_relationship_resolution"]
-
-
-def _metadata_service() -> MetadataResolutionService:
-    # Construct from the active database so isolated test databases remain isolated.
-    return MetadataResolutionService(database)
-
-
-def _resolve_topic_metadata(payload: dict, *, assigned_topic_id: str, metadata: dict | None = None) -> tuple[dict, dict, float, bool, list[dict], list[dict]]:
-    """Local retrieval plus one resolver call; does not change educational fields."""
-    service = _metadata_service()
-    candidates = service.retrieve(payload, library.topics)
-    cache_key, topic_hash, candidate_hashes = service.cache_key(payload, candidates, RELATIONSHIP_RESOLVER_PROMPT_VERSION)
-    cached = database.get_metadata_resolution_cache(cache_key)
-    result = None
-    cost, reused = 0.0, bool(cached)
-    if cached:
-        result = cached["result"]
-    elif not candidates:
-        result = {"prerequisites": [], "related": [], "rejected_candidates": [], "resolver_version": RELATIONSHIP_RESOLVER_PROMPT_VERSION}
-        database.set_metadata_resolution_cache(cache_key, topic_hash, candidate_hashes, RELATIONSHIP_RESOLVER_PROMPT_VERSION, result)
-        reused = True
-    else:
-        request = {"current_topic": compact_topic_payload(payload), "retrieved_candidates": candidates,
-                   "taxonomy": taxonomy_context(), "relationship_definitions": {
-                       "prerequisite": "Material learning dependency; lack of it substantially blocks or confuses understanding.",
-                       "related": "Strong neighbor, extension, alternative, comparison, or central architecture/objective pairing."}}
-        try:
-            resolved, _, cost = ai_service.generate(operation_type="metadata_relationship_resolution",
-                instructions=RELATIONSHIP_RESOLVER_INSTRUCTIONS, input_text=json.dumps(request),
-                schema_name="ultimate_ml_relationship_resolution", schema=strict_response_schema(RelationshipResolution),
-                validate=RelationshipResolution.model_validate, max_output_tokens=1600,
-                metadata={"prompt_version": RELATIONSHIP_RESOLVER_PROMPT_VERSION, "topic_content_hash": topic_hash,
-                          "retrieved_candidate_count": len(candidates), **(metadata or {})})
-        except Exception as exc:
-            _ai_error(exc)
-        result = {**resolved.model_dump(), "resolver_version": RELATIONSHIP_RESOLVER_PROMPT_VERSION}
-        database.set_metadata_resolution_cache(cache_key, topic_hash, candidate_hashes, RELATIONSHIP_RESOLVER_PROMPT_VERSION, result)
-    resolved_payload, warnings, blocking = apply_relationship_resolution(payload, result, candidates=candidates, assigned_topic_id=assigned_topic_id)
-    resolved_payload["metadata_resolution"].update({"cache_key": cache_key, "cached": reused,
-        "topic_hash": topic_hash, "candidate_hashes": candidate_hashes, "resolver_prompt_version": RELATIONSHIP_RESOLVER_PROMPT_VERSION})
-    return resolved_payload, result, cost, reused, warnings, blocking
+    """The paid review gate runs only after a user explicitly requests it."""
+    review_operation = "youtube_topic_quality_review" if operation_type == "youtube_topic_expansion" else "topic_quality_review_existing"
+    return [review_operation]
 
 
 def _queue_status_for_draft(state: str) -> str:
     return {"draft": "ready", "approved": "approved", "discarded": "discarded"}.get(state, "failed")
 
 
+def _draft_lifecycle_status(draft: dict) -> str:
+    """Lifecycle projection reads the authoritative persisted review state."""
+    if draft["state"] == "failed":
+        return "failed"
+    if draft["state"] != "draft":
+        return draft["state"]
+    payload = draft.get("payload", {})
+    review_state = payload.get("quality_review_state")
+    if review_state in {"not_run", "running", "failed"}:
+        return "awaiting_quality_review" if review_state == "not_run" else review_state
+    if payload.get("quality_status") == "needs_attention":
+        return "incomplete"
+    try:
+        TopicDraft.model_validate(payload)
+    except Exception:
+        return "incomplete"
+    return "quality_reviewed" if review_state == "reviewed" else "awaiting_quality_review"
+
+
+def _with_draft_lifecycle_action(draft_id: str):
+    class _Action:
+        def __enter__(self):
+            with _draft_lifecycle_lock:
+                if draft_id in _draft_lifecycle_actions:
+                    raise HTTPException(409, "A lifecycle action is already running for this draft.")
+                _draft_lifecycle_actions.add(draft_id)
+
+        def __exit__(self, *_):
+            with _draft_lifecycle_lock:
+                _draft_lifecycle_actions.discard(draft_id)
+    return _Action()
+
+
 def _sync_video_drafts_to_queue(import_id: str, analysis: dict | None = None) -> None:
     """Add queue projections for old/new drafts without changing the draft itself."""
     concept_lookup = {_slug(item.get("canonical_name", "")): item for item in (analysis or {}).get("concepts", [])}
-    maximum = ai_service.estimate_operations(_topic_quality_operations("youtube_topic_expansion"))["maximum_estimated_cost_usd"]
+    maximum = ai_service.estimate_operations(_topic_authoring_operations("youtube_topic_expansion"))["maximum_estimated_cost_usd"]
     for draft in database.list_video_drafts(import_id):
         concept_name = draft["metadata"].get("youtube_concept")
         if not concept_name:
@@ -265,9 +262,10 @@ def _video_concept(record: dict, concept_index: int) -> dict:
     return concepts[concept_index]
 
 
-def _generate_video_concept_draft(record: dict, concept: dict, action: str, focus: str = "") -> dict:
+def _generate_video_concept_draft(record: dict, concept: dict, action: str, focus: str = "", *, replacing_draft_id: str | None = None,
+                                  restart_input: TopicDraftInput | None = None) -> dict:
     existing_draft = database.find_active_video_draft(record["id"], concept["canonical_name"])
-    if existing_draft:
+    if existing_draft and existing_draft["id"] != replacing_draft_id:
         return {"id": existing_draft["id"], "state": existing_draft["state"], "payload": existing_draft["payload"], "reused": True,
                 "usage": {"estimated_cost_usd": 0}, "budget": ai_service.usage_summary()}
     match = concept.get("existing_topic_match")
@@ -280,11 +278,11 @@ def _generate_video_concept_draft(record: dict, concept: dict, action: str, focu
         existing = library.topics.get(match["id"])
         if not existing:
             raise HTTPException(422, "The matched topic is no longer in the library. Reanalyze the import.")
-        topic_input = TopicDraftInput(title=existing["title"], category=existing["category"], difficulty=existing["difficulty"],
+        topic_input = restart_input or TopicDraftInput(title=existing["title"], category=existing["category"], difficulty=existing["difficulty"],
             tags=existing.get("tags", []), focus=focus or f"Enrich this topic using the video’s treatment of {concept['canonical_name']}.", allow_duplicate=True)
         return _generate_topic_draft(topic_input, operation_type="youtube_topic_expansion", source_context=_source_context(document, concept) | {"base_topic": public(existing)},
             extra_metadata={"youtube_import_id": record["id"], "youtube_concept": concept["canonical_name"], "enrich_existing_topic_id": existing["id"]}, duplicate_check=False)
-    topic_input = TopicDraftInput(title=concept["canonical_name"], category="ml_fundamentals", difficulty=Difficulty.INTERMEDIATE,
+    topic_input = restart_input or TopicDraftInput(title=concept["canonical_name"], category="ml_fundamentals", difficulty=Difficulty.INTERMEDIATE,
         focus=focus or f"Build a deeper ML learning topic from this source concept: {concept['ml_learning_value']}.")
     return _generate_topic_draft(topic_input, operation_type="youtube_topic_expansion", source_context=_source_context(document, concept),
         extra_metadata={"youtube_import_id": record["id"], "youtube_concept": concept["canonical_name"]})
@@ -292,12 +290,15 @@ def _generate_video_concept_draft(record: dict, concept: dict, action: str, focu
 
 def _generate_topic_draft(body: TopicDraftInput, *, operation_type="topic_draft", source_context=None,
                           extra_metadata=None, duplicate_check=True):
+    # The browser normally submits a select value, but API clients, restarts,
+    # and older saved inputs may contain a display label. Canonicalize before
+    # prompts, duplicate work, and persisted generation metadata.
+    body = body.model_copy(update={"category": canonical_category(body.category)})
     duplicate = _title_duplicate(body.title)
     if duplicate and duplicate_check and not body.allow_duplicate:
         raise HTTPException(409, {"message": "A matching topic already exists. Open it or explicitly create a separate draft.", "duplicate": duplicate})
     assigned_topic_id = _slug(body.title)
-    catalog = _topic_catalog()
-    operation_types = _topic_quality_operations(operation_type)
+    operation_types = _topic_authoring_operations(operation_type)
     try:
         preflight = ai_service.require_budget_for_operations(operation_types)
     except Exception as exc:
@@ -305,10 +306,9 @@ def _generate_topic_draft(body: TopicDraftInput, *, operation_type="topic_draft"
     prompt = {"title": body.title, "primary_category": body.category, "difficulty": body.difficulty.value,
               "tags": body.tags, "focus": body.focus, "explanation_depth": body.depth.value,
               "include_mathematics": body.include_mathematics, "include_practical_examples": body.include_examples,
-              "include_misconceptions": body.include_misconceptions, "suggest_related_topics": body.suggest_related_topics,
+              "include_misconceptions": body.include_misconceptions,
               "concept_type_options": ["broad_concept", "named_method", "architecture", "loss_or_objective", "mathematical_concept", "training_mechanism", "evaluation_concept"],
               "taxonomy": taxonomy_context(),
-              "relationship_rules": "Do not select catalog IDs. Leave durable relationship arrays empty; a separate metadata resolver handles sparse graph edges after quality review.",
               "future_source_context": source_context or "None supplied. Do not invent sources."}
     try:
         draft, result, cost = ai_service.generate(operation_type=operation_type, instructions=TOPIC_INSTRUCTIONS,
@@ -317,96 +317,112 @@ def _generate_topic_draft(body: TopicDraftInput, *, operation_type="topic_draft"
             metadata={"prompt_version": TOPIC_PROMPT_VERSION, **(extra_metadata or {})})
     except Exception as exc:
         _ai_error(exc)
-    payload, initial_warnings, initial_blocking = normalize_topic(draft.model_dump(), requested_title=body.title,
-        assigned_topic_id=assigned_topic_id, catalog=catalog, source_context=source_context)
-    review_request = {"requested_title": body.title, "requested_category": body.category, "requested_difficulty": body.difficulty.value,
-        "focus": body.focus, "taxonomy": taxonomy_context(), "candidate": payload,
-        "source_context": source_context or "None supplied"}
-    review_operation = operation_types[1]
-    try:
-        reviewed, review_result, review_cost = ai_service.generate(operation_type=review_operation,
-            instructions=TOPIC_QUALITY_REVIEW_INSTRUCTIONS, input_text=json.dumps(review_request),
-            schema_name="ultimate_ml_topic_quality_review", schema=strict_response_schema(TopicQualityReview),
-            validate=TopicQualityReview.model_validate, max_output_tokens=5000,
-            metadata={"prompt_version": TOPIC_QUALITY_REVIEW_PROMPT_VERSION, "generated_draft_title": body.title, **(extra_metadata or {})})
-    except Exception as exc:
-        _ai_error(exc)
-    payload, review_warnings, review_blocking = normalize_topic(reviewed.corrected_topic.model_dump(), requested_title=body.title,
-        assigned_topic_id=assigned_topic_id, catalog=catalog, source_context=source_context)
-    if source_context:
-        base_topic = source_context.get("base_topic")
-        if base_topic:
-            # Enrichment must not erase reviewed architecture/pipeline assets.
-            for field in ("architecture", "why_it_matters", "knowledge_type", "related_topics"):
-                if field in base_topic:
-                    payload[field] = base_topic[field]
-    payload, resolution, resolver_cost, resolver_reused, resolver_warnings, resolver_blocking = _resolve_topic_metadata(
-        payload, assigned_topic_id=assigned_topic_id, metadata={"generated_draft_title": body.title, **(extra_metadata or {})})
-    quality_report = final_quality_report(reviewed.quality_report.model_dump(), initial_warnings + review_warnings + resolver_warnings,
-        review_blocking + resolver_blocking, payload=payload)
-    consistency_blocking = metadata_payload_consistency(payload, quality_report, catalog=catalog, assigned_topic_id=assigned_topic_id)
-    quality_report["blocking_issues_remaining"] += consistency_blocking
-    # Initial lint findings were deliberately presented to the repairer. They are
-    # history of what the gate caught, not blockers once the corrected topic passes.
-    quality_report["blocking_issues_fixed"] = initial_blocking + quality_report["blocking_issues_fixed"]
-    quality_status = "needs_attention" if quality_report["blocking_issues_remaining"] else "ready"
-    payload["quality_report"] = quality_report
-    payload["quality_status"] = quality_status
+    payload, _, _ = normalize_topic(draft.model_dump(), requested_title=body.title,
+        assigned_topic_id=assigned_topic_id, source_context=source_context)
+    # This endpoint intentionally stops here. A generated draft has not yet had
+    # paid review or relationship resolution, regardless of the presence of
+    # lightweight normalization warnings. Those operations are opt-in below.
+    payload["quality_review_state"] = "not_run"
+    payload["quality_status"] = "not_reviewed"
     payload["generation_metadata"] = {"generated_by_ai": True, "provider": "openai", "model": ai_service.settings().model,
-        "prompt_version": TOPIC_PROMPT_VERSION, "quality_review_prompt_version": TOPIC_QUALITY_REVIEW_PROMPT_VERSION,
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "prompt_version": TOPIC_PROMPT_VERSION, "generated_at": datetime.now(timezone.utc).isoformat(),
         "user_focus": body.focus, "review_state": "draft", **(extra_metadata or {})}
     draft_id = str(uuid4())
-    total_cost = cost + review_cost + resolver_cost
-    database.create_draft(draft_id, "topic", payload["title"], payload, {"request_cost_usd": total_cost, "quality_review_cost_usd": review_cost,
-        "metadata_resolution_cost_usd": resolver_cost, **(extra_metadata or {})})
+    generation_input = {"title": body.title, "category": body.category, "difficulty": body.difficulty.value,
+        "depth": body.depth.value, "tags": body.tags, "focus": body.focus, "include_mathematics": body.include_mathematics,
+        "include_examples": body.include_examples, "include_misconceptions": body.include_misconceptions,
+        "allow_duplicate": body.allow_duplicate}
+    database.create_draft(draft_id, "topic", payload["title"], payload, {"request_cost_usd": cost,
+        "generation_input": generation_input, **(extra_metadata or {})})
     return {"id": draft_id, "state": "draft", "payload": payload, "usage": {"input_tokens": result.input_tokens,
-            "output_tokens": result.output_tokens, "estimated_cost_usd": total_cost,
-            "generation_estimated_cost_usd": cost, "quality_review_estimated_cost_usd": review_cost,
-            "metadata_resolution_estimated_cost_usd": resolver_cost, "metadata_resolution_cached": resolver_reused,
+            "output_tokens": result.output_tokens, "estimated_cost_usd": cost,
+            "generation_estimated_cost_usd": cost,
             "maximum_estimated_cost_usd": preflight["maximum_estimated_cost_usd"]}, "budget": ai_service.usage_summary()}
 
 
-def _sanitize_draft_relationships(payload: dict) -> dict:
-    """Never let an AI-generated relationship point at an unknown topic."""
-    # Manual edits from prior releases may not have relationship rationales; only
-    # generated drafts use the stricter normalization gate above.
-    allowed = set(library.topics)
-    copy = dict(payload)
-    warnings = list(copy.get("relationship_warnings", []))
-    for field in ("prerequisite_topic_ids", "related_topic_ids"):
-        requested = copy.get(field, [])
-        invalid = [item for item in requested if item not in allowed]
-        copy[field] = list(dict.fromkeys(item for item in requested if item in allowed))
-        if invalid:
-            warnings.append({"field": field, "message": f"Removed unavailable topic IDs: {', '.join(invalid)}"})
-    copy["relationship_warnings"] = warnings
-    return canonicalize_relationship_metadata(copy)
+def _strip_legacy_relationship_metadata(payload: dict) -> dict:
+    """New writes omit retired graph metadata; old records remain readable."""
+    cleaned = json.loads(json.dumps(payload))
+    for field in LEGACY_RELATIONSHIP_FIELDS:
+        cleaned.pop(field, None)
+    return cleaned
+
+
+def _canonicalize_topic_category(payload: dict) -> dict:
+    """Persist a known display label as its one authoritative taxonomy ID."""
+    normalized = json.loads(json.dumps(payload))
+    if "category" in normalized:
+        normalized["category"] = canonical_category(normalized["category"])
+    return normalized
+
+
+def _reconcile_taxonomy_quality_report(payload: dict) -> dict:
+    """Remove only taxonomy blockers made stale by deterministic normalization."""
+    reconciled = _canonicalize_topic_category(payload)
+    report = reconciled.get("quality_report")
+    if not isinstance(report, dict):
+        return reconciled
+    reconciled["quality_report"] = final_quality_report(report, [], [], payload=reconciled)
+    if reconciled.get("quality_review_state") == "reviewed":
+        reconciled["quality_status"] = "needs_attention" if reconciled["quality_report"].get("blocking_issues_remaining") else "ready"
+    return reconciled
 
 
 def _payload_hash(payload: dict) -> str:
     """Hash authoring content, not transient review UI metadata."""
     copy = json.loads(json.dumps(payload))
-    for field in ("existing_quality_review", "quality_report", "quality_status", "relationship_warnings", "durable_topic_id"):
+    for field in ("existing_quality_review", "quality_review_state", "quality_review_prompt_version", "quality_review_source_payload_hash",
+                  "quality_reviewed_payload_hash", "quality_review_started_at", "quality_reviewed_at", "quality_review_forced",
+                  "quality_review_failed_at", "quality_review_message", "quality_report", "quality_status", "relationship_warnings", "durable_topic_id"):
         copy.pop(field, None)
     encoded = json.dumps(copy, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
     return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
 
 
 def _draft_quality_state(payload: dict) -> dict:
-    existing = payload.get("existing_quality_review")
-    if isinstance(existing, dict):
-        return existing
-    # Pre-gate drafts remain untouched; this response-only default makes their
-    # upgrade path visible without writing to any already-paid draft.
-    if payload.get("quality_status") == "needs_attention":
-        return {"status": "needs_attention", "reviewer_prompt_version": payload.get("generation_metadata", {}).get("quality_review_prompt_version")}
-    if payload.get("quality_report"):
-        return {"status": "reviewed", "reviewer_prompt_version": payload.get("generation_metadata", {}).get("quality_review_prompt_version")}
-    return {"status": "not_reviewed", "reviewer_prompt_version": None}
+    state = payload.get("quality_review_state")
+    if state in {"not_run", "running", "reviewed", "failed"}:
+        return {"status": state, "reviewer_prompt_version": payload.get("quality_review_prompt_version")}
+    # Callers should first migrate active legacy drafts. This non-mutating
+    # fallback prevents an unreadable legacy record from looking reviewed.
+    return {"status": "not_run", "reviewer_prompt_version": None}
+
+
+def _legacy_quality_review_state(payload: dict) -> str:
+    """Map historical records once, preserving their existing content and spend."""
+    legacy = payload.get("existing_quality_review")
+    if isinstance(legacy, dict):
+        return {"not_reviewed": "not_run", "reviewing": "running", "reviewed": "reviewed",
+                "needs_attention": "reviewed", "review_failed": "failed"}.get(legacy.get("status"), "not_run")
+    # Earlier automatic-gate drafts really did make a reviewer call. Mark that
+    # historical fact without copying any payload fields or touching approvals.
+    if payload.get("quality_report") or payload.get("quality_status") in {"ready", "needs_attention"}:
+        return "reviewed"
+    return "not_run"
+
+
+def _ensure_draft_quality_state(draft: dict) -> dict:
+    """Persist the state only on active topic drafts; approved content is untouched."""
+    if draft.get("draft_type") != "topic" or draft.get("state") != "draft":
+        return draft
+    if draft.get("payload", {}).get("quality_review_state") in {"not_run", "running", "reviewed", "failed"}:
+        return draft
+    payload = json.loads(json.dumps(draft["payload"]))
+    payload["quality_review_state"] = _legacy_quality_review_state(payload)
+    # Keep reviewer provenance only when a historical review actually ran.
+    legacy = payload.get("existing_quality_review")
+    if isinstance(legacy, dict) and legacy.get("reviewer_prompt_version"):
+        payload["quality_review_prompt_version"] = legacy["reviewer_prompt_version"]
+    elif payload["quality_review_state"] == "reviewed":
+        version = payload.get("generation_metadata", {}).get("quality_review_prompt_version")
+        if version:
+            payload["quality_review_prompt_version"] = version
+    database.update_draft(draft["id"], payload)
+    return database.get_draft(draft["id"])
 
 
 def _draft_public_quality(draft: dict) -> dict:
+    draft = _ensure_draft_quality_state(draft)
     return {**draft, "quality_review": _draft_quality_state(draft["payload"])}
 
 
@@ -420,38 +436,41 @@ def _existing_review_source_context(payload: dict) -> dict | None:
 def _run_existing_draft_quality_review(draft: dict, *, force: bool = False) -> dict:
     if draft["draft_type"] != "topic" or draft["state"] != "draft":
         raise HTTPException(409, "Only active topic drafts can be quality-reviewed.")
-    original = json.loads(json.dumps(draft["payload"]))
+    pre_migration_original = json.loads(json.dumps(draft["payload"]))
+    draft = _ensure_draft_quality_state(draft)
+    original = pre_migration_original
     source_hash = _payload_hash(original)
-    current_state = _draft_quality_state(original)
+    current_state = _draft_quality_state(draft["payload"])
     reviewer_version = TOPIC_QUALITY_REVIEW_PROMPT_VERSION
-    if not force and current_state.get("status") in {"reviewed", "needs_attention"} and current_state.get("reviewer_prompt_version") == reviewer_version and current_state.get("reviewed_payload_hash") == source_hash:
+    if not force and current_state.get("status") == "reviewed" and current_state.get("reviewer_prompt_version") == reviewer_version and original.get("quality_reviewed_payload_hash") == source_hash:
         return {"draft": _draft_public_quality(draft), "reused": True, "reason": "This exact repaired revision already passed the current reviewer.", "budget": ai_service.usage_summary()}
     previous = database.find_completed_draft_quality_review(draft["id"], source_hash, reviewer_version)
     if not force and previous:
         return {"draft": _draft_public_quality(draft), "reused": True, "reason": "This exact source revision already has a saved quality review. Restore its repaired revision instead of paying again.", "existing_revision_id": previous["id"], "budget": ai_service.usage_summary()}
     try:
-        preflight = ai_service.require_budget_for_operations(["topic_quality_review_existing", "metadata_relationship_resolution"])
+        review_operation = "youtube_topic_quality_review" if draft.get("metadata", {}).get("youtube_import_id") else "topic_quality_review_existing"
+        preflight = ai_service.require_budget_for_operations([review_operation])
     except Exception as exc:
         _ai_error(exc)
     database.create_draft_quality_revision(str(uuid4()), draft["id"], "pre_quality_review", original,
         source_payload_hash=source_hash, reviewer_prompt_version=reviewer_version)
-    reviewing = {**original, "existing_quality_review": {"status": "reviewing", "source_payload_hash": source_hash,
-        "reviewer_prompt_version": reviewer_version, "started_at": datetime.now(timezone.utc).isoformat()}}
+    reviewing = {**original, "quality_review_state": "running", "quality_review_source_payload_hash": source_hash,
+        "quality_review_prompt_version": reviewer_version, "quality_review_started_at": datetime.now(timezone.utc).isoformat()}
     database.update_draft(draft["id"], reviewing)
     request = {"mode": "existing_paid_draft_quality_review", "instruction": "Review this existing full draft directly. Do not generate a new topic, questions, or IDs.",
         "taxonomy": taxonomy_context(), "candidate": original,
         "source_context": _existing_review_source_context(original) or "No source context supplied."}
     try:
-        reviewed, result, cost = ai_service.generate(operation_type="topic_quality_review_existing",
+        reviewed, result, cost = ai_service.generate(operation_type=review_operation,
             instructions=TOPIC_QUALITY_REVIEW_INSTRUCTIONS, input_text=json.dumps(request),
             schema_name="ultimate_ml_topic_quality_review", schema=strict_response_schema(TopicQualityReview),
             validate=TopicQualityReview.model_validate, max_output_tokens=5000,
             metadata={"prompt_version": reviewer_version, "draft_id": draft["id"], "source_payload_hash": source_hash,
                       "existing_paid_draft": True, "forced_re_review": force})
     except Exception as exc:
-        failed = {**original, "existing_quality_review": {"status": "review_failed", "source_payload_hash": source_hash,
-            "reviewer_prompt_version": reviewer_version, "failed_at": datetime.now(timezone.utc).isoformat(),
-            "message": "Quality review failed. The original draft is preserved; retry when Settings are available."}}
+        failed = {**original, "quality_review_state": "failed", "quality_review_source_payload_hash": source_hash,
+            "quality_review_prompt_version": reviewer_version, "quality_review_failed_at": datetime.now(timezone.utc).isoformat(),
+            "quality_review_message": "Quality review failed. The original draft is preserved; retry when Settings are available."}
         database.update_draft(draft["id"], failed)
         _ai_error(exc)
     corrected = reviewed.corrected_topic.model_dump()
@@ -459,53 +478,47 @@ def _run_existing_draft_quality_review(draft: dict, *, force: bool = False) -> d
     # provenance/assets and all other non-authoring fields from the paid draft.
     authored_fields = set(TopicDraft.model_fields)
     extras = {key: value for key, value in original.items() if key not in authored_fields and key not in {
-        "existing_quality_review", "quality_report", "quality_status", "relationship_warnings", "durable_topic_id"}}
+        "existing_quality_review", "quality_review_state", "quality_review_prompt_version", "quality_review_source_payload_hash",
+        "quality_reviewed_payload_hash", "quality_report", "quality_status", "durable_topic_id", *LEGACY_RELATIONSHIP_FIELDS}}
     corrected = {**corrected, **extras}
     corrected, warnings, blocking = normalize_topic(corrected, requested_title=original.get("title", draft["title"]),
-        assigned_topic_id=_slug(original.get("title", draft["title"])), catalog=_topic_catalog(),
+        assigned_topic_id=_slug(original.get("title", draft["title"])),
         source_context=_existing_review_source_context(original))
-    corrected, resolution, resolver_cost, resolver_reused, resolver_warnings, resolver_blocking = _resolve_topic_metadata(
-        corrected, assigned_topic_id=_slug(original.get("title", draft["title"])), metadata={"draft_id": draft["id"], "existing_paid_draft": True})
-    report = final_quality_report(reviewed.quality_report.model_dump(), warnings + resolver_warnings, blocking + resolver_blocking, payload=corrected)
-    report["blocking_issues_remaining"] += metadata_payload_consistency(corrected, report, catalog=_topic_catalog(),
-        assigned_topic_id=_slug(original.get("title", draft["title"])))
-    status = "needs_attention" if report["blocking_issues_remaining"] else "reviewed"
+    report = final_quality_report(reviewed.quality_report.model_dump(), warnings, blocking, payload=corrected)
+    status = "needs_attention" if report["blocking_issues_remaining"] else "ready"
     corrected["quality_report"] = report
-    corrected["quality_status"] = "needs_attention" if status == "needs_attention" else "ready"
+    corrected["quality_status"] = status
     corrected_hash = _payload_hash(corrected)
-    corrected["existing_quality_review"] = {"status": status, "source_payload_hash": source_hash,
-        "reviewed_payload_hash": corrected_hash, "reviewer_prompt_version": reviewer_version,
-        "reviewed_at": datetime.now(timezone.utc).isoformat(), "forced_re_review": force}
+    corrected["quality_review_state"] = "reviewed"
+    corrected["quality_review_source_payload_hash"] = source_hash
+    corrected["quality_reviewed_payload_hash"] = corrected_hash
+    corrected["quality_review_prompt_version"] = reviewer_version
+    corrected["quality_reviewed_at"] = datetime.now(timezone.utc).isoformat()
+    corrected["quality_review_forced"] = force
     revision = database.create_draft_quality_revision(str(uuid4()), draft["id"], "quality_review", corrected,
         source_payload_hash=source_hash, reviewer_prompt_version=reviewer_version, quality_report=report)
     database.update_draft(draft["id"], corrected)
     saved = database.get_draft(draft["id"])
     return {"draft": _draft_public_quality(saved), "reused": False, "revision": revision,
-        "usage": {"input_tokens": result.input_tokens, "output_tokens": result.output_tokens, "estimated_cost_usd": cost + resolver_cost,
-                  "quality_review_estimated_cost_usd": cost, "metadata_resolution_estimated_cost_usd": resolver_cost,
-                  "metadata_resolution_cached": resolver_reused,
+        "usage": {"input_tokens": result.input_tokens, "output_tokens": result.output_tokens, "estimated_cost_usd": cost,
+                  "quality_review_estimated_cost_usd": cost,
                   "maximum_estimated_cost_usd": preflight["maximum_estimated_cost_usd"]}, "budget": ai_service.usage_summary()}
 
 
 def _validate_topic_draft_payload(payload: dict) -> dict:
+    payload = _reconcile_taxonomy_quality_report(payload)
     errors = []
     try:
         draft = TopicDraft.model_validate(payload)
     except Exception as exc:
-        return {"valid": False, "errors": [{"field": "draft", "message": str(exc)}], "warnings": payload.get("relationship_warnings", [])}
-    for field in ("prerequisite_topic_ids", "related_topic_ids"):
-        invalid = [item for item in getattr(draft, field) if item not in library.topics]
-        if invalid:
-            errors.append({"field": field, "message": f"Unknown topic IDs: {', '.join(invalid)}"})
-    relationship_errors, relationship_warnings = relationship_lint(payload, catalog=_topic_catalog(), assigned_topic_id=_slug(draft.title))
-    errors.extend({"field": "relationships", "message": item["message"]} for item in relationship_errors)
+        return {"valid": False, "errors": [{"field": "draft", "message": str(exc)}], "warnings": []}
     if draft.category not in taxonomy_context():
         errors.append({"field": "category", "message": "Choose a category from the local taxonomy."})
-    if payload.get("quality_status") == "ready" and payload.get("metadata_resolution"):
-        consistency = metadata_payload_consistency(payload, payload.get("quality_report", {}), catalog=_topic_catalog(),
-            assigned_topic_id=_slug(draft.title))
-        errors.extend({"field": "metadata", "message": item["message"]} for item in consistency)
-    return {"valid": not errors, "errors": errors, "warnings": payload.get("relationship_warnings", []) + relationship_warnings}
+    if payload.get("quality_review_state") != "reviewed":
+        errors.append({"field": "quality_review", "message": "Run quality review before approval. Generation alone is authoring-only."})
+    elif payload.get("quality_status") != "ready":
+        errors.append({"field": "quality_review", "message": "Resolve the quality-review blocking issues before approval."})
+    return {"valid": not errors, "errors": errors, "warnings": []}
 
 
 def _reload_library():
@@ -514,17 +527,13 @@ def _reload_library():
 
 
 def _approved_topic(payload: dict, *, canonical_id: str | None = None) -> dict:
-    topic = dict(payload)
-    topic.pop("relationship_warnings", None)
+    topic = _canonicalize_topic_category(_strip_legacy_relationship_metadata(payload))
     topic.pop("durable_topic_id", None)
     # The request/model payload never gets to select a durable ID. A stable ID is
     # passed only for a deliberate enrichment target.
     topic_id = canonical_id or _slug(topic["title"])
-    known = set(library.topics)
     topic.update({"id": topic_id, "content_version": 2, "tags": topic.get("tags", []),
         "knowledge_type": topic.get("knowledge_type", ["conceptual"]),
-        "prerequisite_topic_ids": [x for x in topic.get("prerequisite_topic_ids", []) if x in known],
-        "related_topic_ids": [x for x in topic.get("related_topic_ids", []) if x in known],
         "sources": topic.get("sources", []),
         "generation_metadata": {**topic.get("generation_metadata", {}), "review_state": "approved"}})
     return topic
@@ -569,10 +578,6 @@ def _validate_topic_edit(topic_id: str, payload: dict) -> dict:
             errors.append({"field": field, "message": "This field is required."})
     if payload.get("difficulty") not in {item.value for item in Difficulty}:
         errors.append({"field": "difficulty", "message": "Must be beginner, intermediate, or advanced."})
-    for field in ("prerequisite_topic_ids", "related_topic_ids"):
-        unknown = [value for value in payload.get(field, []) if value not in library.topics]
-        if unknown:
-            errors.append({"field": field, "message": f"Unknown topic IDs: {', '.join(unknown)}"})
     for index, source in enumerate(payload.get("sources", [])):
         if not isinstance(source, dict) or not source.get("title") or not source.get("type"):
             errors.append({"field": f"sources[{index}]", "message": "Sources need a title and type."})
@@ -591,7 +596,7 @@ def _validate_topic_edit(topic_id: str, payload: dict) -> dict:
 def _save_edited_topic(topic_id: str, payload: dict, edit_source: str) -> dict:
     # An editor can omit or accidentally alter this hidden implementation detail;
     # changing a durable ID is a separate migration, never an ordinary content edit.
-    payload = {**payload, "id": topic_id}
+    payload = {**_canonicalize_topic_category(payload), "id": topic_id}
     validation = _validate_topic_edit(topic_id, payload)
     if not validation["valid"]:
         raise HTTPException(422, {"message": "Fix topic validation errors before saving.", **validation})
@@ -639,10 +644,6 @@ def _validate_question_candidate(candidate: dict, topic_id: str) -> tuple[dict |
     except Exception as exc:
         return None, [str(exc)]
     output = item.model_dump()
-    unknown = [value for value in output.get("related_topic_ids", []) if value not in library.topics]
-    if unknown:
-        output["relationship_warnings"] = [f"Removed unavailable related topic IDs: {', '.join(unknown)}"]
-        output["related_topic_ids"] = [value for value in output["related_topic_ids"] if value in library.topics]
     return output, []
 
 
@@ -676,14 +677,7 @@ def duplicate_check(title: str):
 def topic(topic_id: str):
     if topic_id not in library.topics:
         raise HTTPException(404, "Topic not found")
-    item = public(library.topics[topic_id])
-    item["related_topic_details"] = [
-        {"id": value, "title": library.topics[value]["title"]} for value in item.get("related_topic_ids", [])
-    ]
-    item["prerequisite_topic_details"] = [
-        {"id": value, "title": library.topics[value]["title"]} for value in item.get("prerequisite_topic_ids", [])
-    ]
-    return item
+    return public(library.topics[topic_id])
 
 
 @app.get("/api/topics/{topic_id}/editable")
@@ -697,50 +691,6 @@ def editable_topic(topic_id: str):
 @app.put("/api/topics/{topic_id}")
 def edit_topic(topic_id: str, body: TopicEditInput):
     return _save_edited_topic(topic_id, body.payload, body.edit_source)
-
-
-def _metadata_rebuild_estimate(payload: dict) -> dict:
-    service = _metadata_service()
-    candidates = service.retrieve(payload, library.topics)
-    cache_key, _, _ = service.cache_key(payload, candidates, RELATIONSHIP_RESOLVER_PROMPT_VERSION)
-    cached = bool(database.get_metadata_resolution_cache(cache_key)) or not candidates
-    estimate = ai_service.estimate_operations(["metadata_relationship_resolution"])
-    return {**estimate, "candidate_count": len(candidates), "resolver_prompt_version": RELATIONSHIP_RESOLVER_PROMPT_VERSION,
-            "cached": cached, "maximum_estimated_cost_usd": 0 if cached else estimate["maximum_estimated_cost_usd"]}
-
-
-@app.get("/api/topics/{topic_id}/metadata-rebuild-estimate")
-def topic_metadata_rebuild_estimate(topic_id: str):
-    if topic_id not in library.topics:
-        raise HTTPException(404, "Topic not found")
-    return _metadata_rebuild_estimate(public(library.topics[topic_id]))
-
-
-@app.post("/api/topics/{topic_id}/rebuild-relationships")
-def rebuild_topic_relationships(topic_id: str):
-    if topic_id not in library.topics:
-        raise HTTPException(404, "Topic not found")
-    existing = library.topics[topic_id]
-    payload = public(existing)
-    estimate = _metadata_rebuild_estimate(payload)
-    if not estimate["cached"]:
-        try:
-            ai_service.require_budget_for_operations(["metadata_relationship_resolution"])
-        except Exception as exc:
-            _ai_error(exc)
-    rebuilt, _, cost, cached, warnings, blocking = _resolve_topic_metadata(payload, assigned_topic_id=topic_id,
-        metadata={"topic_id": topic_id, "metadata_only_rebuild": True})
-    report = rebuilt.get("quality_report")
-    if isinstance(report, dict):
-        report = final_quality_report(report, warnings, blocking, payload=rebuilt)
-        report["blocking_issues_remaining"] += metadata_payload_consistency(rebuilt, report, catalog=_topic_catalog(), assigned_topic_id=topic_id)
-        rebuilt["quality_report"] = report
-        rebuilt["quality_status"] = "needs_attention" if report["blocking_issues_remaining"] else "ready"
-    # This is an explicit metadata-only revision; educational prose, provenance,
-    # questions, and the durable ID are copied unchanged.
-    result = _save_edited_topic(topic_id, rebuilt, "metadata-rebuild")
-    return {"topic": result, "usage": {"estimated_cost_usd": cost, "maximum_estimated_cost_usd": estimate["maximum_estimated_cost_usd"],
-            "cached": cached}, "warnings": warnings, "budget": ai_service.usage_summary()}
 
 
 @app.get("/api/topics/{topic_id}/revisions")
@@ -938,7 +888,7 @@ def youtube_analysis_estimate(import_id: str):
 
 @app.get("/api/ai/topic-draft-estimate")
 def topic_draft_estimate(youtube: bool = False):
-    operations = _topic_quality_operations("youtube_topic_expansion" if youtube else "topic_draft")
+    operations = _topic_authoring_operations("youtube_topic_expansion" if youtube else "topic_draft")
     return ai_service.estimate_operations(operations)
 
 
@@ -972,7 +922,7 @@ def batch_preflight(import_id: str, body: YoutubeBatchInput):
     if not record:
         raise HTTPException(404, "Video import not found")
     tasks = _validated_batch_selections(record, body.selections)
-    estimate_per = ai_service.estimate_operations(_topic_quality_operations("youtube_topic_expansion"))
+    estimate_per = ai_service.estimate_operations(_topic_authoring_operations("youtube_topic_expansion"))
     maximum_per = estimate_per["maximum_estimated_cost_usd"]
     billable = [task for task in tasks if task["state"] in {"new", "failed"}]
     maximum = maximum_per * len(billable)
@@ -992,7 +942,7 @@ def enqueue_video_drafts(import_id: str, body: YoutubeBatchInput):
     if not preflight["safe_to_start"]:
         raise HTTPException(429, "The selected batch could exceed the local monthly AI budget. Reduce the selection or raise the budget intentionally in Settings.")
     tasks = _validated_batch_selections(record, body.selections)
-    maximum = ai_service.estimate_operations(_topic_quality_operations("youtube_topic_expansion"))["maximum_estimated_cost_usd"]
+    maximum = ai_service.estimate_operations(_topic_authoring_operations("youtube_topic_expansion"))["maximum_estimated_cost_usd"]
     for task in tasks:
         key = _slug(task["concept"]["canonical_name"])
         if task["state"] == "existing_draft":
@@ -1144,6 +1094,7 @@ def create_youtube_question_draft(import_id: str, body: YoutubeQuestionInput):
 
 @app.post("/api/ai/topic-draft")
 def create_topic_draft(body: TopicDraftInput):
+    logger.info("[TOPIC GENERATE DEBUG] backend received POST /api/ai/topic-draft title=%r category=%s difficulty=%s depth=%s", body.title, body.category, body.difficulty.value, body.depth.value)
     return _generate_topic_draft(body)
 
 
@@ -1154,7 +1105,7 @@ def create_question_draft(body: QuestionDraftInput):
         raise HTTPException(404, "Topic not found")
     request = {"topic_id": topic["id"], "topic_title": topic["title"], "topic_summary": topic["one_sentence_summary"],
                "topic_core_explanation": topic["core_explanation"], "focus": body.focus, "count": min(12, max(1, body.count)),
-               "related_topic_ids": topic.get("related_topic_ids", []), "known_question_text": [q["question"] for q in library.questions.values()]}
+               "known_question_text": [q["question"] for q in library.questions.values()]}
     try:
         batch, result, cost = ai_service.generate(operation_type="question_draft", instructions=QUESTION_INSTRUCTIONS,
             input_text=json.dumps(request), schema_name="ultimate_ml_question_draft", schema=strict_response_schema(QuestionDraftBatch),
@@ -1183,8 +1134,125 @@ def get_draft(draft_id: str):
 @app.get("/api/ai/topic-drafts")
 def list_topic_drafts():
     """A cross-source queue view; deriving legacy status performs no writes."""
-    return {"drafts": [_draft_public_quality(item) for item in database.list_drafts_by_type("topic") if item["state"] == "draft"],
+    drafts = []
+    for item in database.list_drafts_by_type("topic"):
+        if item["state"] != "draft":
+            continue
+        drafts.append({**_draft_public_quality(item), "lifecycle_status": _draft_lifecycle_status(item)})
+    return {"drafts": drafts,
             "budget": ai_service.usage_summary()}
+
+
+def _restart_generation_input(draft: dict) -> TopicDraftInput:
+    saved = draft.get("metadata", {}).get("generation_input")
+    if saved is not None:
+        try:
+            return TopicDraftInput.model_validate(saved)
+        except Exception as exc:
+            raise HTTPException(422, f"Saved restart inputs are malformed: {exc}") from exc
+    # Legacy drafts predate persisted request metadata. Recover only safe inputs
+    # from their payload and generation metadata; the current configured depth is
+    # the best available fallback because it was not stored by those releases.
+    payload, generated = draft.get("payload", {}), draft.get("payload", {}).get("generation_metadata", {})
+    title = payload.get("title") or draft.get("title")
+    category = str(payload.get("category", "")).strip()
+    normalized_category = canonical_category(category)
+    if normalized_category not in taxonomy_context():
+        raise HTTPException(422, "Restart metadata is incomplete: the original category is not in the current local taxonomy.")
+    if not title:
+        raise HTTPException(422, "Restart metadata is incomplete: the original title is unavailable.")
+    difficulty = payload.get("difficulty", Difficulty.INTERMEDIATE.value)
+    try:
+        return TopicDraftInput(title=title, category=normalized_category, difficulty=difficulty,
+            tags=list(payload.get("tags", [])), focus=generated.get("user_focus", ""),
+            depth=ai_service.settings().explanation_depth, include_mathematics=True,
+            include_examples=True, include_misconceptions=True,
+            allow_duplicate=True)
+    except Exception as exc:
+        raise HTTPException(422, f"Restart metadata is malformed: {exc}") from exc
+
+
+def _restart_operation_type(draft: dict) -> str:
+    return "youtube_topic_expansion" if draft.get("metadata", {}).get("youtube_import_id") else "topic_draft"
+
+
+def _restart_video_draft(draft: dict, body: TopicDraftInput) -> dict:
+    metadata = draft.get("metadata", {})
+    import_id, concept_name = metadata.get("youtube_import_id"), metadata.get("youtube_concept")
+    record = database.get_youtube_import(import_id) if import_id else None
+    if not record or not concept_name:
+        raise HTTPException(422, "Restart metadata is incomplete: the original video import or concept is unavailable.")
+    concepts = (record.get("analysis") or {}).get("concepts", [])
+    concept = next((item for item in concepts if _slug(item.get("canonical_name", "")) == _slug(concept_name)), None)
+    if not concept:
+        queue_item = database.get_queue_item_by_concept(import_id, _slug(concept_name))
+        concept = queue_item.get("concept") if queue_item else None
+    if not concept:
+        raise HTTPException(422, "Restart metadata is incomplete: reanalyze the video import before restarting this draft.")
+    action = "enrich" if metadata.get("enrich_existing_topic_id") else "create"
+    return _generate_video_concept_draft(record, concept, action, body.focus, replacing_draft_id=draft["id"], restart_input=body)
+
+
+@app.get("/api/ai/drafts/{draft_id}/restart-estimate")
+def restart_draft_estimate(draft_id: str):
+    draft = database.get_draft(draft_id)
+    if not draft:
+        raise HTTPException(404, "Draft not found")
+    if draft["draft_type"] != "topic" or _draft_lifecycle_status(draft) not in {"incomplete", "failed"}:
+        raise HTTPException(409, "Only incomplete or failed topic drafts can be restarted.")
+    body = _restart_generation_input(draft)
+    operation_type = _restart_operation_type(draft)
+    estimate = ai_service.estimate_operations(_topic_authoring_operations(operation_type))
+    return {**estimate, "operation_type": operation_type, "generation_input": {"title": body.title, "category": body.category,
+        "difficulty": body.difficulty.value, "depth": body.depth.value, "tags": body.tags, "focus": body.focus},
+        "old_draft_will_remain_until_success": True}
+
+
+@app.post("/api/ai/drafts/{draft_id}/restart")
+def restart_draft(draft_id: str):
+    with _with_draft_lifecycle_action(draft_id):
+        draft = database.get_draft(draft_id)
+        if not draft:
+            raise HTTPException(404, "Draft not found")
+        if draft["draft_type"] != "topic" or _draft_lifecycle_status(draft) not in {"incomplete", "failed"}:
+            raise HTTPException(409, "Only incomplete or failed topic drafts can be restarted.")
+        body = _restart_generation_input(draft)
+        operation_type = _restart_operation_type(draft)
+        try:
+            if operation_type == "youtube_topic_expansion":
+                fresh = _restart_video_draft(draft, body)
+            else:
+                fresh = _generate_topic_draft(body, operation_type=operation_type,
+                    extra_metadata={"restarted_from_draft_id": draft_id}, duplicate_check=False)
+        except HTTPException:
+            # The original draft is intentionally unchanged on any budget,
+            # validation, or provider failure.
+            raise
+        except Exception as exc:
+            logger.exception("draft_restart_failure draft_id=%s exception_type=%s", draft_id, type(exc).__name__)
+            raise HTTPException(502, "Restart generation failed. The original draft was kept unchanged.") from exc
+        database.update_draft(draft_id, draft["payload"], "discarded")
+        if operation_type == "youtube_topic_expansion":
+            database.update_queue_item_for_draft(draft_id, "discarded")
+            queue_item = database.get_queue_item_by_concept(draft["metadata"]["youtube_import_id"], _slug(draft["metadata"]["youtube_concept"]))
+            if queue_item:
+                database.update_queue_item(queue_item["id"], status="ready", draft_id=fresh["id"])
+        return {"old_draft_id": draft_id, "old_draft_state": "discarded", "draft": fresh,
+                "budget": ai_service.usage_summary()}
+
+
+@app.delete("/api/ai/drafts/{draft_id}")
+def delete_draft(draft_id: str):
+    with _with_draft_lifecycle_action(draft_id):
+        draft = database.get_draft(draft_id)
+        if not draft:
+            raise HTTPException(404, "Draft not found")
+        if draft["state"] != "draft":
+            raise HTTPException(409, "Only active drafts can be deleted. Approved content is preserved.")
+        if draft["draft_type"] == "topic":
+            database.detach_queue_item_for_draft(draft_id)
+        database.delete_draft(draft_id)
+        return {"deleted_draft_id": draft_id, "message": "Draft deleted. Approved topics and questions were not affected."}
 
 
 @app.get("/api/ai/drafts/{draft_id}/quality-review-estimate")
@@ -1194,7 +1262,9 @@ def existing_draft_quality_review_estimate(draft_id: str):
         raise HTTPException(404, "Draft not found")
     if draft["draft_type"] != "topic" or draft["state"] != "draft":
         raise HTTPException(409, "Only active topic drafts can be quality-reviewed.")
-    estimate = ai_service.estimate_operations(["topic_quality_review_existing", "metadata_relationship_resolution"])
+    draft = _ensure_draft_quality_state(draft)
+    operation_type = "youtube_topic_expansion" if draft.get("metadata", {}).get("youtube_import_id") else "topic_draft"
+    estimate = ai_service.estimate_operations(_topic_quality_operations(operation_type))
     return {**estimate, "quality_review": _draft_quality_state(draft["payload"]),
         "original_generation_estimated_cost_usd": draft["metadata"].get("request_cost_usd"),
         "reviewer_prompt_version": TOPIC_QUALITY_REVIEW_PROMPT_VERSION,
@@ -1207,46 +1277,6 @@ def quality_review_existing_draft(draft_id: str, body: ExistingDraftQualityRevie
     if not draft:
         raise HTTPException(404, "Draft not found")
     return _run_existing_draft_quality_review(draft, force=body.force)
-
-
-@app.get("/api/ai/drafts/{draft_id}/metadata-rebuild-estimate")
-def draft_metadata_rebuild_estimate(draft_id: str):
-    draft = database.get_draft(draft_id)
-    if not draft:
-        raise HTTPException(404, "Draft not found")
-    if draft["draft_type"] != "topic" or draft["state"] != "draft":
-        raise HTTPException(409, "Only active topic drafts can rebuild metadata.")
-    return _metadata_rebuild_estimate(draft["payload"])
-
-
-@app.post("/api/ai/drafts/{draft_id}/rebuild-relationships")
-def rebuild_draft_relationships(draft_id: str):
-    draft = database.get_draft(draft_id)
-    if not draft:
-        raise HTTPException(404, "Draft not found")
-    if draft["draft_type"] != "topic" or draft["state"] != "draft":
-        raise HTTPException(409, "Only active topic drafts can rebuild metadata.")
-    original = json.loads(json.dumps(draft["payload"]))
-    estimate = _metadata_rebuild_estimate(original)
-    if not estimate["cached"]:
-        try:
-            ai_service.require_budget_for_operations(["metadata_relationship_resolution"])
-        except Exception as exc:
-            _ai_error(exc)
-    rebuilt, _, cost, cached, warnings, blocking = _resolve_topic_metadata(original, assigned_topic_id=_slug(draft["title"]),
-        metadata={"draft_id": draft_id, "metadata_only_rebuild": True})
-    report = rebuilt.get("quality_report")
-    if isinstance(report, dict):
-        report = final_quality_report(report, warnings, blocking, payload=rebuilt)
-        report["blocking_issues_remaining"] += metadata_payload_consistency(rebuilt, report, catalog=_topic_catalog(), assigned_topic_id=_slug(draft["title"]))
-        rebuilt["quality_report"] = report
-        rebuilt["quality_status"] = "needs_attention" if report["blocking_issues_remaining"] else "ready"
-    database.create_draft_quality_revision(str(uuid4()), draft_id, "metadata_rebuild", original,
-        source_payload_hash=_payload_hash(original), reviewer_prompt_version=RELATIONSHIP_RESOLVER_PROMPT_VERSION)
-    database.update_draft(draft_id, rebuilt)
-    return {"draft": _draft_public_quality(database.get_draft(draft_id)), "usage": {"estimated_cost_usd": cost,
-            "maximum_estimated_cost_usd": estimate["maximum_estimated_cost_usd"], "cached": cached}, "warnings": warnings,
-            "budget": ai_service.usage_summary()}
 
 
 @app.get("/api/ai/drafts/{draft_id}/quality-revisions")
@@ -1284,9 +1314,16 @@ def update_draft(draft_id: str, body: DraftPayloadInput):
         raise HTTPException(404, "Draft not found")
     payload = body.payload
     if draft["draft_type"] == "topic":
-        # The normal editor only offers known topics. Keep the advanced editor
-        # safe as well: unavailable IDs never persist as relationships.
-        payload = _sanitize_draft_relationships(payload)
+        draft = _ensure_draft_quality_state(draft)
+        # Older editor clients can submit a payload snapshot made before the
+        # compatibility migration. Preserve the authoritative state rather than
+        # silently dropping it during an otherwise unrelated local edit.
+        for field in ("quality_review_state", "quality_review_prompt_version", "quality_review_source_payload_hash",
+                      "quality_reviewed_payload_hash", "quality_reviewed_at", "quality_review_forced", "quality_status",
+                      "quality_report"):
+            if field not in payload and field in draft["payload"]:
+                payload[field] = draft["payload"][field]
+        payload = _reconcile_taxonomy_quality_report(_strip_legacy_relationship_metadata(payload))
     database.update_draft(draft_id, payload)
     return database.get_draft(draft_id)
 
@@ -1298,7 +1335,7 @@ def validate_draft(draft_id: str):
         raise HTTPException(404, "Draft not found")
     if draft["draft_type"] != "topic":
         return {"valid": True, "errors": [], "warnings": []}
-    return _validate_topic_draft_payload(_sanitize_draft_relationships(draft["payload"]))
+    return _validate_topic_draft_payload(draft["payload"])
 
 
 @app.post("/api/ai/drafts/{draft_id}/regenerate-section")
@@ -1324,7 +1361,7 @@ def regenerate_section(draft_id: str, body: RegenerateSectionInput):
     if body.section not in {"mathematical_foundation", "common_misconceptions", "limitations", "mental_models"} and not isinstance(value, str):
         raise HTTPException(422, "The regenerated text section had an invalid shape. No draft changes were made.")
     draft["payload"][body.section] = value
-    database.update_draft(draft_id, draft["payload"])
+    database.update_draft(draft_id, _strip_legacy_relationship_metadata(draft["payload"]))
     return database.get_draft(draft_id)
 
 
@@ -1346,7 +1383,7 @@ def approve_draft(draft_id: str):
     if draft["draft_type"] == "topic" and draft["state"] != "draft":
         raise HTTPException(409, "Only an active draft can be approved")
     if draft["draft_type"] == "topic":
-        validation = _validate_topic_draft_payload(_sanitize_draft_relationships(draft["payload"]))
+        validation = _validate_topic_draft_payload(draft["payload"])
         if not validation["valid"]:
             raise HTTPException(422, {"message": "Fix draft validation errors before approval.", **validation})
         enrichment_target_id = draft["payload"].get("generation_metadata", {}).get("enrich_existing_topic_id")

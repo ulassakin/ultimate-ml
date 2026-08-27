@@ -1,0 +1,32 @@
+{
+  "content_version": 2,
+  "id": "eigenvalues-and-eigenvectors_q010",
+  "topic_ids": [
+    "eigenvalues-and-eigenvectors"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mechanism",
+  "difficulty": "advanced",
+  "question": "Why does a symmetric covariance matrix have a particularly nice eigen-decomposition?",
+  "direct_answer": "Its eigenvalues are real and its eigenvectors can be chosen orthogonal.",
+  "expanded_answer": "Symmetry gives strong structure: a covariance matrix does not mix directions in an arbitrary way. This guarantees real spectral information and an orthogonal basis of eigenvectors, which makes it ideal for rotating data into independent principal directions.",
+  "key_points": [
+    "Symmetric matrices have real eigenvalues",
+    "Eigenvectors can be orthogonal",
+    "This supports a clean change of basis"
+  ],
+  "common_wrong_ideas": [
+    "Assuming orthogonality happens for all matrices",
+    "Ignoring that symmetry is the key property"
+  ],
+  "concept_refresher_topic_id": "eigenvalues-and-eigenvectors",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T16:35:35.040173+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

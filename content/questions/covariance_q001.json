@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "covariance_q001",
+  "topic_ids": [
+    "covariance"
+  ],
+  "question_type": "conceptual",
+  "question_category": "foundation",
+  "difficulty": "beginner",
+  "question": "What does covariance measure in plain language?",
+  "direct_answer": "It measures whether two variables tend to move together.",
+  "expanded_answer": "Covariance summarizes shared variation between two variables. If one tends to be above its mean when the other is also above its mean, covariance is positive. If one tends to be above its mean when the other is below its mean, covariance is negative.",
+  "key_points": [
+    "Measures co-movement between two variables",
+    "Positive means they tend to increase and decrease together",
+    "Negative means they tend to move in opposite directions"
+  ],
+  "common_wrong_ideas": [
+    "Covariance measures causal influence",
+    "Covariance is always positive"
+  ],
+  "related_topic_ids": [],
+  "concept_refresher_topic_id": "covariance",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T14:42:43.067191+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

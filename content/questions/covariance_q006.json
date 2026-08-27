@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "covariance_q006",
+  "topic_ids": [
+    "covariance"
+  ],
+  "question_type": "conceptual",
+  "question_category": "application",
+  "difficulty": "intermediate",
+  "question": "Why is covariance useful in machine learning?",
+  "direct_answer": "It helps describe how features vary together, which is useful for understanding structure in data.",
+  "expanded_answer": "Covariance can reveal redundant features, correlated dimensions, and shared patterns in data. This is important in feature analysis, dimensionality reduction, and probabilistic modeling, where understanding joint variation helps build better representations and assumptions.",
+  "key_points": [
+    "Shows shared variation among features",
+    "Useful for feature analysis and dimensionality reduction",
+    "Important in probabilistic and representation learning"
+  ],
+  "common_wrong_ideas": [
+    "Covariance is only a statistics concept with no ML use",
+    "High covariance always means one feature should be removed"
+  ],
+  "related_topic_ids": [],
+  "concept_refresher_topic_id": "covariance",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T14:42:43.067191+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

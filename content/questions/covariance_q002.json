@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "covariance_q002",
+  "topic_ids": [
+    "covariance"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mechanism",
+  "difficulty": "beginner",
+  "question": "How is covariance computed conceptually?",
+  "direct_answer": "By multiplying centered deviations pairwise and averaging them.",
+  "expanded_answer": "For each paired observation, subtract each variable’s mean from its value, multiply those two deviations, and then average the products over the dataset. This makes covariance depend on how the two variables jointly deviate from their means.",
+  "key_points": [
+    "Center both variables by subtracting their means",
+    "Multiply the centered deviations for each pair",
+    "Average the products across observations"
+  ],
+  "common_wrong_ideas": [
+    "You compute covariance from raw values without centering",
+    "Covariance is the same as taking an absolute difference"
+  ],
+  "related_topic_ids": [],
+  "concept_refresher_topic_id": "covariance",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T14:42:43.067191+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

@@ -20,9 +20,7 @@
     "Learning rate changes the gradient itself",
     "Learning rate only matters at the start of training"
   ],
-  "related_topic_ids": [
-    "gradient-flow"
-  ],
+  "related_topic_ids": [],
   "concept_refresher_topic_id": "gradient-descent",
   "generation_metadata": {
     "generated_by_ai": true,

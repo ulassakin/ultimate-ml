@@ -21,9 +21,7 @@
     "Backpropagation directly changes the weights",
     "Gradient descent can work without gradients"
   ],
-  "related_topic_ids": [
-    "gradient-flow"
-  ],
+  "related_topic_ids": [],
   "concept_refresher_topic_id": "gradient-descent",
   "generation_metadata": {
     "generated_by_ai": true,

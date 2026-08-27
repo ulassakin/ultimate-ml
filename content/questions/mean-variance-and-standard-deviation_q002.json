@@ -1,0 +1,32 @@
+{
+  "content_version": 2,
+  "id": "mean-variance-and-standard-deviation_q002",
+  "topic_ids": [
+    "mean-variance-and-standard-deviation"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mechanism",
+  "difficulty": "intermediate",
+  "question": "Why does variance square deviations from the mean instead of using raw distances?",
+  "direct_answer": "To make all deviations positive and to penalize larger deviations more strongly.",
+  "expanded_answer": "If you used signed deviations, positive and negative differences would cancel out. Squaring removes that cancellation and also makes unusually large deviations contribute much more than small ones. That is why variance is sensitive to spread and outliers.",
+  "key_points": [
+    "Avoids cancellation",
+    "Emphasizes large deviations",
+    "Measures spread around the mean"
+  ],
+  "common_wrong_ideas": [
+    "Squaring is only a mathematical convention with no effect",
+    "Variance is just the average absolute distance"
+  ],
+  "concept_refresher_topic_id": "mean-variance-and-standard-deviation",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T18:06:08.791270+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

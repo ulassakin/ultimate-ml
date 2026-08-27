@@ -1,0 +1,32 @@
+{
+  "content_version": 2,
+  "id": "eigenvalues-and-eigenvectors_q006",
+  "topic_ids": [
+    "eigenvalues-and-eigenvectors"
+  ],
+  "question_type": "conceptual",
+  "question_category": "comparison",
+  "difficulty": "intermediate",
+  "question": "Why do vectors like [1, 1] usually fail to be eigenvectors for a diagonal scaling matrix?",
+  "direct_answer": "Because the transformation changes their components by different amounts, so the direction usually changes.",
+  "expanded_answer": "If one coordinate is stretched more than the other, a diagonal vector such as [1, 1] typically gets bent to a new direction rather than staying on the same line. Only special directions aligned with the scaling axes remain unchanged as directions.",
+  "key_points": [
+    "Different coordinate scaling changes slope",
+    "Eigenvectors must keep the same line through the origin",
+    "Special aligned directions can survive"
+  ],
+  "common_wrong_ideas": [
+    "Thinking any vector in 2D will be preserved by a scaling matrix",
+    "Confusing component-wise scaling with directional preservation"
+  ],
+  "concept_refresher_topic_id": "eigenvalues-and-eigenvectors",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T16:35:35.040173+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

@@ -1,9 +1,0 @@
-{
-  "id": "resnet_q002", "topic_ids": ["resnet"], "question_type": "free_text", "difficulty": "intermediate",
-  "question": "What must happen to a ResNet shortcut when a block changes spatial resolution or channel count?",
-  "short_answer": "The shortcut must project the input to the output shape, commonly with a strided 1×1 convolution.",
-  "expanded_answer": "Addition requires equal tensor shapes. When the residual branch downsamples or changes channels, a projection shortcut aligns the identity branch's spatial and channel dimensions. A 1×1 convolution, optionally with stride, is a common choice.",
-  "key_points": ["Elementwise addition requires matching shapes.", "Projection shortcuts can change channels and resolution."],
-  "common_misconceptions": [], "related_topic_ids": ["cnn"], "concept_refresher_topic_id": "resnet",
-  "tags": ["architecture", "tensor-shapes"]
-}

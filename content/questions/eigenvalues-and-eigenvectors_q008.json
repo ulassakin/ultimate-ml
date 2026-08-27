@@ -1,0 +1,32 @@
+{
+  "content_version": 2,
+  "id": "eigenvalues-and-eigenvectors_q008",
+  "topic_ids": [
+    "eigenvalues-and-eigenvectors"
+  ],
+  "question_type": "conceptual",
+  "question_category": "intuition",
+  "difficulty": "intermediate",
+  "question": "Why do nontrivial 2D rotations usually have no real eigenvectors?",
+  "direct_answer": "Because they rotate every nonzero direction away from itself.",
+  "expanded_answer": "A nontrivial rotation changes the angle of every vector, so no real line through the origin stays fixed as a line. Since eigenvectors require a preserved direction, ordinary real eigenvectors do not exist in this case.",
+  "key_points": [
+    "Rotation changes every direction",
+    "Eigenvectors require invariant lines",
+    "This is a geometric obstruction, not a computational accident"
+  ],
+  "common_wrong_ideas": [
+    "Thinking the axis of rotation in 2D behaves like 3D rotation axes",
+    "Believing numerical methods just fail to find them"
+  ],
+  "concept_refresher_topic_id": "eigenvalues-and-eigenvectors",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T16:35:35.040173+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

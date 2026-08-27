@@ -48,7 +48,7 @@ def test_legacy_review_is_opt_in_idempotent_and_never_generates_topics_or_questi
     question_before=database.get_draft("questions")
     history_before=database.progress()
     listed=client.get("/api/ai/topic-drafts").json()["drafts"]
-    assert listed[0]["quality_review"]["status"] == "not_reviewed"
+    assert listed[0]["quality_review"]["status"] == "not_run"
     estimate=client.get("/api/ai/drafts/legacy/quality-review-estimate").json()
     assert estimate["original_generation_will_not_repeat"] is True and estimate["original_generation_estimated_cost_usd"] == 0.0123
 
@@ -56,21 +56,26 @@ def test_legacy_review_is_opt_in_idempotent_and_never_generates_topics_or_questi
     assert reviewed.status_code == 200 and reviewed.json()["reused"] is False
     payload=database.get_draft("legacy")["payload"]
     assert payload["category"] == "representation_learning"
-    assert payload["existing_quality_review"]["status"] == "reviewed"
-    assert provider.calls == ["ultimate_ml_topic_quality_review", "ultimate_ml_relationship_resolution"]
+    assert payload["quality_review_state"] == "reviewed"
+    assert provider.calls == ["ultimate_ml_topic_quality_review"]
     revisions=client.get("/api/ai/drafts/legacy/quality-revisions").json()["revisions"]
     assert {item["revision_type"] for item in revisions} == {"pre_quality_review", "quality_review"}
     before_revision=next(item for item in revisions if item["revision_type"] == "pre_quality_review")
-    assert client.get("/api/ai/drafts/legacy/quality-revisions/"+before_revision["id"]).json()["payload"] == original
+    before_payload=client.get("/api/ai/drafts/legacy/quality-revisions/"+before_revision["id"]).json()["payload"]
+    assert {key:value for key,value in before_payload.items() if key!="quality_review_state"} == original
+    assert before_payload["quality_review_state"] == "not_run"
 
     reopened=client.post("/api/ai/drafts/legacy/quality-review", json={}).json()
-    assert reopened["reused"] is True and provider.calls == ["ultimate_ml_topic_quality_review", "ultimate_ml_relationship_resolution"]
+    assert reopened["reused"] is True and provider.calls == ["ultimate_ml_topic_quality_review"]
     forced=client.post("/api/ai/drafts/legacy/quality-review", json={"force":True})
-    assert forced.status_code == 200 and provider.calls == ["ultimate_ml_topic_quality_review", "ultimate_ml_relationship_resolution", "ultimate_ml_topic_quality_review"]
+    assert forced.status_code == 200 and provider.calls == ["ultimate_ml_topic_quality_review", "ultimate_ml_topic_quality_review"]
     assert database.get_draft("questions") == question_before and database.progress() == history_before
 
     restored=client.post("/api/ai/drafts/legacy/quality-revisions/"+before_revision["id"]+"/restore").json()
-    assert restored["payload"] == original and database.get_draft("legacy")["payload"] == original
+    restored_payload=restored["payload"]
+    assert {key:value for key,value in restored_payload.items() if key!="quality_review_state"} == original
+    assert restored_payload["quality_review_state"] == "not_run"
+    assert database.get_draft("legacy")["payload"] == restored_payload
 
 
 def test_failed_existing_review_keeps_original_recoverable_and_never_calls_generator(tmp_path, monkeypatch):
@@ -84,4 +89,4 @@ def test_failed_existing_review_keeps_original_recoverable_and_never_calls_gener
     assert database.get_draft("legacy")["payload"]["core_explanation"] == original["core_explanation"]
     revisions=database.list_draft_quality_revisions("legacy")
     assert revisions[0]["revision_type"] == "pre_quality_review" and revisions[0]["payload"] == original
-    assert database.get_draft("legacy")["payload"]["existing_quality_review"]["status"] == "review_failed"
+    assert database.get_draft("legacy")["payload"]["quality_review_state"] == "failed"

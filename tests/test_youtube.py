@@ -95,7 +95,7 @@ def test_video_expansion_and_questions_are_drafts_with_video_usage(tmp_path, mon
     assert questions.status_code == 200
     assert questions.json()["payload"]["generation_metadata"]["youtube_import_id"] == imported["id"]
     usage = client.get(f"/api/youtube/imports/{imported['id']}").json()["usage"]["events"]
-    assert {event["operation_type"] for event in usage} == {"youtube_concept_extraction", "youtube_topic_expansion", "youtube_topic_quality_review", "metadata_relationship_resolution", "youtube_question_generation"}
+    assert {event["operation_type"] for event in usage} == {"youtube_concept_extraction", "youtube_topic_expansion", "youtube_question_generation"}
 
 
 def test_existing_video_draft_survives_queue_projection_without_payload_change(tmp_path, monkeypatch):

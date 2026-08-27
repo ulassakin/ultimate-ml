@@ -49,12 +49,6 @@ def load_library(content_root: Path | None = None) -> Library:
         if topic.get("difficulty") not in allowed_difficulties:
             errors.append(f"{topic.get('_path')}: invalid difficulty '{topic.get('difficulty')}'")
         _normalize_topic(topic)
-        for related in topic.get("related_topic_ids", []):
-            if related not in topic_map:
-                errors.append(f"{topic.get('_path')}: missing related topic '{related}'")
-        for prerequisite in topic.get("prerequisite_topic_ids", []):
-            if prerequisite not in topic_map:
-                errors.append(f"{topic.get('_path')}: missing prerequisite topic '{prerequisite}'")
         _validate_sources(topic, errors)
         _validate_generation_metadata(topic, errors)
         _validate_mathematical_foundation(topic, errors)
@@ -68,7 +62,7 @@ def load_library(content_root: Path | None = None) -> Library:
         _required(question, ["id", "topic_ids", "difficulty", "question", "direct_answer", "concept_refresher_topic_id"], errors)
         if question.get("difficulty") not in allowed_difficulties:
             errors.append(f"{question.get('_path')}: invalid difficulty '{question.get('difficulty')}'")
-        references = question.get("topic_ids", []) + question.get("related_topic_ids", [])
+        references = question.get("topic_ids", [])
         references.append(question.get("concept_refresher_topic_id"))
         for related in references:
             if related and related not in topic_map:
@@ -99,10 +93,8 @@ def _required(item: dict[str, Any], fields: list[str], errors: list[str]) -> Non
 
 
 def _normalize_topic(topic: dict[str, Any]) -> None:
-    """Keep V1 files readable while exposing V2's explicit relationship names."""
+    """Keep V1/V2 topics readable; retired graph fields are tolerated as legacy data."""
     topic.setdefault("content_version", 1)
-    topic.setdefault("related_topic_ids", topic.get("related_topics", []))
-    topic.setdefault("prerequisite_topic_ids", [])
     topic.setdefault("knowledge_type", ["conceptual"])
 
 
@@ -113,7 +105,6 @@ def _normalize_question(question: dict[str, Any]) -> None:
     question.setdefault("short_answer", question.get("direct_answer", ""))
     question.setdefault("question_type", "free_text")
     question.setdefault("question_category", "conceptual")
-    question.setdefault("related_topic_ids", [])
 
 
 def _validate_mathematical_foundation(topic: dict[str, Any], errors: list[str]) -> None:

@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "vectors-and-vector-spaces_q001",
+  "topic_ids": [
+    "vectors-and-vector-spaces"
+  ],
+  "question_type": "conceptual",
+  "question_category": "foundation",
+  "difficulty": "beginner",
+  "question": "What is a vector, in the ML sense?",
+  "direct_answer": "An ordered list of numbers representing a point or feature set.",
+  "expanded_answer": "In machine learning, a vector is usually an ordered collection of coordinates such as a feature vector or embedding. Each entry gives the value along one axis in a chosen coordinate system. Vectors let us represent examples, parameters, activations, and latent embeddings in a form that supports arithmetic.",
+  "key_points": [
+    "Ordered collection of numbers",
+    "Represents features, points, or embeddings",
+    "Dimension equals number of coordinates"
+  ],
+  "common_wrong_ideas": [
+    "A vector is only a geometric arrow",
+    "A vector must be visualizable in 2D or 3D",
+    "The entries have meaning without any chosen coordinate system"
+  ],
+  "concept_refresher_topic_id": "vectors-and-vector-spaces",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T18:05:04.216480+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

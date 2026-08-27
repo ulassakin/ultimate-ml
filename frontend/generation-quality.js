@@ -8,7 +8,7 @@ createTopic = async function(){
     const estimate=await api('/ai/topic-draft-estimate');
     const detail=document.createElement('p');
     detail.className='muted';
-    detail.textContent=estimate.operations.map(item=>`${title(item.operation_type)}: ${money(item.maximum_estimated_cost_usd)}`).join(' · ')+` · total maximum: ${money(estimate.maximum_estimated_cost_usd)}`;
+    detail.textContent=`Generate Draft authoring only · ${estimate.operations.map(item=>`${title(item.operation_type)}: ${money(item.maximum_estimated_cost_usd)}`).join(' · ')} · maximum: ${money(estimate.maximum_estimated_cost_usd)}. Quality review is an explicit separate action.`;
     usage.after(detail);
   }catch(_){/* Existing estimate remains useful if the local server is mid-upgrade. */}
 };

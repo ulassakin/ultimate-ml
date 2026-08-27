@@ -1,0 +1,32 @@
+{
+  "content_version": 2,
+  "id": "mean-variance-and-standard-deviation_q006",
+  "topic_ids": [
+    "mean-variance-and-standard-deviation"
+  ],
+  "question_type": "conceptual",
+  "question_category": "intuition",
+  "difficulty": "beginner",
+  "question": "Why is the mean often used before measuring spread?",
+  "direct_answer": "Because spread is usually defined relative to the center.",
+  "expanded_answer": "If you want to know how far values vary, you first need a reference point. The mean provides a natural center, and variance or standard deviation then describe how far the data tend to move away from that center.",
+  "key_points": [
+    "Need a reference center",
+    "Spread is relative",
+    "Mean is a natural baseline"
+  ],
+  "common_wrong_ideas": [
+    "Spread can be defined without any reference point",
+    "The center and spread are the same statistic"
+  ],
+  "concept_refresher_topic_id": "mean-variance-and-standard-deviation",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-26T18:06:08.791270+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}
