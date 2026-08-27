@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "cost-function_q004",
+  "topic_ids": [
+    "cost-function"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mechanism",
+  "difficulty": "intermediate",
+  "question": "How does the choice of cost function affect training behavior?",
+  "direct_answer": "It changes the gradients, which changes how the model updates and what errors it prioritizes.",
+  "expanded_answer": "Because optimization follows gradients of the cost, the chosen objective determines which mistakes are penalized more strongly and how learning proceeds. For example, some costs are more robust to outliers, while others strongly emphasize large errors.",
+  "key_points": [
+    "Affects gradient direction and magnitude",
+    "Changes which errors are emphasized",
+    "Can improve robustness or speed"
+  ],
+  "common_wrong_ideas": [
+    "The optimizer ignores the cost function shape",
+    "All costs produce the same updates",
+    "Only the model architecture controls training behavior"
+  ],
+  "concept_refresher_topic_id": "cost-function",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T11:58:44.045789+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

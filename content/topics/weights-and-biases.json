@@ -1,0 +1,131 @@
+{
+  "title": "Weights and biases",
+  "category": "deep_learning",
+  "difficulty": "intermediate",
+  "concept_type": "broad_concept",
+  "tags": [
+    "neural networks",
+    "parameters",
+    "optimization",
+    "linear transformation",
+    "intercepts"
+  ],
+  "one_sentence_summary": "Weights and biases are the learned numeric parameters that let a neural network scale, shift, and combine signals so it can fit data and represent useful behavior.",
+  "quick_recall": "Weights control how strongly inputs influence a neuron; biases shift the activation threshold. Together they are the model’s learned knobs.",
+  "big_picture": "A neural network is not just a fixed formula; it is a family of formulas whose shape is determined by parameters. Weights and biases are the parts of that family that training changes from data. Intuitively, weights decide what should matter and by how much, while biases decide where the model’s response starts or shifts. Without them, a network would be too rigid: it could only apply the same unshifted transformations everywhere. With them, the network can move decision boundaries, tune feature importance, and compose many simple transformations into flexible behavior.",
+  "why_it_exists": "Weights and biases exist because learning requires adjustable structure. If a model had no trainable parameters, it could not adapt to different tasks or datasets. Weights provide controllable sensitivity to each input, and biases provide the ability to offset outputs even when inputs are zero. This combination gives neural networks enough flexibility to approximate complicated relationships while still being trainable by gradient-based optimization.",
+  "intuition": "Think of a neuron like a dialed-in scoring rule. Each input contributes some amount, and the weights decide how loudly each input speaks. The bias is like a baseline shift that moves the whole score up or down. If the weighted sum is above a threshold, the neuron activates more strongly; if not, it stays quiet. In a larger network, many such dials interact, so training is essentially the process of turning thousands or millions of these knobs until the network’s outputs line up with the data.",
+  "core_explanation": "In the simplest form, a neuron computes a weighted sum of its inputs and adds a bias before applying a nonlinearity. For an input vector x and weight vector w, the pre-activation is z = w^T x + b. The value z is then passed through an activation function such as ReLU or sigmoid to produce the neuron’s output. Here, w determines how each input dimension contributes, and b sets the offset of the response. In a network, each layer has its own collection of weights and biases, and training updates them to reduce a loss function. So weights and biases are not the learning algorithm themselves; they are the parameters being learned.",
+  "mechanism": "Mechanically, each forward pass uses the current weights and biases to transform data. During backpropagation, the loss gradient tells us how changing each weight or bias would change the error. Optimization algorithms such as gradient descent then nudge these parameters in the direction that lowers the loss. A weight attached to an input feature can become positive, negative, large, small, or even near zero, depending on whether the feature helps, hurts, or is irrelevant. A bias can move the neuron’s activation pattern so that it can turn on even when inputs are modest, or remain off until inputs are sufficiently strong. Across many layers, these parameters define the entire learned computation.",
+  "ml_relevance": "In ML practice, understanding weights and biases helps explain model capacity, interpretability, and training behavior. Large weights can mean a feature has strong influence, though the exact interpretation depends on the architecture and surrounding layers. Biases can be especially important for allowing shifts in decision boundaries and activation thresholds. Initialization, regularization, and optimization all interact with these parameters, so issues like slow training, saturation, dead neurons, or overfitting often show up as consequences of how weights and biases evolve.",
+  "practical_example": "Suppose a binary classifier uses two inputs: x1 = age and x2 = income. A neuron might learn w1 = 0.8, w2 = 1.6, and b = -2.0. The model then computes z = 0.8 x1 + 1.6 x2 - 2.0. If income is high enough, the positive contribution from x2 may overcome the negative bias and push the neuron toward activation. If the bias were more negative, the same inputs would need to be larger to trigger the neuron. In image recognition, weights can learn to respond to edges, colors, or textures, while biases help place those responses at the right threshold.",
+  "mathematical_foundation": {
+    "overview": "The essential math is the affine transformation: a linear combination of inputs plus a constant offset. This is the building block behind most neural layers.",
+    "prerequisites": [],
+    "sections": [
+      {
+        "title": "Single neuron as an affine map",
+        "explanation": "A neuron takes an input vector x = (x1, ..., xd), multiplies each coordinate by a weight, sums them, and adds a bias. This produces a scalar pre-activation z that is later transformed by an activation function. The weights control direction and scaling; the bias controls translation.",
+        "equations": [
+          {
+            "latex": "z = w^T x + b",
+            "explanation": "z is the pre-activation output. w is the weight vector, x is the input vector, and b is the bias scalar. The dot product w^T x sums feature contributions, and b shifts the result. This is the basic trainable rule used in a neuron."
+          },
+          {
+            "latex": "z = \\sum_{i=1}^{d} w_i x_i + b",
+            "explanation": "This expanded form shows the same computation feature by feature. Each weight w_i scales the corresponding input x_i. The bias b adds an offset independent of the inputs."
+          }
+        ],
+        "prerequisites": []
+      },
+      {
+        "title": "From pre-activation to output",
+        "explanation": "The affine transformation is usually followed by a nonlinearity. Without the nonlinearity, stacked layers would collapse into a single linear map. The bias is especially important because it changes where the nonlinearity switches behavior.",
+        "equations": [
+          {
+            "latex": "a = \\phi(z) = \\phi(w^T x + b)",
+            "explanation": "a is the neuron’s output after applying activation function phi. The activation creates nonlinearity, while the weights and bias determine the input to that nonlinearity. This combination is what gives neural networks expressive power."
+          }
+        ],
+        "prerequisites": []
+      },
+      {
+        "title": "Layer form",
+        "explanation": "A full layer applies many neurons at once. The same idea becomes a matrix transformation plus a bias vector, which is efficient to compute and easy to differentiate.",
+        "equations": [
+          {
+            "latex": "h = \\phi(Wx + b)",
+            "explanation": "h is the vector of hidden activations, W is a weight matrix, and b is a bias vector. Each row of W corresponds to one neuron’s weights. The bias vector gives each neuron its own offset. This is the standard layer-level form used in neural networks."
+          }
+        ],
+        "prerequisites": []
+      }
+    ]
+  },
+  "common_misconceptions": [
+    "Weights are not the same as importance in a simple, universally interpretable sense; their meaning depends on the full network and preprocessing.",
+    "Biases are not just optional extras; they often matter for shifting thresholds and improving fit.",
+    "A large weight does not automatically mean a feature is globally more important in every context.",
+    "Training does not directly search for human-readable rules; it adjusts parameters to reduce loss.",
+    "Zero weights do not necessarily mean a feature is useless forever; later layers may still use transformed versions of that information."
+  ],
+  "limitations": [
+    "Weights and biases alone do not guarantee good generalization; a model can fit training data while still failing on new data.",
+    "Their interpretation becomes harder in deep networks because parameters interact across many layers and nonlinearities.",
+    "Poor initialization or optimization can make some weights learn slowly or become ineffective.",
+    "Bias terms are useful, but they do not solve issues like missing data, bad features, or biased datasets.",
+    "In very large networks, individual parameters are usually not meaningful on their own; structure emerges from many parameters working together."
+  ],
+  "mental_models": [
+    "Weights as knobs that control sensitivity",
+    "Biases as threshold shifters",
+    "A neuron as a learned scoring rule",
+    "A network as a composition of many affine transforms and nonlinearities",
+    "Training as repeatedly adjusting parameters to reduce error"
+  ],
+  "deep_dive": "Weights and biases are the smallest useful unit of trainable behavior in a neural network. Their importance comes from two roles. First, they define the model’s function class: every possible setting of these parameters corresponds to one concrete computation. Second, they are the objects that optimization can actually move. This is why people often call them the model’s learned parameters.\n\nA useful way to think about the division of labor is: weights encode relative influence, biases encode absolute shift. The weight vector says how the input should be mixed. The bias says where the neuron’s operating point sits after the mixing. If you remove the bias, the neuron must pass through the origin in input space before activation, which can make some patterns harder to represent. If you remove the weights, the neuron loses its ability to distinguish among input dimensions.\n\nIn deep networks, the role of weights and biases becomes more subtle because layers are composed. A single weight may not be directly interpretable, but the set of weights across layers can create detectors, feature hierarchies, and decision surfaces. For example, early layers might learn local patterns, later layers might combine them into higher-level features, and the final layer might map those features to classes. Biases in hidden layers help determine whether a feature is detected only when evidence is strong enough.\n\nThey also interact with common training choices. Initialization sets the starting scale of weights, which affects gradient flow. Regularization can penalize large weights to encourage simpler solutions. Some architectures use or omit biases depending on surrounding normalization layers. So weights and biases are not just passive storage; they actively shape how easily a network trains and what kind of representations it can form.\n\nFor intuition, it is helpful to compare a neuron to a weighted vote plus a baseline. Each input votes for or against activation according to its weight. The bias is the baseline that decides how much total support is needed. Training changes both the votes and the baseline until the neuron becomes useful for the task. This simple mechanism, repeated across many neurons, is one of the core reasons neural networks can learn complex patterns from data.",
+  "sources": [
+    {
+      "title": "But what is a neural network? | Deep learning chapter 1",
+      "type": "youtube",
+      "url": "https://www.youtube.com/watch?v=aircAruvnKk"
+    }
+  ],
+  "source_provenance": {
+    "source_derived": {
+      "kind": "youtube",
+      "video_id": "aircAruvnKk",
+      "title": "But what is a neural network? | Deep learning chapter 1",
+      "channel": "3Blue1Brown",
+      "attribution": "YouTube transcript retrieved locally",
+      "concept": "Weights and biases",
+      "source_evidence_summary": "Connections carry weights, each neuron has a bias, and these many numeric parameters are the knobs the network learns.",
+      "timestamp_seconds": [
+        549.0,
+        681.0,
+        738.0,
+        751.0
+      ],
+      "video_url": "https://www.youtube.com/watch?v=aircAruvnKk"
+    },
+    "ai_expanded": "The educational explanation was AI-expanded from the selected source concept and requires human review."
+  },
+  "quality_review_state": "not_run",
+  "quality_status": "not_reviewed",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "topic-authoring-v4",
+    "generated_at": "2026-08-27T11:23:54.300624+00:00",
+    "user_focus": "Build a deeper ML learning topic from this source concept: Core to understanding how neural networks store learned behavior and how parameter tuning drives model performance..",
+    "review_state": "approved",
+    "youtube_import_id": "3385813b-f750-4fa7-964f-378fd7a9350c",
+    "youtube_concept": "Weights and biases"
+  },
+  "id": "weights-and-biases",
+  "content_version": 2,
+  "knowledge_type": [
+    "conceptual"
+  ]
+}

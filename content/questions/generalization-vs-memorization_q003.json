@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "generalization-vs-memorization_q003",
+  "topic_ids": [
+    "generalization-vs-memorization"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mechanism",
+  "difficulty": "intermediate",
+  "question": "How can a model memorize some examples and still generalize well overall?",
+  "direct_answer": "It can learn the main pattern from the data while also storing a few rare exceptions.",
+  "expanded_answer": "Memorization and generalization can coexist because real datasets often contain both regular structure and unusual edge cases. A model may capture the dominant pattern that explains most samples, which supports generalization, while also remembering rare or difficult training instances. The presence of some memorized details does not automatically mean the model fails to generalize.",
+  "key_points": [
+    "Models can learn both broad structure and rare exceptions",
+    "Memorization of a few cases does not imply total failure",
+    "Generalization is judged by performance on unseen data",
+    "Capacity makes mixed behavior more likely"
+  ],
+  "common_wrong_ideas": [
+    "Thinking a model must be purely one or the other",
+    "Assuming any memorization ruins generalization"
+  ],
+  "concept_refresher_topic_id": "generalization-vs-memorization",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T11:59:38.012659+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

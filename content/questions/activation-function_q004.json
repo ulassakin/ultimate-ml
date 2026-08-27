@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "activation-function_q004",
+  "topic_ids": [
+    "activation-function"
+  ],
+  "question_type": "conceptual",
+  "question_category": "comparison",
+  "difficulty": "intermediate",
+  "question": "How do sigmoid and tanh differ conceptually as activation functions?",
+  "direct_answer": "Sigmoid outputs values in (0,1), while tanh outputs values in (-1,1) and is zero-centered.",
+  "expanded_answer": "Sigmoid is often used when you want outputs that look like probabilities or gates. Tanh is symmetric around zero, which can make optimization behave more naturally in hidden layers. Both can saturate, which can reduce gradient flow for large-magnitude inputs.",
+  "key_points": [
+    "Sigmoid is bounded above zero",
+    "Tanh is zero-centered",
+    "Both can saturate"
+  ],
+  "common_wrong_ideas": [
+    "Tanh is just a shifted sigmoid with no practical difference",
+    "Sigmoid is always better for hidden layers",
+    "Bounded outputs automatically mean better gradients"
+  ],
+  "concept_refresher_topic_id": "activation-function",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T11:41:11.293079+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

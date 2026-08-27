@@ -1,0 +1,32 @@
+{
+  "content_version": 2,
+  "id": "principal-component-analysis-pca_q005",
+  "topic_ids": [
+    "principal-component-analysis-pca"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mechanism",
+  "difficulty": "intermediate",
+  "question": "What does the eigenvalue mean in PCA?",
+  "direct_answer": "It measures how much variance lies along that principal direction.",
+  "expanded_answer": "A larger eigenvalue means the data are more spread out along the corresponding eigenvector. PCA sorts components by decreasing eigenvalue so the first components explain the most variance.",
+  "key_points": [
+    "Eigenvalue = variance along direction",
+    "Higher means more important component",
+    "Used to rank principal components"
+  ],
+  "common_wrong_ideas": [
+    "Eigenvalues measure label importance",
+    "A small eigenvalue means the direction is always useless"
+  ],
+  "concept_refresher_topic_id": "principal-component-analysis-pca",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T07:51:18.340699+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

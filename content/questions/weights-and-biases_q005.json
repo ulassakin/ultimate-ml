@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "weights-and-biases_q005",
+  "topic_ids": [
+    "weights-and-biases"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mechanism",
+  "difficulty": "intermediate",
+  "question": "How do weights and biases relate to learning in a neural network?",
+  "direct_answer": "Training updates them to reduce the loss.",
+  "expanded_answer": "The learning algorithm computes gradients of the loss with respect to weights and biases, then adjusts them so predictions improve. So weights and biases are the learned quantities, while gradient descent or Adam is the method used to learn them.",
+  "key_points": [
+    "Training changes parameters based on loss",
+    "Gradients tell how to update them",
+    "The optimizer is separate from the parameters"
+  ],
+  "common_wrong_ideas": [
+    "Weights and biases are the optimizer",
+    "They are updated randomly",
+    "Learning happens without changing parameters"
+  ],
+  "concept_refresher_topic_id": "weights-and-biases",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T11:35:04.269510+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

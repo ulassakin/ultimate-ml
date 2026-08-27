@@ -1,0 +1,34 @@
+{
+  "content_version": 2,
+  "id": "feature-scaling-and-standardization_q004",
+  "topic_ids": [
+    "feature-scaling-and-standardization"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mathematical_intuition",
+  "difficulty": "beginner",
+  "question": "What does standardization do mathematically, and what is the intuition behind it?",
+  "direct_answer": "It subtracts the mean and divides by the standard deviation, so each feature is measured in units of its own spread.",
+  "expanded_answer": "Standardization transforms a value by removing the feature’s average offset and then rescaling by typical variation. Subtracting the mean recenters the feature around zero. Dividing by the standard deviation makes a one-unit change mean “one standard deviation” rather than one raw unit. This gives features a common scale, which is especially helpful when the model depends on relative variation rather than raw units.",
+  "key_points": [
+    "Center by subtracting the mean",
+    "Rescale by dividing by standard deviation",
+    "Produces comparable units across features",
+    "Makes spread more directly comparable"
+  ],
+  "common_wrong_ideas": [
+    "Standardization makes all features identical",
+    "Standardization removes all outliers",
+    "Standardization always makes the distribution Gaussian"
+  ],
+  "concept_refresher_topic_id": "feature-scaling-and-standardization",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T07:47:33.572266+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

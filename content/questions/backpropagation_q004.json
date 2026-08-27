@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "backpropagation_q004",
+  "topic_ids": [
+    "backpropagation"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mathematical_intuition",
+  "difficulty": "intermediate",
+  "question": "Why is the chain rule central to backpropagation?",
+  "direct_answer": "Because the loss depends on parameters through many nested operations, and the chain rule lets us combine those local derivatives into a global gradient.",
+  "expanded_answer": "A neural network is a composition of functions. The chain rule converts how each small piece responds to its inputs into how the overall loss responds to a parameter. Backprop is essentially an efficient way to apply the chain rule across the whole network.",
+  "key_points": [
+    "Neural networks are composed functions",
+    "Local derivatives combine into total derivatives",
+    "Backprop is reverse-mode chain rule"
+  ],
+  "common_wrong_ideas": [
+    "The chain rule is optional in neural networks",
+    "Backprop estimates gradients without calculus",
+    "Only nonlinear layers require the chain rule"
+  ],
+  "concept_refresher_topic_id": "backpropagation",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T11:56:15.256276+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

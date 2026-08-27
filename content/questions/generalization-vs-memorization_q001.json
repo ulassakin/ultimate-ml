@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "generalization-vs-memorization_q001",
+  "topic_ids": [
+    "generalization-vs-memorization"
+  ],
+  "question_type": "conceptual",
+  "question_category": "foundation",
+  "difficulty": "beginner",
+  "question": "What is the core difference between generalization and memorization in machine learning?",
+  "direct_answer": "Generalization means performing well on new data; memorization means relying on specific training examples or quirks.",
+  "expanded_answer": "Generalization is about learning structure that transfers beyond the training set to fresh samples from the same data-generating process. Memorization is about fitting the training set very closely, including idiosyncrasies, noise, or rare examples. Real models often do both to some degree, so the key question is whether success comes mostly from transferable patterns or from remembering seen data.",
+  "key_points": [
+    "Generalization concerns unseen data from the same distribution",
+    "Memorization concerns dependence on specific training examples or noise",
+    "They are not strict opposites; a model can do both",
+    "The important issue is transferable structure"
+  ],
+  "common_wrong_ideas": [
+    "Thinking low training error automatically means good generalization",
+    "Assuming memorization and generalization cannot coexist"
+  ],
+  "concept_refresher_topic_id": "generalization-vs-memorization",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T11:59:38.012659+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "activation-function_q005",
+  "topic_ids": [
+    "activation-function"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mechanism",
+  "difficulty": "intermediate",
+  "question": "Why is ReLU often preferred in hidden layers?",
+  "direct_answer": "It is simple and does not saturate on the positive side, which often helps gradients flow.",
+  "expanded_answer": "ReLU keeps positive inputs unchanged and clips negative inputs to zero. This makes computation cheap and often avoids the severe gradient shrinkage seen in saturating activations. Its tradeoff is that some units can become inactive for negative inputs.",
+  "key_points": [
+    "Simple piecewise behavior",
+    "Better positive-side gradient flow",
+    "Can create inactive units for negative inputs"
+  ],
+  "common_wrong_ideas": [
+    "ReLU is bounded like sigmoid",
+    "ReLU guarantees all units stay active",
+    "ReLU is always better in every layer"
+  ],
+  "concept_refresher_topic_id": "activation-function",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T11:41:11.293079+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

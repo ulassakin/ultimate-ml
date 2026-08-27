@@ -2,7 +2,7 @@
 const existingQualityLabel=status=>({not_run:'Not run',running:'Reviewing',reviewed:'Reviewed',failed:'Review failed'}[status]||title(status));
 const draftLifecycleBusy=new Set();
 let draftLifecycleNotice='';
-const lifecycleLabel=status=>({awaiting_quality_review:'Awaiting quality review',running:'Quality review running',incomplete:'Incomplete / needs attention',failed:'Failed',ready_for_review:'Ready for review',quality_reviewed:'Quality reviewed'}[status]||title(status));
+const lifecycleLabel=status=>({awaiting_quality_review:'Awaiting quality review',running:'Quality review running',review_running:'Quality review running · approval available',review_failed:'Quality review failed · approval available',ready_for_approval:'Ready to approve',incomplete:'Incomplete / needs attention',failed:'Failed',ready_for_review:'Ready for review',quality_reviewed:'Quality reviewed'}[status]||title(status));
 async function runDraftLifecycleAction(button, work){
   const id=button.dataset.id;
   if(draftLifecycleBusy.has(id))return;

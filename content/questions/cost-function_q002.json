@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "cost-function_q002",
+  "topic_ids": [
+    "cost-function"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mechanism",
+  "difficulty": "beginner",
+  "question": "Why does the cost function matter beyond just measuring error?",
+  "direct_answer": "Because it determines the learning signal and what kinds of solutions the model prefers.",
+  "expanded_answer": "The cost function is not just a score; it defines the gradients used for optimization. Different cost functions can make training more sensitive to outliers, favor different tradeoffs, and lead to different inductive biases even with the same architecture.",
+  "key_points": [
+    "Shapes gradients",
+    "Influences optimization behavior",
+    "Affects inductive bias and solution quality"
+  ],
+  "common_wrong_ideas": [
+    "Any loss works equally well for any task",
+    "The architecture alone determines what the model learns",
+    "The cost function only matters at the end of training"
+  ],
+  "concept_refresher_topic_id": "cost-function",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T11:58:44.045789+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

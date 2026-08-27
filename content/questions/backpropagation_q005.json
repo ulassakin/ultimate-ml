@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "backpropagation_q005",
+  "topic_ids": [
+    "backpropagation"
+  ],
+  "question_type": "conceptual",
+  "question_category": "comparison",
+  "difficulty": "intermediate",
+  "question": "How is backpropagation related to gradient descent?",
+  "direct_answer": "Backprop computes the gradients, and gradient descent uses those gradients to update the parameters.",
+  "expanded_answer": "Backpropagation is the derivative-calculation step. Gradient descent is the optimization step that subtracts a learning-rate-scaled gradient from each parameter. They work together, but they are not the same algorithm.",
+  "key_points": [
+    "Backprop = compute gradients",
+    "Gradient descent = apply updates",
+    "Training typically uses both"
+  ],
+  "common_wrong_ideas": [
+    "Backprop and gradient descent are synonyms",
+    "Gradient descent can work without gradients",
+    "Backprop itself chooses the learning rate"
+  ],
+  "concept_refresher_topic_id": "backpropagation",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T11:56:15.256276+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

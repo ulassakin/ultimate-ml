@@ -1,0 +1,135 @@
+{
+  "title": "Cost function",
+  "category": "deep_learning",
+  "difficulty": "intermediate",
+  "concept_type": "loss_or_objective",
+  "tags": [
+    "loss function",
+    "objective",
+    "training",
+    "optimization",
+    "gradient descent",
+    "neural networks"
+  ],
+  "one_sentence_summary": "A cost function is the quantity a learning algorithm tries to minimize so the model’s predictions become more accurate on the training data.",
+  "quick_recall": "Think of the cost function as the model’s scoreboard: lower means the current parameters fit the training data better.",
+  "big_picture": "Training a model is usually turned into an optimization problem. Instead of directly asking “is the model good?”, we define a numerical objective that measures how bad its predictions are, then search for parameters that make that number small. In deep learning, the cost function connects the abstract goal of learning to concrete parameter updates such as gradient descent.",
+  "why_it_exists": "We need a single scalar target because learning algorithms require a clear signal for improvement. If a model makes many kinds of mistakes, the cost function converts all of them into one number that can be minimized systematically. Without such an objective, there is no principled way to decide whether one set of parameters is better than another during training.",
+  "intuition": "Imagine adjusting a machine by hand while watching one dial that summarizes all the errors. If the dial goes down, you are moving in a better direction; if it goes up, you are moving worse. A cost function plays that dial-like role. It turns prediction errors into a smooth landscape over parameter space so optimization methods can follow downhill directions.",
+  "core_explanation": "A cost function maps the model’s predictions and the true targets to a real number representing error or loss. For a single example, this is often called a loss; for a dataset, the cost is typically the average or sum of per-example losses. Training then means finding parameters that minimize this objective.\n\nIn neural networks, the cost function is not just a reporting tool. It defines what “better” means, shapes the gradients used for learning, and strongly influences the kinds of solutions the model can find. Different cost functions can lead to different inductive biases, different sensitivity to outliers, and different training behavior even with the same architecture.",
+  "mechanism": "1. The model produces predictions from inputs.\n2. The cost function compares predictions to targets.\n3. The resulting scalar measures how wrong the model is.\n4. Optimization computes gradients of that scalar with respect to model parameters.\n5. Parameters are updated to reduce the cost.\n\nThis creates a feedback loop: predictions determine cost, cost determines gradients, and gradients change the parameters that generate future predictions.",
+  "ml_relevance": "Cost functions are central to almost every supervised learning setup and many self-supervised or reinforcement learning setups as well. In deep learning, choosing the objective is often as important as choosing the architecture. For example, regression commonly uses squared error, classification often uses cross-entropy, and representation learning may use contrastive objectives. The objective determines what the model is encouraged to care about.",
+  "practical_example": "Suppose a regression model predicts house prices. If the true price is 300 and the model predicts 280, the error is 20. A squared-error cost would contribute 20^2 = 400 for that example. Across many houses, the average squared error gives a single value the optimizer tries to reduce. If the model later predicts 295 instead, the cost drops, so training treats that as improvement.\n\nFor a classifier, the cost might instead penalize assigning low probability to the correct class. A prediction that says “cat: 0.90, dog: 0.10” for a cat image gets a much smaller cost than “cat: 0.20, dog: 0.80.”",
+  "mathematical_foundation": {
+    "overview": "The mathematical role of a cost function is to define an objective surface over parameters. Optimization methods try to move downhill on this surface. The details matter because the shape of the surface affects gradient size, convergence speed, robustness to outliers, and the kind of solution learned.",
+    "prerequisites": [],
+    "sections": [
+      {
+        "title": "From per-example loss to dataset cost",
+        "explanation": "A model with parameters \\(\\theta\\) produces a prediction \\(\\hat{y}_i = f(x_i;\\theta)\\) for input \\(x_i\\). A loss function \\(\\ell(\\hat{y}_i, y_i)\\) measures error for one example. The cost over a dataset of size \\(N\\) is commonly the average of these losses. Averaging keeps the scale stable when dataset size changes and makes the objective easier to compare across training runs.",
+        "equations": [
+          {
+            "latex": "J(\\theta)=\\frac{1}{N}\\sum_{i=1}^{N} \\ell\\big(f(x_i;\\theta), y_i\\big)",
+            "explanation": "\\(J(\\theta)\\) is the cost function, a scalar depending on model parameters \\(\\theta\\). \\(N\\) is the number of training examples. \\(x_i\\) is the input, \\(y_i\\) is the target, \\(f(x_i;\\theta)\\) is the model prediction, and \\(\\ell\\) is the per-example loss. The average makes the objective represent typical performance on the training set rather than raw dataset size."
+          }
+        ],
+        "prerequisites": []
+      },
+      {
+        "title": "Squared error as a common example",
+        "explanation": "For regression, a typical choice is squared error. It penalizes large mistakes more heavily than small ones and is differentiable, which is useful for gradient-based optimization. Squaring also makes the objective smooth and gives a strong penalty when predictions are far from the target.",
+        "equations": [
+          {
+            "latex": "\\ell(\\hat{y}, y)=(\\hat{y}-y)^2",
+            "explanation": "\\(\\hat{y}\\) is the predicted value and \\(y\\) is the true value. The difference is the prediction error. Squaring makes all errors nonnegative and amplifies large mistakes. This is often helpful when big errors should be strongly discouraged, but it can make training sensitive to outliers."
+          },
+          {
+            "latex": "J(\\theta)=\\frac{1}{N}\\sum_{i=1}^{N}(f(x_i;\\theta)-y_i)^2",
+            "explanation": "This is the dataset-level squared-error cost. It measures the average squared gap between predictions and targets. Minimizing it encourages the model to place predictions close to the true values across the training set."
+          }
+        ],
+        "prerequisites": []
+      },
+      {
+        "title": "Why gradients matter",
+        "explanation": "Optimization uses derivatives of the cost with respect to parameters. The gradient points in the direction of greatest increase, so moving in the opposite direction reduces the cost locally. This is the mathematical bridge from an abstract objective to concrete learning updates.",
+        "equations": [
+          {
+            "latex": "\\theta \\leftarrow \\theta - \\eta \\nabla_\\theta J(\\theta)",
+            "explanation": "\\(\\theta\\) denotes the model parameters, \\(\\eta\\) is the learning rate, and \\(\\nabla_\\theta J(\\theta)\\) is the gradient of the cost with respect to those parameters. The update subtracts a fraction of the gradient to move downhill. A larger \\(\\eta\\) makes bigger steps; too large can overshoot, too small can learn slowly."
+          }
+        ],
+        "prerequisites": []
+      }
+    ]
+  },
+  "common_misconceptions": [
+    "The cost function is not the same thing as accuracy; accuracy is a metric, while the cost is the objective optimized during training.",
+    "Lower training cost does not automatically mean better real-world performance; the model can overfit.",
+    "The cost function does not have to be squared error. Different tasks use different objectives.",
+    "A model can have a low average cost while still making a few large mistakes, depending on the loss shape.",
+    "The cost function is not the model itself; it is the criterion used to train the model."
+  ],
+  "limitations": [
+    "A cost function only captures what you explicitly encode, so it may miss properties you care about but did not include in the objective.",
+    "Poorly chosen objectives can encourage undesirable behavior, such as overconfidence or sensitivity to outliers.",
+    "Some objectives are hard to optimize because their landscapes are nonconvex or have flat regions.",
+    "Minimizing the training objective does not guarantee the objective matches the true downstream goal.",
+    "Different cost functions trade off robustness, smoothness, interpretability, and calibration in different ways."
+  ],
+  "mental_models": [
+    "A cost function is a scoreboard for training.",
+    "It is a landscape over parameters, and learning is downhill navigation.",
+    "The loss is the local penalty; the cost is the aggregated penalty over data.",
+    "Optimization does not magically know the right answer; it only knows how to reduce the chosen objective.",
+    "The objective defines the behavior you are teaching the model to prefer."
+  ],
+  "deep_dive": "The most important thing to understand about a cost function is that it is not merely a bookkeeping device. It is the formal statement of what the model is supposed to optimize. Once you choose it, you are shaping the training signal, the gradient geometry, and often the final behavior of the model.\n\nA useful distinction is between per-example loss and aggregate cost. The loss says how bad one prediction is. The cost says how bad the model is overall on a dataset or minibatch. In practice, training often minimizes a minibatch estimate of the full-dataset cost because computing the exact full average at every step is expensive. That minibatch estimate is noisy, but usually good enough to guide learning efficiently.\n\nThe shape of the cost matters a lot. Squared error strongly punishes large mistakes, which can be desirable in regression but problematic if outliers should not dominate. Cross-entropy is usually better for classification because it encourages calibrated probabilities and gives useful gradients when the model is very wrong. In representation learning, the cost may compare pairs or groups of examples rather than predicting a label directly, which changes what “similarity” means in the learned embedding space.\n\nAnother subtle point is scale. If the cost is the sum over examples, then its magnitude grows with dataset size. If it is the average, its scale is more stable. That matters because learning rates, regularization strengths, and gradient magnitudes interact with this scale. For this reason, many implementations use averaged losses so that hyperparameters are less dependent on batch size.\n\nFinally, minimizing the training cost is only part of the story. The objective must align with the evaluation metric and the real task. If they are misaligned, the model may optimize the wrong thing very efficiently. Good ML practice is therefore not just “pick a loss,” but “pick a loss that encourages the behavior you want, under the constraints you actually have.”",
+  "sources": [
+    {
+      "title": "Gradient descent, how neural networks learn | Deep Learning Chapter 2",
+      "type": "youtube",
+      "url": "https://www.youtube.com/watch?v=IHZwWFHWa-w"
+    }
+  ],
+  "source_provenance": {
+    "source_derived": {
+      "kind": "youtube",
+      "video_id": "IHZwWFHWa-w",
+      "title": "Gradient descent, how neural networks learn | Deep Learning Chapter 2",
+      "channel": "3Blue1Brown",
+      "attribution": "YouTube transcript retrieved locally",
+      "concept": "Cost function",
+      "source_evidence_summary": "Defined as a measure of how bad the network is, based on squared differences between desired and actual outputs averaged over the training set.",
+      "timestamp_seconds": [
+        217,
+        241,
+        259,
+        267,
+        293,
+        302,
+        754
+      ],
+      "video_url": "https://www.youtube.com/watch?v=IHZwWFHWa-w"
+    },
+    "ai_expanded": "The educational explanation was AI-expanded from the selected source concept and requires human review."
+  },
+  "quality_review_state": "not_run",
+  "quality_status": "not_reviewed",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "topic-authoring-v4",
+    "generated_at": "2026-08-27T11:49:20.722620+00:00",
+    "user_focus": "Build a deeper ML learning topic from this source concept: Training objective that learning algorithms minimize to improve model performance..",
+    "review_state": "approved",
+    "youtube_import_id": "dd57bcf4-38ac-4ebb-9f85-651aab6586d3",
+    "youtube_concept": "Cost function"
+  },
+  "id": "cost-function",
+  "content_version": 2,
+  "knowledge_type": [
+    "conceptual"
+  ]
+}

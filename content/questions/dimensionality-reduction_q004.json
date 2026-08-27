@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "dimensionality-reduction_q004",
+  "topic_ids": [
+    "dimensionality-reduction"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mechanism",
+  "difficulty": "intermediate",
+  "question": "What is PCA doing conceptually?",
+  "direct_answer": "It finds directions of largest variance and projects data onto the top ones.",
+  "expanded_answer": "PCA is a linear dimensionality reduction method that identifies directions in the data where the spread is greatest. Keeping only the top principal components gives a compact approximation that often captures the main structure of the dataset efficiently.",
+  "key_points": [
+    "Linear method",
+    "Finds high-variance directions",
+    "Projects onto a smaller set of components"
+  ],
+  "common_wrong_ideas": [
+    "PCA chooses features based on labels",
+    "PCA always preserves pairwise distances",
+    "PCA is a nonlinear visualization method"
+  ],
+  "concept_refresher_topic_id": "dimensionality-reduction",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T10:05:47.493182+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

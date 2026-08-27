@@ -1,0 +1,34 @@
+{
+  "content_version": 2,
+  "id": "neural-network_q006",
+  "topic_ids": [
+    "neural-network"
+  ],
+  "question_type": "conceptual",
+  "question_category": "intuition",
+  "difficulty": "intermediate",
+  "question": "Why can a neural network learn internal representations instead of just memorizing outputs?",
+  "direct_answer": "Because hidden layers can transform raw inputs into useful intermediate features.",
+  "expanded_answer": "As parameters are optimized, earlier layers often organize information into representations that make the final task easier. These learned features can capture patterns such as edges, shapes, or higher-level abstractions depending on the task and data.",
+  "key_points": [
+    "Hidden layers create features",
+    "Intermediate representations",
+    "Task-relevant abstractions",
+    "Not just direct memorization"
+  ],
+  "common_wrong_ideas": [
+    "Only the output layer matters",
+    "Representations are manually designed",
+    "Neural networks cannot reuse features"
+  ],
+  "concept_refresher_topic_id": "neural-network",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T11:39:48.859306+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

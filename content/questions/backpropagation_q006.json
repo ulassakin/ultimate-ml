@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "backpropagation_q006",
+  "topic_ids": [
+    "backpropagation"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mechanism",
+  "difficulty": "advanced",
+  "question": "Why is backpropagation often described as reverse-mode automatic differentiation?",
+  "direct_answer": "Because it computes derivatives of one scalar output with respect to many inputs by propagating sensitivities backward through a computation graph.",
+  "expanded_answer": "In neural network training, the loss is usually a single scalar, while the model has many parameters. Reverse-mode autodiff is ideal for this setting because it efficiently computes gradients of that scalar with respect to many variables in one backward sweep, which is exactly what backprop does.",
+  "key_points": [
+    "Scalar loss, many parameters",
+    "Backward sweep through computation graph",
+    "Efficient for neural network training"
+  ],
+  "common_wrong_ideas": [
+    "Reverse-mode means the network runs backward at inference time",
+    "Automatic differentiation is the same as numerical finite differences",
+    "Backprop only applies to fully connected layers"
+  ],
+  "concept_refresher_topic_id": "backpropagation",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T11:56:15.256276+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

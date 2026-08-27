@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "generalization-vs-memorization_q002",
+  "topic_ids": [
+    "generalization-vs-memorization"
+  ],
+  "question_type": "conceptual",
+  "question_category": "intuition",
+  "difficulty": "beginner",
+  "question": "Why doesn’t a low training error by itself prove that a model has learned something useful?",
+  "direct_answer": "Because a model can fit the training set well by memorizing noise or quirks.",
+  "expanded_answer": "A model can achieve very low training loss simply by matching the examples it has seen, even if it has not learned the underlying pattern that will hold for new data. This is especially possible in high-capacity models, which can sometimes fit randomized labels. So training performance alone is not enough; we need evidence that the learned function transfers to unseen samples.",
+  "key_points": [
+    "Training error measures fit to seen data only",
+    "High-capacity models can fit noise or random labels",
+    "Useful learning requires transfer to new data",
+    "Generalization is the real test of learned structure"
+  ],
+  "common_wrong_ideas": [
+    "Assuming perfect training fit implies understanding",
+    "Equating optimization success with generalization"
+  ],
+  "concept_refresher_topic_id": "generalization-vs-memorization",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T11:59:38.012659+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

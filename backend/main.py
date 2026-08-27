@@ -21,7 +21,9 @@ from .ai.prompts import (QUESTION_INSTRUCTIONS, QUESTION_PROMPT_VERSION, TOPIC_I
                          TOPIC_QUALITY_REVIEW_INSTRUCTIONS, TOPIC_QUALITY_REVIEW_PROMPT_VERSION,
                          YOUTUBE_CONCEPT_INSTRUCTIONS, YOUTUBE_CONCEPT_PROMPT_VERSION)
 from .ai.schemas import QuestionDraftBatch, QuestionDraftItem, RegeneratedSection, TopicDraft, TopicQualityReview
-from .ai.topic_quality import LEGACY_RELATIONSHIP_FIELDS, canonical_category, final_quality_report, normalize_topic, taxonomy_context
+from .ai.topic_quality import (LEGACY_RELATIONSHIP_FIELDS, actual_topic_changes, canonical_category,
+                               compact_quality_review_candidate, final_payload_issues, final_quality_report,
+                               normalize_topic, taxonomy_context, validate_report_changes)
 from .domain import Difficulty, ExplanationDepth
 from .ai.service import AIService, AIUnavailableError, BudgetExceededError, StructuredOutputError
 from .ai.structured import strict_response_schema
@@ -174,15 +176,24 @@ def _draft_lifecycle_status(draft: dict) -> str:
         return draft["state"]
     payload = draft.get("payload", {})
     review_state = payload.get("quality_review_state")
-    if review_state in {"not_run", "running", "failed"}:
-        return "awaiting_quality_review" if review_state == "not_run" else review_state
-    if payload.get("quality_status") == "needs_attention":
+    # Quality review is an explicit, optional safeguard.  Its lifecycle state
+    # must never make a locally valid draft look unapprovable on its own.
+    if review_state == "reviewed" and payload.get("quality_status") == "needs_attention" and (
+        payload.get("quality_report", {}).get("blocking_issues_remaining") or []
+    ):
         return "incomplete"
     try:
-        TopicDraft.model_validate(payload)
+        if final_payload_issues(payload):
+            return "incomplete"
     except Exception:
         return "incomplete"
-    return "quality_reviewed" if review_state == "reviewed" else "awaiting_quality_review"
+    if review_state == "reviewed":
+        return "quality_reviewed"
+    if review_state == "running":
+        return "review_running"
+    if review_state == "failed":
+        return "review_failed"
+    return "ready_for_approval"
 
 
 def _with_draft_lifecycle_action(draft_id: str):
@@ -357,12 +368,17 @@ def _canonicalize_topic_category(payload: dict) -> dict:
 
 
 def _reconcile_taxonomy_quality_report(payload: dict) -> dict:
-    """Remove only taxonomy blockers made stale by deterministic normalization."""
+    """Locally reconcile legacy review reports without another provider call."""
     reconciled = _canonicalize_topic_category(payload)
     report = reconciled.get("quality_report")
     if not isinstance(report, dict):
         return reconciled
-    reconciled["quality_report"] = final_quality_report(report, [], [], payload=reconciled)
+    final_issues = final_payload_issues(reconciled)
+    report = final_quality_report(report, [], final_issues, payload=reconciled)
+    report, consistency_blocking, retained_claims = validate_report_changes(
+        report, report.get("reviewer_change_claims", []), report.get("changes", []), payload=reconciled, final_issues=final_issues)
+    report["reviewer_change_claims"] = retained_claims
+    reconciled["quality_report"] = final_quality_report(report, [], consistency_blocking, payload=reconciled)
     if reconciled.get("quality_review_state") == "reviewed":
         reconciled["quality_status"] = "needs_attention" if reconciled["quality_report"].get("blocking_issues_remaining") else "ready"
     return reconciled
@@ -423,7 +439,15 @@ def _ensure_draft_quality_state(draft: dict) -> dict:
 
 def _draft_public_quality(draft: dict) -> dict:
     draft = _ensure_draft_quality_state(draft)
-    return {**draft, "quality_review": _draft_quality_state(draft["payload"])}
+    if draft.get("draft_type") == "topic" and draft.get("state") == "draft":
+        reconciled = _reconcile_taxonomy_quality_report(draft["payload"])
+        if reconciled != draft["payload"]:
+            # This is a deterministic report/status migration only: it never
+            # changes authored content, calls a provider, or creates usage.
+            database.update_draft(draft["id"], reconciled)
+            draft = database.get_draft(draft["id"])
+    return {**draft, "quality_review": _draft_quality_state(draft["payload"]),
+            "quality_review_recommendation": _quality_review_recommendation(draft["payload"])}
 
 
 def _existing_review_source_context(payload: dict) -> dict | None:
@@ -457,8 +481,12 @@ def _run_existing_draft_quality_review(draft: dict, *, force: bool = False) -> d
     reviewing = {**original, "quality_review_state": "running", "quality_review_source_payload_hash": source_hash,
         "quality_review_prompt_version": reviewer_version, "quality_review_started_at": datetime.now(timezone.utc).isoformat()}
     database.update_draft(draft["id"], reviewing)
-    request = {"mode": "existing_paid_draft_quality_review", "instruction": "Review this existing full draft directly. Do not generate a new topic, questions, or IDs.",
-        "taxonomy": taxonomy_context(), "candidate": original,
+    # Send only the current authoring payload and compact constraints. Historical
+    # revisions, draft lifecycle data, usage/cost records, and retired graph
+    # fields cannot improve a focused correctness review and waste tokens.
+    review_candidate = compact_quality_review_candidate(original)
+    request = {"mode": "focused_existing_draft_quality_review", "instruction": "Make the minimum material corrections only; do not generate a new topic, questions, IDs, or stylistic rewrite.",
+        "taxonomy": taxonomy_context(), "candidate": review_candidate,
         "source_context": _existing_review_source_context(original) or "No source context supplied."}
     try:
         reviewed, result, cost = ai_service.generate(operation_type=review_operation,
@@ -484,7 +512,14 @@ def _run_existing_draft_quality_review(draft: dict, *, force: bool = False) -> d
     corrected, warnings, blocking = normalize_topic(corrected, requested_title=original.get("title", draft["title"]),
         assigned_topic_id=_slug(original.get("title", draft["title"])),
         source_context=_existing_review_source_context(original))
-    report = final_quality_report(reviewed.quality_report.model_dump(), warnings, blocking, payload=corrected)
+    actual_changes = actual_topic_changes(original, corrected)
+    final_issues = blocking + final_payload_issues(corrected)
+    report = final_quality_report(reviewed.quality_report.model_dump(), warnings, final_issues, payload=corrected)
+    report, consistency_blocking, retained_claims = validate_report_changes(
+        report, [item.model_dump() for item in reviewed.changes], actual_changes, payload=corrected, final_issues=final_issues)
+    report["changes"] = actual_changes
+    report["reviewer_change_claims"] = retained_claims
+    report = final_quality_report(report, [], consistency_blocking, payload=corrected)
     status = "needs_attention" if report["blocking_issues_remaining"] else "ready"
     corrected["quality_report"] = report
     corrected["quality_status"] = status
@@ -505,20 +540,80 @@ def _run_existing_draft_quality_review(draft: dict, *, force: bool = False) -> d
                   "maximum_estimated_cost_usd": preflight["maximum_estimated_cost_usd"]}, "budget": ai_service.usage_summary()}
 
 
+def _quality_review_recommendation(payload: dict) -> dict:
+    """A transparent local heuristic; it never spends budget or blocks approval."""
+    reasons: list[str] = []
+    score = 0
+    concept_type = str(payload.get("concept_type", ""))
+    if concept_type in {"named_method", "architecture", "loss_or_objective", "training_mechanism"}:
+        score += 2
+        reasons.append("named method, architecture, objective, or training mechanism")
+    elif concept_type == "mathematical_concept":
+        score += 2
+        reasons.append("mathematical concept")
+
+    foundation = payload.get("mathematical_foundation")
+    sections = foundation.get("sections", []) if isinstance(foundation, dict) else []
+    equation_count = sum(len(section.get("equations", [])) for section in sections if isinstance(section, dict))
+    foundation_text = " ".join(str(section.get("explanation", "")) for section in sections if isinstance(section, dict))
+    if equation_count >= 2:
+        score += 2
+        reasons.append("multiple equations")
+    elif equation_count:
+        score += 1
+        reasons.append("equations")
+    if len(foundation_text) >= 900:
+        score += 1
+        reasons.append("long mathematical foundation")
+
+    provenance = payload.get("source_provenance")
+    sources = payload.get("sources")
+    if isinstance(provenance, dict) and provenance.get("source_derived"):
+        score += 1
+        reasons.append("source-derived claims")
+    elif isinstance(sources, list) and any(isinstance(source, dict) and source.get("type") in {"paper", "youtube", "video"} for source in sources):
+        score += 1
+        reasons.append("paper or video source claims")
+
+    # Deep technical prose is a useful signal even where the model did not add
+    # equations (for example, a complex named architecture).
+    technical_text = " ".join(str(payload.get(key, "")) for key in ("mechanism", "deep_dive", "core_explanation"))
+    if len(technical_text) >= 2200:
+        score += 1
+        reasons.append("long technical explanation")
+    return {"level": "high" if score >= 3 else "low", "recommended": score >= 3,
+            "reasons": list(dict.fromkeys(reasons)), "local_only": True}
+
+
+def _validation_error_from_issue(issue: dict) -> dict:
+    area = str(issue.get("area", "draft"))
+    field = "category" if area == "taxonomy" else "draft"
+    return {"field": field, "message": str(issue.get("message", "Draft validation failed."))}
+
+
 def _validate_topic_draft_payload(payload: dict) -> dict:
     payload = _reconcile_taxonomy_quality_report(payload)
     errors = []
     try:
         draft = TopicDraft.model_validate(payload)
     except Exception as exc:
-        return {"valid": False, "errors": [{"field": "draft", "message": str(exc)}], "warnings": []}
-    if draft.category not in taxonomy_context():
-        errors.append({"field": "category", "message": "Choose a category from the local taxonomy."})
-    if payload.get("quality_review_state") != "reviewed":
-        errors.append({"field": "quality_review", "message": "Run quality review before approval. Generation alone is authoring-only."})
-    elif payload.get("quality_status") != "ready":
+        return {"valid": False, "errors": [{"field": "draft", "message": str(exc)}], "warnings": [],
+                "quality_review_recommendation": _quality_review_recommendation(payload)}
+    for issue in final_payload_issues(payload):
+        errors.append(_validation_error_from_issue(issue))
+    # A review is advisory unless it completed with genuine unresolved
+    # blockers.  Not run, running, and failed are all informational states;
+    # approval remains purely local after deterministic validation.
+    report = payload.get("quality_report", {})
+    if payload.get("quality_review_state") == "reviewed" and payload.get("quality_status") == "needs_attention" and (
+        report.get("blocking_issues_remaining") if isinstance(report, dict) else []
+    ):
         errors.append({"field": "quality_review", "message": "Resolve the quality-review blocking issues before approval."})
-    return {"valid": not errors, "errors": errors, "warnings": []}
+    warnings = []
+    if payload.get("quality_review_state") == "failed":
+        warnings.append({"field": "quality_review", "message": "Quality review failed; approval is available because deterministic validation passed."})
+    return {"valid": not errors, "errors": errors, "warnings": warnings,
+            "quality_review_recommendation": _quality_review_recommendation(payload)}
 
 
 def _reload_library():

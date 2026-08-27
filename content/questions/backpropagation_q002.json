@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "backpropagation_q002",
+  "topic_ids": [
+    "backpropagation"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mechanism",
+  "difficulty": "intermediate",
+  "question": "Why does backpropagation move backward through the network instead of forward?",
+  "direct_answer": "Because later layers depend on earlier layers, so gradients must be propagated backward from the loss to the parameters that influenced it.",
+  "expanded_answer": "The loss depends on the output, the output depends on the last hidden layer, and each hidden layer depends on previous layers. Backprop follows this dependency graph in reverse so each operation can receive the gradient coming from the layers after it and combine that with its own local derivative.",
+  "key_points": [
+    "Gradients flow from loss to inputs/parameters",
+    "Reverse order matches the dependency structure",
+    "Each layer uses the gradient from later layers"
+  ],
+  "common_wrong_ideas": [
+    "Backward pass is just a computational trick with no mathematical reason",
+    "Earlier layers are updated first because they matter more",
+    "Forward pass already contains all gradient information"
+  ],
+  "concept_refresher_topic_id": "backpropagation",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T11:56:15.256276+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

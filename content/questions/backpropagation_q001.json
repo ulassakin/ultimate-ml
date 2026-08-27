@@ -1,0 +1,34 @@
+{
+  "content_version": 2,
+  "id": "backpropagation_q001",
+  "topic_ids": [
+    "backpropagation"
+  ],
+  "question_type": "conceptual",
+  "question_category": "foundation",
+  "difficulty": "beginner",
+  "question": "What is backpropagation in a neural network?",
+  "direct_answer": "Backpropagation is the efficient algorithm used to compute how each trainable parameter should change to reduce the loss.",
+  "expanded_answer": "Backpropagation computes gradients of the loss with respect to all parameters by applying the chain rule through the network from the output backward to earlier layers. It is the core mechanism that tells training algorithms which direction to update weights and biases.",
+  "key_points": [
+    "Computes gradients for training",
+    "Uses the chain rule",
+    "Runs backward through the network",
+    "Enables efficient learning of many parameters"
+  ],
+  "common_wrong_ideas": [
+    "It directly updates weights without computing gradients",
+    "It is the same thing as gradient descent",
+    "It only works for the final layer"
+  ],
+  "concept_refresher_topic_id": "backpropagation",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T11:56:15.256276+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

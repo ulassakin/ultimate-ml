@@ -1,0 +1,32 @@
+{
+  "content_version": 2,
+  "id": "principal-component-analysis-pca_q007",
+  "topic_ids": [
+    "principal-component-analysis-pca"
+  ],
+  "question_type": "conceptual",
+  "question_category": "application",
+  "difficulty": "intermediate",
+  "question": "Why is keeping only the top k principal components useful?",
+  "direct_answer": "It gives a lower-dimensional approximation that often keeps most of the important structure.",
+  "expanded_answer": "By discarding low-variance directions, PCA compresses the data into a smaller subspace. This can reduce storage, speed up learning, improve visualization, and sometimes remove noise.",
+  "key_points": [
+    "Dimensionality reduction",
+    "Compression",
+    "Can denoise by dropping small-variance directions"
+  ],
+  "common_wrong_ideas": [
+    "Dropping components never loses information",
+    "The lowest-variance directions always contain only noise"
+  ],
+  "concept_refresher_topic_id": "principal-component-analysis-pca",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T07:51:18.340699+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

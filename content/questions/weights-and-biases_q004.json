@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "weights-and-biases_q004",
+  "topic_ids": [
+    "weights-and-biases"
+  ],
+  "question_type": "conceptual",
+  "question_category": "intuition",
+  "difficulty": "beginner",
+  "question": "Why is the bias term useful?",
+  "direct_answer": "It lets the neuron shift its response independently of the inputs.",
+  "expanded_answer": "The bias changes where the neuron activates. Without a bias, the neuron’s output is constrained to pass through the origin in input space, which can make the model less flexible. The bias gives the network an adjustable offset.",
+  "key_points": [
+    "Bias shifts the activation threshold",
+    "It adds flexibility to the model",
+    "Without bias, decision boundaries can be overly constrained"
+  ],
+  "common_wrong_ideas": [
+    "Bias changes the slope of every input weight",
+    "Bias is only needed in convolution layers",
+    "Bias has no effect if the weights are learned"
+  ],
+  "concept_refresher_topic_id": "weights-and-biases",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T11:35:04.269510+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

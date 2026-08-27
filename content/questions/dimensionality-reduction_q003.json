@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "dimensionality-reduction_q003",
+  "topic_ids": [
+    "dimensionality-reduction"
+  ],
+  "question_type": "conceptual",
+  "question_category": "intuition",
+  "difficulty": "intermediate",
+  "question": "Why does the curse of dimensionality motivate dimensionality reduction?",
+  "direct_answer": "Because high-dimensional data become sparse, making distance and density-based reasoning harder.",
+  "expanded_answer": "As dimensionality grows, the available space expands very quickly, so data points occupy only a tiny fraction of it unless you have enormous data. This sparsity weakens nearest-neighbor methods, density estimation, and some generalization behavior because distances become less informative.",
+  "key_points": [
+    "High-dimensional spaces grow very fast",
+    "Data become sparse in the ambient space",
+    "Distances can become less discriminative"
+  ],
+  "common_wrong_ideas": [
+    "More dimensions always mean more information",
+    "Curse of dimensionality only matters for images",
+    "Distance-based methods are unaffected by dimension"
+  ],
+  "concept_refresher_topic_id": "dimensionality-reduction",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T10:05:47.493182+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

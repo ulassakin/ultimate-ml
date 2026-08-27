@@ -1,0 +1,34 @@
+{
+  "content_version": 2,
+  "id": "neural-network_q008",
+  "topic_ids": [
+    "neural-network"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mathematical_intuition",
+  "difficulty": "intermediate",
+  "question": "Why do stacked linear layers without activations not increase expressiveness much?",
+  "direct_answer": "Their composition is still just a single linear transformation.",
+  "expanded_answer": "If each layer only applies a linear map, then multiplying those maps together gives another linear map. The model may have many parameters, but the overall input-output relationship remains linear, so the depth does not create new kinds of functions.",
+  "key_points": [
+    "Composition of linear maps is linear",
+    "Depth alone is not enough",
+    "Nonlinearity is what adds expressiveness",
+    "Many parameters do not imply nonlinear behavior"
+  ],
+  "common_wrong_ideas": [
+    "More layers always mean more complexity",
+    "Linear composition becomes nonlinear by stacking",
+    "Biases alone create nonlinearity"
+  ],
+  "concept_refresher_topic_id": "neural-network",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T11:39:48.859306+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

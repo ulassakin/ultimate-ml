@@ -1,0 +1,34 @@
+{
+  "content_version": 2,
+  "id": "neural-network_q009",
+  "topic_ids": [
+    "neural-network"
+  ],
+  "question_type": "conceptual",
+  "question_category": "application",
+  "difficulty": "beginner",
+  "question": "What kinds of outputs can a neural network produce?",
+  "direct_answer": "It can produce class scores or probabilities, regression values, or other task-specific outputs.",
+  "expanded_answer": "The final layer is designed for the task. For classification, it may output logits or probabilities. For regression, it may output a continuous value. More generally, the network’s output can be any representation useful for downstream decision-making.",
+  "key_points": [
+    "Classification outputs",
+    "Regression outputs",
+    "Task-specific final layer",
+    "Logits or probabilities"
+  ],
+  "common_wrong_ideas": [
+    "Neural networks only output probabilities",
+    "All outputs must be discrete",
+    "The last layer has the same form for every task"
+  ],
+  "concept_refresher_topic_id": "neural-network",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T11:39:48.859306+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "content_version": 2,
+  "id": "principal-component-analysis-pca_q008",
+  "topic_ids": [
+    "principal-component-analysis-pca"
+  ],
+  "question_type": "conceptual",
+  "question_category": "misconception",
+  "difficulty": "advanced",
+  "question": "Does PCA always find the directions most useful for prediction?",
+  "direct_answer": "No, PCA finds directions of maximal variance, not maximal predictive signal.",
+  "expanded_answer": "A feature direction can have high variance but be irrelevant for a target, while a low-variance direction can still carry strong label information. That is why PCA is often used as preprocessing, not as a substitute for supervised learning.",
+  "key_points": [
+    "Variance is not prediction",
+    "Low-variance directions may matter",
+    "PCA is unsupervised"
+  ],
+  "common_wrong_ideas": [
+    "The first principal component is always the best feature",
+    "Variance and usefulness for prediction are the same"
+  ],
+  "concept_refresher_topic_id": "principal-component-analysis-pca",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T07:51:18.340699+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

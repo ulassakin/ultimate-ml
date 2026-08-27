@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "weights-and-biases_q006",
+  "topic_ids": [
+    "weights-and-biases"
+  ],
+  "question_type": "conceptual",
+  "question_category": "comparison",
+  "difficulty": "intermediate",
+  "question": "How is a weight different from a bias?",
+  "direct_answer": "A weight scales an input; a bias adds an offset.",
+  "expanded_answer": "A weight determines how much a specific input dimension contributes to the neuron’s pre-activation. A bias does not depend on any input feature; it shifts the whole response by a constant amount.",
+  "key_points": [
+    "Weights multiply inputs",
+    "Bias is added as a constant",
+    "Weights affect direction and scaling; bias affects offset"
+  ],
+  "common_wrong_ideas": [
+    "Bias is just another input weight",
+    "Weights and bias play identical roles",
+    "Bias depends on one specific feature"
+  ],
+  "concept_refresher_topic_id": "weights-and-biases",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T11:35:04.269510+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

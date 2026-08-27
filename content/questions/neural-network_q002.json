@@ -1,0 +1,34 @@
+{
+  "content_version": 2,
+  "id": "neural-network_q002",
+  "topic_ids": [
+    "neural-network"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mechanism",
+  "difficulty": "beginner",
+  "question": "What does a single layer of a neural network usually do before the activation is applied?",
+  "direct_answer": "It applies an affine transformation to the input.",
+  "expanded_answer": "A layer typically computes a weighted sum of the inputs and adds a bias term. This affine step decides how strongly each input feature contributes to the next representation before nonlinearity is introduced.",
+  "key_points": [
+    "Weighted sum",
+    "Bias shift",
+    "Affine transformation",
+    "Pre-activation computation"
+  ],
+  "common_wrong_ideas": [
+    "The layer only multiplies inputs by weights",
+    "Bias replaces weights",
+    "Activation happens first"
+  ],
+  "concept_refresher_topic_id": "neural-network",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T11:39:48.859306+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

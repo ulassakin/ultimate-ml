@@ -1,0 +1,32 @@
+{
+  "content_version": 2,
+  "id": "principal-component-analysis-pca_q003",
+  "topic_ids": [
+    "principal-component-analysis-pca"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mechanism",
+  "difficulty": "intermediate",
+  "question": "How does the covariance matrix help PCA find principal directions?",
+  "direct_answer": "It summarizes how features vary together, and its eigenvectors point along directions of maximal variance.",
+  "expanded_answer": "The covariance matrix encodes the geometry of the centered data cloud. Its eigenvectors identify directions that remain stable under the covariance transform, and the associated eigenvalues tell how much variance lies along each direction.",
+  "key_points": [
+    "Covariance captures pairwise variation",
+    "Eigenvectors give directions",
+    "Eigenvalues give explained variance"
+  ],
+  "common_wrong_ideas": [
+    "Covariance is only about correlation, not geometry",
+    "Eigenvectors are arbitrary directions unrelated to the data cloud"
+  ],
+  "concept_refresher_topic_id": "principal-component-analysis-pca",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T07:51:18.340699+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "content_version": 2,
+  "id": "neural-network_q004",
+  "topic_ids": [
+    "neural-network"
+  ],
+  "question_type": "conceptual",
+  "question_category": "foundation",
+  "difficulty": "beginner",
+  "question": "What are weights and biases in a neural network?",
+  "direct_answer": "They are the learned parameters that control each layer’s transformation.",
+  "expanded_answer": "Weights determine how much each input affects the output, while biases shift the output up or down. Both are adjusted during training so the network can fit the data.",
+  "key_points": [
+    "Weights control influence",
+    "Biases shift outputs",
+    "Both are learned",
+    "They define the model’s behavior"
+  ],
+  "common_wrong_ideas": [
+    "Weights are fixed constants",
+    "Bias only matters for classification",
+    "Parameters are not learned from data"
+  ],
+  "concept_refresher_topic_id": "neural-network",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T11:39:48.859306+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

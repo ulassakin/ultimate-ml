@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "dimensionality-reduction_q005",
+  "topic_ids": [
+    "dimensionality-reduction"
+  ],
+  "question_type": "conceptual",
+  "question_category": "misconception",
+  "difficulty": "intermediate",
+  "question": "Does dimensionality reduction always make data easier to use for prediction?",
+  "direct_answer": "No; it can help, but it can also remove predictive information.",
+  "expanded_answer": "Dimensionality reduction may improve efficiency, reduce noise, or help with generalization, but it is not guaranteed to preserve the information needed for a specific target. Methods like PCA preserve variance, not necessarily task-relevant signal, so some prediction problems may get worse after reduction.",
+  "key_points": [
+    "It may help or hurt prediction",
+    "PCA preserves variance, not labels",
+    "Task-relevant information can be lost"
+  ],
+  "common_wrong_ideas": [
+    "Fewer dimensions always means better models",
+    "High-variance directions are always the most predictive",
+    "Any reduction is automatically beneficial"
+  ],
+  "concept_refresher_topic_id": "dimensionality-reduction",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T10:05:47.493182+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

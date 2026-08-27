@@ -1,0 +1,34 @@
+{
+  "content_version": 2,
+  "id": "neural-network_q010",
+  "topic_ids": [
+    "neural-network"
+  ],
+  "question_type": "conceptual",
+  "question_category": "research_relevance",
+  "difficulty": "intermediate",
+  "question": "Why are neural networks so widely used in modern machine learning?",
+  "direct_answer": "They are flexible function approximators that can learn useful representations from data.",
+  "expanded_answer": "Neural networks can combine many learned transformations with nonlinearities, which makes them adaptable to images, text, audio, and structured data. This flexibility lets them support both end-to-end prediction and representation learning at scale.",
+  "key_points": [
+    "Flexible approximation",
+    "Representation learning",
+    "Works across modalities",
+    "Scales well with data and compute"
+  ],
+  "common_wrong_ideas": [
+    "They are popular only because they are trendy",
+    "They always beat simpler models",
+    "They require handcrafted features to work"
+  ],
+  "concept_refresher_topic_id": "neural-network",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T11:39:48.859306+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

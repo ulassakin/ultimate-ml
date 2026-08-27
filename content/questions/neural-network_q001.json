@@ -1,0 +1,34 @@
+{
+  "content_version": 2,
+  "id": "neural-network_q001",
+  "topic_ids": [
+    "neural-network"
+  ],
+  "question_type": "conceptual",
+  "question_category": "foundation",
+  "difficulty": "beginner",
+  "question": "What is a neural network, in simple conceptual terms?",
+  "direct_answer": "A neural network is a learned layered function that maps inputs to outputs.",
+  "expanded_answer": "A neural network is a parameterized model made of layers. Each layer transforms its input using learned weights, biases, and a nonlinear activation. By stacking these transformations, the network can model complex input-output relationships that a single linear model cannot.",
+  "key_points": [
+    "Layered function",
+    "Learned parameters",
+    "Input-to-output mapping",
+    "Nonlinearity enables complexity"
+  ],
+  "common_wrong_ideas": [
+    "A neural network is just a fixed formula",
+    "The network learns rules without parameters",
+    "It can only do classification"
+  ],
+  "concept_refresher_topic_id": "neural-network",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T11:39:48.859306+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

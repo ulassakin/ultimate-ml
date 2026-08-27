@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "cost-function_q005",
+  "topic_ids": [
+    "cost-function"
+  ],
+  "question_type": "conceptual",
+  "question_category": "application",
+  "difficulty": "beginner",
+  "question": "Why do we minimize the cost function during training?",
+  "direct_answer": "To find parameters that make predictions closer to the targets.",
+  "expanded_answer": "Minimizing the cost means searching for model parameters that reduce prediction error according to the chosen objective. This is the core way training improves model performance on the data it sees.",
+  "key_points": [
+    "Training is an optimization problem",
+    "Lower cost usually means lower error on training data",
+    "The minimized objective defines learning"
+  ],
+  "common_wrong_ideas": [
+    "Training is just memorizing labels",
+    "Minimizing cost guarantees perfect generalization",
+    "The cost has no connection to prediction quality"
+  ],
+  "concept_refresher_topic_id": "cost-function",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T11:58:44.045789+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

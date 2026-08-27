@@ -1,0 +1,187 @@
+{
+  "title": "Neural network",
+  "category": "deep_learning",
+  "difficulty": "intermediate",
+  "concept_type": "architecture",
+  "tags": [
+    "layered models",
+    "function approximation",
+    "feedforward networks",
+    "activation functions",
+    "representation learning"
+  ],
+  "one_sentence_summary": "A neural network is a layered, parameterized function that transforms inputs into outputs through learned linear maps and nonlinear activations, allowing it to approximate complex relationships.",
+  "quick_recall": "Think of a neural network as a stack of simple transformations: each layer mixes information, applies a nonlinearity, and passes it forward so the whole system can build complicated functions from simple parts.",
+  "big_picture": "Neural networks are one of the core ways modern ML builds flexible predictors. Instead of hand-designing rules, we choose a model family with many adjustable parameters and let training discover the right combination of transformations from data. The key idea is compositionality: simple building blocks are chained together, and the combination can express far more complex behavior than a single linear model. This is why neural networks are so widely used for vision, language, speech, and structured prediction.",
+  "why_it_exists": "A single linear model is limited: it can only separate or fit data with a simple geometry. Real-world data often needs curved decision boundaries, feature interactions, and hierarchical abstractions. Neural networks exist to provide a general-purpose, differentiable way to learn these nonlinear relationships from examples. They give us a tunable balance between expressiveness and trainability.",
+  "intuition": "Imagine each layer as a feature mixer. The first layer may detect simple patterns; later layers combine those patterns into higher-level ones. The nonlinearity matters because without it, stacking layers would still collapse into one linear transformation. The network is therefore not just a deep stack of calculations, but a mechanism for repeatedly re-encoding the input into a more useful representation.",
+  "core_explanation": "At its simplest, a neural network takes an input vector x, applies an affine transformation, then a nonlinear activation, and repeats this across layers. Each layer has learned weights and biases. The weights decide how strongly inputs influence the next representation; the bias shifts the result. The activation introduces nonlinearity so the model can represent interactions that a linear model cannot. The final layer produces predictions such as class probabilities, a regression value, or logits for downstream decision-making. During training, optimization adjusts the parameters to reduce prediction error on examples. Over many updates, the network learns internal representations that can support the task.",
+  "mechanism": "For a feedforward network, the computation proceeds from input to output:\n1. Start with x.\n2. Compute z^(1) = W^(1)x + b^(1).\n3. Apply an activation h^(1) = φ(z^(1)).\n4. Repeat for more layers: z^(ℓ) = W^(ℓ)h^(ℓ-1) + b^(ℓ), h^(ℓ) = φ(z^(ℓ)).\n5. Use the final hidden state or output layer to produce y_hat.\n\nHere W^(ℓ) is the matrix of learned weights at layer ℓ, b^(ℓ) is the bias vector, and φ is an activation such as ReLU, sigmoid, or tanh. The purpose of the linear step is to mix features; the purpose of the activation is to create nonlinearity. If φ were the identity function, the whole network would reduce to a single linear map no matter how many layers it has. Training uses backpropagation to compute gradients of a loss with respect to all parameters, then an optimizer like gradient descent updates them. This is what makes the architecture learn from data rather than acting as a fixed formula.",
+  "ml_relevance": "Neural networks are the backbone of deep learning because they are adaptable enough to handle highly complex inputs and tasks. In computer vision, they can learn edges, textures, parts, and objects. In language, they can learn embeddings and contextual relationships. In recommender systems, they can model interaction effects. Their importance comes from both expressiveness and differentiability: they can be optimized end-to-end using gradient-based methods, which scales well to large datasets and many parameters.",
+  "practical_example": "For handwritten digit recognition, the input might be a 28×28 grayscale image flattened into a vector. A first hidden layer can learn simple stroke detectors. A second layer can combine strokes into loops, crossings, and digit-like fragments. The output layer then assigns scores to the ten digit classes. During training, images labeled “3” should increase the score for class 3 and decrease scores for the others. The network does not explicitly know what a loop or stroke is; it discovers useful intermediate features because those features help reduce classification error.",
+  "mathematical_foundation": {
+    "overview": "The mathematics of a neural network is the repeated composition of affine maps and nonlinear functions. This composition is what gives the model its expressive power.",
+    "prerequisites": [
+      "Vectors and matrices"
+    ],
+    "sections": [
+      {
+        "title": "Single-layer transformation",
+        "explanation": "A neuron computes a weighted sum of inputs and then applies a nonlinearity. This is the smallest useful unit of a neural network. The weighted sum collects evidence from different input dimensions; the nonlinearity turns that evidence into a transformed feature.",
+        "equations": [
+          {
+            "latex": "z = w^\\top x + b",
+            "explanation": "x is the input vector, w is a weight vector, and b is a scalar bias. The dot product w^\\top x measures alignment between the input and a learned direction. The bias shifts the threshold. This is the affine part of the model."
+          },
+          {
+            "latex": "h = \\phi(z)",
+            "explanation": "φ is an activation function. h is the transformed output. The nonlinearity is essential: it lets the model represent curved and piecewise relationships instead of collapsing into one linear map."
+          }
+        ],
+        "prerequisites": [
+          "Dot products"
+        ]
+      },
+      {
+        "title": "Multi-layer composition",
+        "explanation": "A deep network applies the same pattern many times. Each layer re-expresses the data in a new coordinate system, hopefully making the task easier for the next layer. Depth matters because composition can build complex functions efficiently.",
+        "equations": [
+          {
+            "latex": "h^{(\\ell)} = \\phi\\left(W^{(\\ell)}h^{(\\ell-1)} + b^{(\\ell)}\\right)",
+            "explanation": "This is the layer update rule. W^(ℓ) is a matrix that mixes the previous layer’s features, b^(ℓ) is a bias vector, and φ is applied elementwise. The previous representation h^(ℓ−1) is transformed into h^(ℓ). Repeating this across layers creates a deep function."
+          },
+          {
+            "latex": "f(x) = h^{(L)}",
+            "explanation": "After L layers, the network defines a function f that maps input x to an output representation or prediction. The model is therefore a learned function family, not a symbolic rule list."
+          }
+        ],
+        "prerequisites": []
+      },
+      {
+        "title": "Why nonlinearity matters",
+        "explanation": "Without nonlinear activations, multiple layers would still be equivalent to one affine transformation. Nonlinearity breaks that collapse and enables decision boundaries and feature interactions beyond linear models.",
+        "equations": [
+          {
+            "latex": "W_2(W_1x + b_1) + b_2 = (W_2W_1)x + (W_2b_1 + b_2)",
+            "explanation": "This shows that two linear layers with biases but no activation can be algebraically merged into one linear layer. So depth alone is not enough; the activation function is what creates extra expressive power."
+          }
+        ],
+        "prerequisites": []
+      },
+      {
+        "title": "Training objective",
+        "explanation": "The network parameters are chosen to minimize a loss over data. The loss measures how far predictions are from targets. Optimization uses gradients to adjust parameters in the direction that reduces this loss.",
+        "equations": [
+          {
+            "latex": "\\min_{\\theta} \\frac{1}{N}\\sum_{i=1}^{N} \\mathcal{L}(f_{\\theta}(x_i), y_i)",
+            "explanation": "θ denotes all model parameters, N is number of training examples, x_i is the i-th input, y_i is its target, and L is a loss function such as cross-entropy or mean squared error. The average loss summarizes performance over the dataset."
+          },
+          {
+            "latex": "\\theta \\leftarrow \\theta - \\eta \\nabla_{\\theta} \\mathcal{L}",
+            "explanation": "η is the learning rate and ∇_θ L is the gradient of the loss with respect to parameters. This update moves parameters in the direction that locally decreases error. Backpropagation computes these gradients efficiently through the layers."
+          }
+        ],
+        "prerequisites": []
+      }
+    ]
+  },
+  "common_misconceptions": [
+    "A neural network is not just a mysterious black box; it is a precisely defined mathematical function with learnable parameters.",
+    "More layers do not automatically mean better performance. Depth helps only if the architecture, data, and optimization support it.",
+    "Nonlinearity is not optional. Without it, a deep network collapses to an equivalent shallow linear model.",
+    "Neural networks do not ‘understand’ in a human sense; they learn statistical regularities useful for prediction.",
+    "A network’s internal features are learned from the task, not usually manually designed."
+  ],
+  "limitations": [
+    "They can require large amounts of data and compute to train well.",
+    "They may be hard to interpret compared with simpler models.",
+    "They can overfit when capacity is too large relative to data or regularization is weak.",
+    "Optimization can be sensitive to initialization, learning rate, and architecture choices.",
+    "They may behave poorly outside the distribution of the training data."
+  ],
+  "mental_models": [
+    "A neural network is a learnable function composer.",
+    "Each layer is a representation transformer.",
+    "Nonlinearity is the ingredient that turns depth into expressiveness.",
+    "Training is repeated error correction through gradients.",
+    "The model learns features that are useful for the task, not necessarily human-readable concepts."
+  ],
+  "deep_dive": "A useful way to understand neural networks is to separate three questions: what function family they represent, how they are trained, and why they work well in practice. The function family is defined by composition of affine transforms and nonlinear activations. Training is the search through that family for parameters that reduce loss on data. Practical success comes from a combination of expressive power, differentiability, and scalable optimization.\n\nThe layered structure matters because each layer can re-use and recombine earlier features. This creates a hierarchy of representations: simple patterns can be combined into more abstract ones. That hierarchy is especially natural for data with compositional structure, such as images or language.\n\nAnother important perspective is that neural networks are not one model but a family of architectures. A multilayer perceptron, a convolutional network, and a transformer all use learned parameters and nonlinear composition, but they differ in how information is routed and shared. The basic idea of a neural network underlies all of them.\n\nWhen explaining neural networks, it is often helpful to distinguish expressiveness from trainability. A model may be theoretically powerful but still hard to optimize in practice. Conversely, a simpler architecture may train more reliably even if it is less expressive. Much of deep learning is about managing that tradeoff with good activations, normalization, initialization, regularization, and optimization choices.\n\nIn short, neural networks are important not because they are magical, but because they provide a general, differentiable way to learn complex input-output mappings from data using layered composition.",
+  "sources": [
+    {
+      "title": "But what is a neural network? | Deep learning chapter 1",
+      "type": "youtube",
+      "url": "https://www.youtube.com/watch?v=aircAruvnKk"
+    }
+  ],
+  "source_provenance": {
+    "source_derived": {
+      "kind": "youtube",
+      "video_id": "aircAruvnKk",
+      "title": "But what is a neural network? | Deep learning chapter 1",
+      "channel": "3Blue1Brown",
+      "attribution": "YouTube transcript retrieved locally",
+      "concept": "Neural network",
+      "source_evidence_summary": "Introduced as a simple 'plain vanilla' network for recognizing handwritten digits, with an emphasis on explaining what it is as math rather than a buzzword.",
+      "timestamp_seconds": [
+        75.0,
+        101.0,
+        149.0,
+        939.0
+      ],
+      "video_url": "https://www.youtube.com/watch?v=aircAruvnKk"
+    },
+    "ai_expanded": "The educational explanation was AI-expanded from the selected source concept and requires human review."
+  },
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "topic-authoring-v4",
+    "generated_at": "2026-08-27T11:23:36.511956+00:00",
+    "user_focus": "Build a deeper ML learning topic from this source concept: Foundational ML concept for understanding how layered parameterized models map inputs to outputs and why they can represent complex functions..",
+    "review_state": "approved",
+    "youtube_import_id": "3385813b-f750-4fa7-964f-378fd7a9350c",
+    "youtube_concept": "Neural network"
+  },
+  "quality_report": {
+    "blocking_issues_fixed": [],
+    "blocking_issues_remaining": [],
+    "warnings": [
+      {
+        "area": "taxonomy",
+        "message": "The topic is correctly placed in deep_learning with concept_type architecture."
+      },
+      {
+        "area": "source_grounding",
+        "message": "Source context is limited to a general explainer video; the draft is mostly AI-expanded rather than directly source-derived, which is acceptable as a warning here."
+      },
+      {
+        "area": "source_grounding",
+        "message": "Source segment is brief; the broader explanation is explicitly marked AI-expanded."
+      }
+    ],
+    "confidence": "high",
+    "changes": [
+      {
+        "field_path": "mathematical_foundation.sections[3].equations[0].explanation",
+        "change_type": "replace",
+        "old_value": "θ denotes all model parameters, N is the number of training examples, x_i is the i-th input, y_i is its target, and L is a loss function such as cross-entropy or mean squared error. The average loss summarizes performance over the dataset.",
+        "new_value": "θ denotes all model parameters, N is number of training examples, x_i is the i-th input, y_i is its target, and L is a loss function such as cross-entropy or mean squared error. The average loss summarizes performance over the dataset."
+      }
+    ],
+    "reviewer_change_claims": []
+  },
+  "quality_status": "ready",
+  "quality_review_state": "reviewed",
+  "quality_review_source_payload_hash": "d4ee93f55dda55282966f02409ce469a68cb1d7a2295da6d942ed831d41fcf65",
+  "quality_reviewed_payload_hash": "f874881fdd8e19849a731e0f4388131af5f52a9e5a7a9d4f3f50a391e7a86fdf",
+  "quality_review_prompt_version": "topic-quality-review-v6",
+  "quality_reviewed_at": "2026-08-27T11:36:33.298458+00:00",
+  "quality_review_forced": false,
+  "id": "neural-network",
+  "content_version": 2,
+  "knowledge_type": [
+    "conceptual"
+  ]
+}

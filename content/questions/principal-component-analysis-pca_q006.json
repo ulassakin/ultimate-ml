@@ -1,0 +1,32 @@
+{
+  "content_version": 2,
+  "id": "principal-component-analysis-pca_q006",
+  "topic_ids": [
+    "principal-component-analysis-pca"
+  ],
+  "question_type": "conceptual",
+  "question_category": "comparison",
+  "difficulty": "intermediate",
+  "question": "How is PCA different from supervised feature selection?",
+  "direct_answer": "PCA ignores labels and preserves input variance, while supervised feature selection tries to improve prediction of a target.",
+  "expanded_answer": "PCA is unsupervised: it looks only at the input geometry. Supervised methods use label information to choose or transform features that help prediction, which can be very different from the directions of highest variance.",
+  "key_points": [
+    "Unsupervised vs supervised",
+    "Variance-based vs label-based",
+    "Different goals"
+  ],
+  "common_wrong_ideas": [
+    "PCA is a classifier",
+    "High variance always means high predictive power"
+  ],
+  "concept_refresher_topic_id": "principal-component-analysis-pca",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T07:51:18.340699+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

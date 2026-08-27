@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "activation-function_q006",
+  "topic_ids": [
+    "activation-function"
+  ],
+  "question_type": "conceptual",
+  "question_category": "application",
+  "difficulty": "intermediate",
+  "question": "How does the choice of activation function influence a network’s inductive bias?",
+  "direct_answer": "It shapes what kinds of signals and patterns the network is naturally good at representing.",
+  "expanded_answer": "Different activations impose different output ranges, saturation behavior, and gating patterns. Those properties affect optimization, stability, and the kinds of functions the model tends to learn efficiently. In practice, activation choice is part of the model’s design bias, not just a cosmetic detail.",
+  "key_points": [
+    "Changes output range",
+    "Affects gradient behavior",
+    "Shapes training dynamics and representational preferences"
+  ],
+  "common_wrong_ideas": [
+    "Activation choice only changes speed, not learned behavior",
+    "All activations are interchangeable",
+    "Inductive bias comes only from architecture depth"
+  ],
+  "concept_refresher_topic_id": "activation-function",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T11:41:11.293079+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

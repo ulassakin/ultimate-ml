@@ -5,6 +5,7 @@ from copy import deepcopy
 import re
 from urllib.parse import urlparse
 
+from .schemas import TopicDraft
 from ..youtube.transcript_provider import TranscriptUnavailableError, canonical_youtube_url, youtube_video_id
 
 
@@ -37,6 +38,13 @@ LEGACY_RELATIONSHIP_FIELDS = {
     "prerequisite_topic_ids", "related_topic_ids", "relationship_justifications",
     "suggested_new_topic_relationships", "relationship_warnings", "metadata_resolution",
 }
+QUALITY_TRANSIENT_FIELDS = {
+    "existing_quality_review", "quality_review_state", "quality_review_prompt_version",
+    "quality_review_source_payload_hash", "quality_reviewed_payload_hash", "quality_review_started_at",
+    "quality_reviewed_at", "quality_review_forced", "quality_review_failed_at", "quality_review_message",
+    "quality_report", "quality_status", "quality_review_changes", "durable_topic_id",
+    "generation_metadata",
+}
 
 
 def taxonomy_context() -> dict:
@@ -61,6 +69,171 @@ def canonical_category(value: object) -> str:
         if token in {_taxonomy_token(category_id), _taxonomy_token(definition["display_name"])}:
             return category_id
     return str(value or "").strip()
+
+
+def compact_quality_review_candidate(payload: dict) -> dict:
+    """Send the reviewer only authoring fields, never historical/UI graph data."""
+    candidate = deepcopy(payload)
+    for field in LEGACY_RELATIONSHIP_FIELDS | QUALITY_TRANSIENT_FIELDS:
+        candidate.pop(field, None)
+    candidate["category"] = canonical_category(candidate.get("category"))
+    # The structured TopicDraft fields are the compact authoring contract. This
+    # deliberately omits draft metadata, historical revisions, use/cost data,
+    # source cache paths, and any graph-era fields.
+    return {field: candidate[field] for field in TopicDraft.model_fields if field in candidate}
+
+
+def quality_comparison_payload(payload: dict) -> dict:
+    """Canonical form used to derive actual, material reviewer changes."""
+    candidate = compact_quality_review_candidate(payload)
+    try:
+        # Fill benign schema defaults so a reviewer is not credited for merely
+        # serializing omitted optional fields from a legacy draft.
+        candidate = TopicDraft.model_validate(candidate).model_dump()
+    except Exception:
+        # A malformed draft still needs a useful diff; final schema validation
+        # will make it ineligible for Ready below.
+        pass
+    candidate["category"] = canonical_category(candidate.get("category"))
+    return candidate
+
+
+def actual_topic_changes(source: dict, final: dict) -> list[dict]:
+    """Recursively derive deterministic add/remove/replace changes."""
+    changes: list[dict] = []
+
+    def walk(before: object, after: object, path: str) -> None:
+        if isinstance(before, dict) and isinstance(after, dict):
+            for key in sorted(set(before) | set(after)):
+                child = f"{path}.{key}" if path else key
+                if key not in before:
+                    changes.append({"field_path": child, "change_type": "add", "old_value": None, "new_value": after[key]})
+                elif key not in after:
+                    changes.append({"field_path": child, "change_type": "remove", "old_value": before[key], "new_value": None})
+                else:
+                    walk(before[key], after[key], child)
+        elif isinstance(before, list) and isinstance(after, list):
+            limit = max(len(before), len(after))
+            for index in range(limit):
+                child = f"{path}[{index}]"
+                if index >= len(before):
+                    changes.append({"field_path": child, "change_type": "add", "old_value": None, "new_value": after[index]})
+                elif index >= len(after):
+                    changes.append({"field_path": child, "change_type": "remove", "old_value": before[index], "new_value": None})
+                else:
+                    walk(before[index], after[index], child)
+        elif before != after:
+            changes.append({"field_path": path, "change_type": "replace", "old_value": before, "new_value": after})
+
+    walk(quality_comparison_payload(source), quality_comparison_payload(final), "")
+    return changes
+
+
+def validate_report_changes(report: dict, reviewer_changes: list[dict], actual_changes: list[dict], *, payload: dict,
+                            final_issues: list[dict]) -> tuple[dict, list[dict], list[dict]]:
+    """Keep evidence-backed claims; discard valid no-op verification claims."""
+    result = deepcopy(report)
+    actual_paths = {change["field_path"] for change in actual_changes}
+
+    def matches(path: str) -> list[dict]:
+        normalized = path.lstrip("$.")
+        return [change for change in actual_changes if change["field_path"] == normalized
+                or change["field_path"].startswith(normalized + ".")
+                or change["field_path"].startswith(normalized + "[")]
+
+    consistency, retained_claims, valid_noop_paths = [], [], set()
+
+    def field_is_valid(path: str) -> bool:
+        root = path.lstrip("$.").split(".", 1)[0].split("[", 1)[0]
+        category = canonical_category(payload.get("category"))
+        if root == "category":
+            return category in TAXONOMY_REGISTRY
+        if root == "concept_type":
+            return category in TAXONOMY_REGISTRY and payload.get("concept_type") in TAXONOMY_REGISTRY[category]["compatible_concept_types"]
+        if root == "mathematical_foundation":
+            return not any(issue.get("area") == "mathematics" for issue in final_issues)
+        return not any(issue.get("area") == "schema" for issue in final_issues)
+
+    for claim in reviewer_changes:
+        path = str(claim.get("field_path", "")).lstrip("$.")
+        matching = matches(path)
+        old_matches = matching and (claim.get("old_value") is None or any(change.get("old_value") == claim.get("old_value") for change in matching))
+        new_matches = matching and (claim.get("new_value") is None or any(change.get("new_value") == claim.get("new_value") for change in matching))
+        if not path or not old_matches or not new_matches:
+            if path and field_is_valid(path):
+                # A reviewer may describe a canonicalization check as a
+                # replace even when the source already has the correct value.
+                # That is verification, not a failed fix and not a blocker.
+                valid_noop_paths.add(path)
+                continue
+            consistency.append(_issue("schema", f"Reviewer claimed a change at '{path or 'unknown field'}' that the final payload does not reflect and remains invalid."))
+        else:
+            retained_claims.append(claim)
+
+    def claimed_paths(message: str) -> list[str]:
+        text = message.casefold()
+        fields = []
+        if "concept_type" in text or "concept type" in text:
+            fields.append("concept_type")
+        if "category" in text or "taxonomy" in text:
+            fields.append("category")
+        if any(token in text for token in ("equation", "latex", "notation", "formula")):
+            fields.append("mathematical_foundation")
+        return fields
+
+    def stale_noop_blocker(issue: dict) -> bool:
+        if issue.get("area") != "schema":
+            return False
+        message = str(issue.get("message", ""))
+        matched = re.search(r"change at '([^']+)'", message)
+        if matched:
+            return field_is_valid(matched.group(1))
+        if "quality report claims a fix" in message.casefold():
+            paths = claimed_paths(message)
+            return bool(paths) and all(field_is_valid(path) for path in paths)
+        return False
+
+    # Reconcile records written by the previous strict gate as well. These are
+    # local report/status fields, so clearing a valid no-op blocker never calls
+    # a provider or changes the authored topic.
+    result["blocking_issues_remaining"] = [issue for issue in result.get("blocking_issues_remaining", [])
+                                           if not stale_noop_blocker(issue)]
+
+    verified_fixed = []
+    for issue in result.get("blocking_issues_fixed", []):
+        paths = claimed_paths(str(issue.get("message", "")))
+        # A specific claimed field must have changed. A generic claim is valid
+        # only when the reviewer supplied at least one evidenced material edit.
+        if paths and not any(matches(path) for path in paths):
+            if all(path in valid_noop_paths or field_is_valid(path) for path in paths):
+                # The final field is already correct, so this is an unnecessary
+                # no-op claim rather than evidence of an unresolved defect.
+                continue
+            consistency.append(_issue("schema", f"Quality report claims a fix that the final payload does not reflect: {issue.get('message', '')}"))
+        elif not paths and not actual_paths:
+            # With no field-level evidence, only preserve a no-op report when
+            # final validation is clean; otherwise keep the real blocker.
+            if final_issues:
+                consistency.append(_issue("schema", f"Quality report claims a fix that the final payload does not reflect: {issue.get('message', '')}"))
+        else:
+            verified_fixed.append(issue)
+    result["blocking_issues_fixed"] = verified_fixed
+    return result, _dedupe_issues(consistency), retained_claims
+
+
+def final_payload_issues(payload: dict) -> list[dict]:
+    """Schema/taxonomy checks that must pass before a reviewed draft is Ready."""
+    issues = []
+    try:
+        topic = TopicDraft.model_validate(payload)
+    except Exception as exc:
+        return [_issue("schema", f"Final corrected topic does not satisfy the topic schema: {exc}")]
+    category = canonical_category(topic.category)
+    if category not in TAXONOMY_REGISTRY:
+        issues.append(_issue("taxonomy", f"Unknown category '{topic.category}'."))
+    elif topic.concept_type not in TAXONOMY_REGISTRY[category]["compatible_concept_types"]:
+        issues.append(_issue("taxonomy", f"Concept type '{topic.concept_type}' is not compatible with category '{category}'."))
+    return issues
 
 
 def _slug(value: str) -> str:
@@ -103,7 +276,7 @@ def _equation_issues(payload: dict) -> list[dict]:
             label = f"Equation {section_index + 1}.{equation_index + 1}"
             if not latex or not explanation:
                 issues.append(_issue("mathematics", f"{label} needs non-empty LaTeX and an explanation."))
-            elif latex.count("{") != latex.count("}") or latex.endswith("\\"):
+            elif latex.count("{") != latex.count("}") or latex.endswith("\\") or "?" in latex:
                 issues.append(_issue("mathematics", f"{label} has malformed LaTeX delimiters."))
     return issues
 
@@ -196,7 +369,7 @@ def normalize_topic(payload: dict, *, requested_title: str, assigned_topic_id: s
     if topic.get("concept_type") not in CONCEPT_TYPES:
         topic["concept_type"] = "broad_concept"
         warnings.append(_issue("taxonomy", "Unrecognized concept type was normalized to broad_concept."))
-    elif topic["concept_type"] not in TAXONOMY_REGISTRY.get(topic.get("category"), {}).get("compatible_concept_types", []):
+    if topic["concept_type"] not in TAXONOMY_REGISTRY.get(topic.get("category"), {}).get("compatible_concept_types", []):
         blocking.append(_issue("taxonomy", f"Concept type '{topic['concept_type']}' is not compatible with category '{topic.get('category')}'."))
     for source in topic.get("sources", []):
         if isinstance(source, dict):
@@ -252,4 +425,9 @@ def final_quality_report(reviewer_report: dict, deterministic_warnings: list[dic
             report["blocking_issues_remaining"] = retained
     for key in ("warnings", "blocking_issues_fixed", "blocking_issues_remaining"):
         report[key] = _dedupe_issues(report[key])
+    remaining = {(item.get("area"), item.get("message")) for item in report["blocking_issues_remaining"]}
+    # A real unresolved blocker takes precedence over the same historical
+    # "fixed" note; a final report must never say both.
+    report["blocking_issues_fixed"] = [item for item in report["blocking_issues_fixed"]
+                                       if (item.get("area"), item.get("message")) not in remaining]
     return report

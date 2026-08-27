@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "cost-function_q001",
+  "topic_ids": [
+    "cost-function"
+  ],
+  "question_type": "conceptual",
+  "question_category": "foundation",
+  "difficulty": "beginner",
+  "question": "What is a cost function in machine learning?",
+  "direct_answer": "A cost function is the quantity a model tries to minimize during training.",
+  "expanded_answer": "A cost function maps predictions and true targets to a real-valued measure of error. Training adjusts model parameters to reduce this value, so the model fits the training data better according to the chosen objective.",
+  "key_points": [
+    "Maps predictions and targets to a scalar",
+    "Training aims to minimize it",
+    "Defines what counts as 'better' for the model"
+  ],
+  "common_wrong_ideas": [
+    "It is only a metric for reporting after training",
+    "It is the same thing as model accuracy",
+    "It is independent of the training objective"
+  ],
+  "concept_refresher_topic_id": "cost-function",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T11:58:44.045789+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

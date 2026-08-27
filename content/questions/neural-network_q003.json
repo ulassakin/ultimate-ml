@@ -1,0 +1,34 @@
+{
+  "content_version": 2,
+  "id": "neural-network_q003",
+  "topic_ids": [
+    "neural-network"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mechanism",
+  "difficulty": "beginner",
+  "question": "Why are nonlinear activation functions important in neural networks?",
+  "direct_answer": "They let the network represent relationships a purely linear model cannot.",
+  "expanded_answer": "Without nonlinear activations, stacking layers would still collapse into one overall linear transformation. Nonlinearity breaks that collapse, allowing the network to model interactions, thresholds, and more complex decision boundaries.",
+  "key_points": [
+    "Breaks linearity",
+    "Enables expressive models",
+    "Allows feature interactions",
+    "Prevents collapse into one linear map"
+  ],
+  "common_wrong_ideas": [
+    "More layers alone always add nonlinearity",
+    "Weights by themselves make the model nonlinear",
+    "Activation is only for numerical stability"
+  ],
+  "concept_refresher_topic_id": "neural-network",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T11:39:48.859306+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

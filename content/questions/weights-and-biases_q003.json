@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "weights-and-biases_q003",
+  "topic_ids": [
+    "weights-and-biases"
+  ],
+  "question_type": "conceptual",
+  "question_category": "intuition",
+  "difficulty": "beginner",
+  "question": "Why are weights useful in a neural network?",
+  "direct_answer": "They let the model decide how important each input is.",
+  "expanded_answer": "Weights determine the contribution of each input feature to a neuron’s response. Large positive or negative weights amplify certain signals, while near-zero weights make inputs matter less. This is how the network learns which patterns are relevant.",
+  "key_points": [
+    "Weights control feature importance",
+    "They can amplify or suppress inputs",
+    "Different weights let the model combine signals flexibly"
+  ],
+  "common_wrong_ideas": [
+    "All inputs always matter equally",
+    "Weights only rescale the final output",
+    "Weights are only useful in the first layer"
+  ],
+  "concept_refresher_topic_id": "weights-and-biases",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T11:35:04.269510+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

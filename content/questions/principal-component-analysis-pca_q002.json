@@ -1,0 +1,32 @@
+{
+  "content_version": 2,
+  "id": "principal-component-analysis-pca_q002",
+  "topic_ids": [
+    "principal-component-analysis-pca"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mechanism",
+  "difficulty": "beginner",
+  "question": "Why do we center the data before computing PCA?",
+  "direct_answer": "To make the covariance reflect spread around the mean rather than the absolute location of the cloud.",
+  "expanded_answer": "If features are not centered, the mean offset can bias the covariance and distort the geometry PCA is trying to summarize. Centering makes PCA focus on variation rather than position in feature space.",
+  "key_points": [
+    "Subtract feature means first",
+    "Covariance should measure spread, not location",
+    "Centering simplifies geometry"
+  ],
+  "common_wrong_ideas": [
+    "Centering is just a numerical trick with no effect on PCA",
+    "PCA works the same on uncentered data"
+  ],
+  "concept_refresher_topic_id": "principal-component-analysis-pca",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T07:51:18.340699+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

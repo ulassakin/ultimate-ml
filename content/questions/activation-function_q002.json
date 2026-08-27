@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "activation-function_q002",
+  "topic_ids": [
+    "activation-function"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mechanism",
+  "difficulty": "intermediate",
+  "question": "Why does using the identity function as an activation make a deep network effectively linear?",
+  "direct_answer": "Because composing linear layers with no nonlinearity collapses to one linear map.",
+  "expanded_answer": "If every layer is linear, then stacking layers does not create new kinds of transformations; the whole network can be rewritten as a single affine transformation. Nonlinear activations are what prevent this collapse and allow richer function classes.",
+  "key_points": [
+    "Linear maps compose to linear maps",
+    "Depth alone is not enough",
+    "Nonlinearity creates expressiveness"
+  ],
+  "common_wrong_ideas": [
+    "More layers always mean more expressiveness",
+    "A bias term alone makes the network nonlinear",
+    "Identity is a useful hidden-layer activation"
+  ],
+  "concept_refresher_topic_id": "activation-function",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T11:41:11.293079+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

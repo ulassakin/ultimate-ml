@@ -1,0 +1,32 @@
+{
+  "content_version": 2,
+  "id": "principal-component-analysis-pca_q004",
+  "topic_ids": [
+    "principal-component-analysis-pca"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mathematical_intuition",
+  "difficulty": "intermediate",
+  "question": "What is the geometric meaning of an eigenvector in PCA?",
+  "direct_answer": "It is a direction that the covariance matrix stretches or shrinks without rotating.",
+  "expanded_answer": "For a covariance matrix, an eigenvector is a special axis of the data cloud. After applying the covariance transform, the vector still points in the same direction; only its length changes by the eigenvalue.",
+  "key_points": [
+    "Direction preserved under transformation",
+    "Only scale changes",
+    "Acts like a stable axis"
+  ],
+  "common_wrong_ideas": [
+    "Eigenvectors are just algebraic artifacts",
+    "Any direction can be an eigenvector if normalized"
+  ],
+  "concept_refresher_topic_id": "principal-component-analysis-pca",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T07:51:18.340699+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

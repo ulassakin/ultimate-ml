@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "activation-function_q003",
+  "topic_ids": [
+    "activation-function"
+  ],
+  "question_type": "conceptual",
+  "question_category": "intuition",
+  "difficulty": "beginner",
+  "question": "Why are nonlinear activation functions important in neural networks?",
+  "direct_answer": "They let the network represent complex, non-linear relationships.",
+  "expanded_answer": "Without nonlinearity, the model can only bend data in limited ways. Nonlinear activations let each layer reshape and gate information, so stacked layers can build hierarchical representations instead of staying equivalent to a single linear model.",
+  "key_points": [
+    "Enable complex decision boundaries",
+    "Allow hierarchical feature building",
+    "Prevent collapse to linear behavior"
+  ],
+  "common_wrong_ideas": [
+    "They are mainly for numerical stability only",
+    "Any activation works the same",
+    "Nonlinearity is only useful in output layers"
+  ],
+  "concept_refresher_topic_id": "activation-function",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T11:41:11.293079+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

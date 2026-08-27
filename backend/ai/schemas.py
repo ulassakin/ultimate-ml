@@ -55,9 +55,17 @@ class TopicQualityReport(BaseModel):
     confidence: Literal["high", "medium", "low"] = "medium"
 
 
+class TopicQualityChange(BaseModel):
+    """A concise claim about a material edit; verified against a backend diff."""
+    field_path: str = Field(min_length=1)
+    change_type: Literal["replace", "remove", "add"]
+    reason: str = Field(min_length=1)
+
+
 class TopicQualityReview(BaseModel):
     corrected_topic: TopicDraft
     quality_report: TopicQualityReport
+    changes: list[TopicQualityChange] = []
 
 
 class QuestionDraftItem(BaseModel):

@@ -1,0 +1,34 @@
+{
+  "content_version": 2,
+  "id": "neural-network_q007",
+  "topic_ids": [
+    "neural-network"
+  ],
+  "question_type": "conceptual",
+  "question_category": "comparison",
+  "difficulty": "intermediate",
+  "question": "How is a neural network different from a linear model?",
+  "direct_answer": "A neural network can model nonlinear relationships; a linear model cannot.",
+  "expanded_answer": "A linear model predicts using one linear combination of inputs. A neural network composes multiple affine transforms with nonlinear activations, which lets it represent curved decision boundaries and more complex interactions.",
+  "key_points": [
+    "Linear vs nonlinear",
+    "Composed layers",
+    "Richer decision boundaries",
+    "More expressive hypothesis class"
+  ],
+  "common_wrong_ideas": [
+    "A neural network is just a bigger linear model",
+    "Linear models always outperform neural networks",
+    "Nonlinearity is optional if the model is deep"
+  ],
+  "concept_refresher_topic_id": "neural-network",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T11:39:48.859306+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

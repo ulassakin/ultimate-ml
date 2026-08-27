@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "backpropagation_q007",
+  "topic_ids": [
+    "backpropagation"
+  ],
+  "question_type": "conceptual",
+  "question_category": "application",
+  "difficulty": "intermediate",
+  "question": "Why is backpropagation considered the mathematical engine inside neural network training frameworks?",
+  "direct_answer": "Because it provides the gradient information needed to update every trainable parameter in a model.",
+  "expanded_answer": "Modern frameworks can build a computation graph during the forward pass and then use backpropagation to compute parameter gradients automatically. Those gradients are what optimizers like SGD and Adam use to train the network.",
+  "key_points": [
+    "Produces training gradients",
+    "Works with optimizers",
+    "Implemented by deep learning frameworks"
+  ],
+  "common_wrong_ideas": [
+    "Frameworks train by guessing better weights directly",
+    "Backprop is only a theoretical idea, not used in practice",
+    "Optimizers replace backprop"
+  ],
+  "concept_refresher_topic_id": "backpropagation",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T11:56:15.256276+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

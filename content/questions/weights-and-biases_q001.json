@@ -1,0 +1,34 @@
+{
+  "content_version": 2,
+  "id": "weights-and-biases_q001",
+  "topic_ids": [
+    "weights-and-biases"
+  ],
+  "question_type": "conceptual",
+  "question_category": "foundation",
+  "difficulty": "beginner",
+  "question": "What are weights and biases in a neural network?",
+  "direct_answer": "They are the learned numeric parameters of the model.",
+  "expanded_answer": "Weights and biases are the parameters a neural network learns from data. Weights control how strongly each input influences the output, and biases shift the activation up or down. Together they let the network represent flexible functions rather than fixed rules.",
+  "key_points": [
+    "Weights and biases are learned parameters, not the learning algorithm",
+    "Weights scale input contributions",
+    "Biases shift the neuron’s response",
+    "They are updated during training to reduce loss"
+  ],
+  "common_wrong_ideas": [
+    "Weights and biases are the same as the optimizer",
+    "They are fixed constants chosen by hand",
+    "Only weights matter and biases are optional in all cases"
+  ],
+  "concept_refresher_topic_id": "weights-and-biases",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T11:35:04.269510+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

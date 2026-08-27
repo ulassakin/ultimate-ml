@@ -1,0 +1,34 @@
+{
+  "content_version": 2,
+  "id": "feature-scaling-and-standardization_q005",
+  "topic_ids": [
+    "feature-scaling-and-standardization"
+  ],
+  "question_type": "conceptual",
+  "question_category": "application",
+  "difficulty": "intermediate",
+  "question": "In what kinds of ML methods is feature scaling especially important, and why?",
+  "direct_answer": "It is especially important in distance-based, gradient-based, and variance-based methods because those methods depend on numeric scale.",
+  "expanded_answer": "Feature scaling matters most when the algorithm uses geometry or optimization directly. For k-NN, k-means, and many clustering methods, scale affects distances and assignments. For linear models trained with gradient descent, scaling can improve conditioning and speed convergence. For PCA and other covariance-based methods, scale changes which directions appear most variable. Tree-based models are often less sensitive because they split on thresholds rather than Euclidean distances, though scaling can still matter in some pipelines.",
+  "key_points": [
+    "Distance-based methods",
+    "Gradient-based optimization",
+    "Variance/covariance-based methods",
+    "Trees are often less sensitive"
+  ],
+  "common_wrong_ideas": [
+    "Scaling is only for neural networks",
+    "Tree models always need scaling just like k-NN",
+    "If one model does not need scaling, no model does"
+  ],
+  "concept_refresher_topic_id": "feature-scaling-and-standardization",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T07:47:33.572266+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

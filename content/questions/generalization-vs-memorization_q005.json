@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "generalization-vs-memorization_q005",
+  "topic_ids": [
+    "generalization-vs-memorization"
+  ],
+  "question_type": "conceptual",
+  "question_category": "research_relevance",
+  "difficulty": "advanced",
+  "question": "Why is the distinction between generalization and memorization especially important in modern ML research?",
+  "direct_answer": "Because researchers want models that transfer reliably, not just models that can interpolate the training set.",
+  "expanded_answer": "Modern models often have enough capacity to fit huge datasets and even memorize spurious details. That makes it crucial to ask whether improvements come from learning robust, transferable structure or from exploiting dataset-specific artifacts. This distinction affects how we evaluate architectures, training methods, and data quality, and it matters for deployment where models face new inputs.",
+  "key_points": [
+    "Large models can memorize very effectively",
+    "Researchers care about transfer to new settings",
+    "Dataset artifacts can inflate apparent performance",
+    "Evaluation should test robustness and out-of-sample behavior"
+  ],
+  "common_wrong_ideas": [
+    "Thinking larger models automatically generalize better",
+    "Treating training accuracy as the main research success criterion"
+  ],
+  "concept_refresher_topic_id": "generalization-vs-memorization",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T11:59:38.012659+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

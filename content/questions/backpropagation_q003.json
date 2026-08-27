@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "backpropagation_q003",
+  "topic_ids": [
+    "backpropagation"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mechanism",
+  "difficulty": "intermediate",
+  "question": "What does each layer need from the forward pass in order for backpropagation to work efficiently?",
+  "direct_answer": "It needs enough saved intermediate information to compute local derivatives during the backward pass.",
+  "expanded_answer": "Backprop is efficient because each layer stores values from the forward pass, such as inputs or activations, that are needed to compute derivatives of that operation. Without these saved values, the backward computation would have to recompute much more from scratch.",
+  "key_points": [
+    "Forward-pass caches are reused",
+    "Local derivatives depend on stored values",
+    "Efficiency comes from avoiding recomputation"
+  ],
+  "common_wrong_ideas": [
+    "The backward pass needs only the final loss value",
+    "No forward information is needed at all",
+    "Backprop stores every possible intermediate indefinitely"
+  ],
+  "concept_refresher_topic_id": "backpropagation",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T11:56:15.256276+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

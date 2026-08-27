@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "cost-function_q006",
+  "topic_ids": [
+    "cost-function"
+  ],
+  "question_type": "conceptual",
+  "question_category": "misconception",
+  "difficulty": "intermediate",
+  "question": "Does a low training cost always mean a good model?",
+  "direct_answer": "No; it can still overfit and generalize poorly.",
+  "expanded_answer": "A model can achieve a very low cost on the training set by fitting noise or idiosyncrasies in that data. Good performance usually depends on both the training objective and how well the model generalizes to unseen examples.",
+  "key_points": [
+    "Low training cost does not guarantee generalization",
+    "Overfitting can still happen",
+    "Validation/test performance matters too"
+  ],
+  "common_wrong_ideas": [
+    "If the cost is low, the model must be good",
+    "Training cost and generalization are the same thing",
+    "Minimizing cost eliminates overfitting automatically"
+  ],
+  "concept_refresher_topic_id": "cost-function",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T11:58:44.045789+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

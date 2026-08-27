@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "weights-and-biases_q007",
+  "topic_ids": [
+    "weights-and-biases"
+  ],
+  "question_type": "conceptual",
+  "question_category": "application",
+  "difficulty": "intermediate",
+  "question": "Why do neural networks usually have weights and biases in every layer?",
+  "direct_answer": "Because each layer needs its own learnable transformation.",
+  "expanded_answer": "Each layer performs a different linear transformation of its inputs before applying an activation. Separate weights and biases let each layer learn a different representation, so the network can build more complex behavior step by step.",
+  "key_points": [
+    "Each layer has its own parameters",
+    "Layers learn different transformations",
+    "This stacking enables expressive models"
+  ],
+  "common_wrong_ideas": [
+    "All layers share the same weights by default",
+    "Only the first layer needs parameters",
+    "Biases are unnecessary once there are multiple layers"
+  ],
+  "concept_refresher_topic_id": "weights-and-biases",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T11:35:04.269510+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

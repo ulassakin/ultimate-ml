@@ -1,0 +1,34 @@
+{
+  "content_version": 2,
+  "id": "weights-and-biases_q002",
+  "topic_ids": [
+    "weights-and-biases"
+  ],
+  "question_type": "conceptual",
+  "question_category": "mechanism",
+  "difficulty": "beginner",
+  "question": "What does a single neuron compute before applying its activation function?",
+  "direct_answer": "A weighted sum of inputs plus a bias.",
+  "expanded_answer": "A neuron first forms a pre-activation value by taking the dot product of its input vector and weight vector, then adding a bias: z = w^T x + b. This value is then passed through an activation function such as ReLU or sigmoid.",
+  "key_points": [
+    "Compute w^T x",
+    "Add bias b",
+    "Result is the pre-activation z",
+    "Activation is applied after this step"
+  ],
+  "common_wrong_ideas": [
+    "The activation comes before the linear combination",
+    "Bias multiplies the inputs instead of shifting them",
+    "The neuron just averages inputs equally"
+  ],
+  "concept_refresher_topic_id": "weights-and-biases",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T11:35:04.269510+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

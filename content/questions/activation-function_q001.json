@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "activation-function_q001",
+  "topic_ids": [
+    "activation-function"
+  ],
+  "question_type": "conceptual",
+  "question_category": "foundation",
+  "difficulty": "beginner",
+  "question": "What does an activation function do in a neural network neuron?",
+  "direct_answer": "It transforms the neuron’s weighted sum into the output signal.",
+  "expanded_answer": "A neuron first computes a pre-activation value from its inputs, weights, and bias. The activation function then maps that value to the neuron’s output. This mapping is what lets a network do more than just linear combination.",
+  "key_points": [
+    "Takes pre-activation to output",
+    "Acts pointwise on each neuron",
+    "Introduces the signal used by later layers"
+  ],
+  "common_wrong_ideas": [
+    "It adds more parameters by itself",
+    "It is the same as a weight matrix",
+    "It only matters at the final layer"
+  ],
+  "concept_refresher_topic_id": "activation-function",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T11:41:11.293079+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

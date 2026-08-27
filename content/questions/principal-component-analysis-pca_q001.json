@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "principal-component-analysis-pca_q001",
+  "topic_ids": [
+    "principal-component-analysis-pca"
+  ],
+  "question_type": "conceptual",
+  "question_category": "foundation",
+  "difficulty": "beginner",
+  "question": "What is PCA trying to do to a dataset, in one sentence?",
+  "direct_answer": "It finds a new orthogonal coordinate system that captures the data’s variance as efficiently as possible.",
+  "expanded_answer": "PCA re-expresses the data in a rotated coordinate system whose axes are chosen to align with directions of maximal spread in the data cloud. This often makes the representation more compact and easier to analyze.",
+  "key_points": [
+    "Linear change of basis",
+    "Orthogonal axes",
+    "Maximizes variance along early directions",
+    "Useful for compression and visualization"
+  ],
+  "common_wrong_ideas": [
+    "PCA selects features by prediction power",
+    "PCA changes the underlying data distribution nonlinearly"
+  ],
+  "concept_refresher_topic_id": "principal-component-analysis-pca",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T07:51:18.340699+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

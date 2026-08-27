@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "dimensionality-reduction_q001",
+  "topic_ids": [
+    "dimensionality-reduction"
+  ],
+  "question_type": "conceptual",
+  "question_category": "foundation",
+  "difficulty": "beginner",
+  "question": "What is dimensionality reduction in machine learning?",
+  "direct_answer": "It is the process of representing data with fewer variables while keeping useful structure.",
+  "expanded_answer": "Dimensionality reduction maps data from a high-dimensional space into a lower-dimensional one. The goal is not just compression, but preserving the structure that matters for analysis, visualization, or downstream tasks.",
+  "key_points": [
+    "Fewer variables than the original data",
+    "Keeps useful structure if possible",
+    "Used for compression, visualization, and learning"
+  ],
+  "common_wrong_ideas": [
+    "It always means throwing away important information",
+    "It is the same thing as feature scaling",
+    "It only refers to visualization methods"
+  ],
+  "concept_refresher_topic_id": "dimensionality-reduction",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T10:05:47.493182+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

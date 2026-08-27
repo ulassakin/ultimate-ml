@@ -19,7 +19,7 @@ Saved learning works offline: browse a topic, answer a question, reveal its answ
 ```text
 Idea, transcript, or existing draft
 → structured AI authoring draft
-→ explicit AI quality review/repair
+→ optional AI quality review/repair
 → human edit and provenance inspection
 → explicit approval
 → conceptual questions
@@ -100,8 +100,8 @@ There is no relationship retrieval, resolver call, or hidden metadata cost. Loca
 1. Start the app and open **Settings**. Confirm a key is detected and keep or intentionally change the $5 budget.
 2. Open **Create topic**, provide title, category, difficulty, depth, and focus.
 3. Review the authoring-only estimate and choose **Generate draft**. The new draft shows **Quality review: Not run**.
-4. Open the draft or Draft Queue, review/edit the content, and explicitly choose **Run Quality Review**. This sends the existing full draft to the reviewer; it never regenerates the topic or touches questions.
-5. When review status is **Ready**, save any local edits and choose **Validate & approve**. The backend owns the durable topic ID and writes portable content JSON.
+4. Open the draft or Draft Queue and inspect/edit the content. You may choose **Run Quality Review** first; it sends the existing full draft to the reviewer and never regenerates the topic or touches questions. A local risk hint recommends review for math-heavy, source-derived, or technically complex topics.
+5. Choose **Approve** after schema, taxonomy, and deterministic validation pass. Review is optional by default: unreviewed or failed-review drafts can be approved after a one-time confirmation, while a completed review with real unresolved blockers still prevents approval. The backend owns the durable topic ID and writes portable content JSON.
 6. Generate conceptual question candidates only when desired, then review and locally approve selected questions into Daily Review.
 
 ## Existing draft quality review
@@ -109,6 +109,8 @@ There is no relationship retrieval, resolver call, or hidden metadata cost. Loca
 Earlier paid AI drafts are never regenerated or automatically changed when the quality gate improves. Active legacy drafts show **Quality review: Not run** until the user explicitly runs review.
 
 An existing-draft review stores a pre-review snapshot and a separate repaired revision in local SQLite. It is idempotent by payload hash and reviewer prompt version: reopening/reusing the same reviewed revision does not spend again; **Run explicit re-review** is a separately estimated, deliberate call. Reviewing never creates, deletes, approves, or changes questions, imports, review history, or approved topics.
+
+Quality Review is a focused correctness pass, not a second authoring pass. It preserves correct prose and makes the minimum material edits for technical, mathematical, taxonomy/schema, provenance, or misleading-content issues. The backend derives a structured field-level diff from the original and final payload, verifies model-reported changes and fixed-issue claims against that diff, removes stale report entries after normalization, and permits **Ready** only when the final payload and report agree. Each review response and local usage record reports its input tokens, output tokens, and estimated cost; no hidden resolver or relationship call is made.
 
 ## Local corrections and question recovery
 

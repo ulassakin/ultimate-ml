@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "dimensionality-reduction_q002",
+  "topic_ids": [
+    "dimensionality-reduction"
+  ],
+  "question_type": "conceptual",
+  "question_category": "comparison",
+  "difficulty": "intermediate",
+  "question": "How is feature selection different from feature extraction?",
+  "direct_answer": "Feature selection keeps original features; feature extraction creates new ones from them.",
+  "expanded_answer": "Feature selection chooses a subset of the existing variables, so the result stays interpretable in the original measurement space. Feature extraction combines or transforms the original variables into new coordinates, which can be more expressive but less directly interpretable.",
+  "key_points": [
+    "Selection = subset of original features",
+    "Extraction = new derived features",
+    "Selection is usually more interpretable"
+  ],
+  "common_wrong_ideas": [
+    "Feature extraction is just picking the best columns",
+    "Feature selection always improves performance",
+    "New features must be easier to interpret"
+  ],
+  "concept_refresher_topic_id": "dimensionality-reduction",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T10:05:47.493182+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}

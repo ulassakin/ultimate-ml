@@ -1,0 +1,33 @@
+{
+  "content_version": 2,
+  "id": "generalization-vs-memorization_q004",
+  "topic_ids": [
+    "generalization-vs-memorization"
+  ],
+  "question_type": "conceptual",
+  "question_category": "misconception",
+  "difficulty": "intermediate",
+  "question": "Why can a high-capacity model sometimes fit randomized labels, and what does that tell us?",
+  "direct_answer": "Because it has enough flexibility to store arbitrary mappings, showing that low training loss alone does not imply meaningful learning.",
+  "expanded_answer": "If a model is expressive enough, it can match even labels with no real relationship to the inputs. That means the training objective can be minimized without discovering a useful pattern. This is an important warning: a good fit on the training set may reflect memorization capacity rather than extraction of structure that will transfer to new data.",
+  "key_points": [
+    "High capacity allows arbitrary fitting",
+    "Random labels remove real predictive structure",
+    "Low loss can be achieved without meaningful learning",
+    "Generalization requires more than interpolation of the training set"
+  ],
+  "common_wrong_ideas": [
+    "Assuming any fit must reflect true pattern discovery",
+    "Believing model size alone guarantees better generalization"
+  ],
+  "concept_refresher_topic_id": "generalization-vs-memorization",
+  "generation_metadata": {
+    "generated_by_ai": true,
+    "provider": "openai",
+    "model": "gpt-5.4-mini",
+    "prompt_version": "question-authoring-v1",
+    "generated_at": "2026-08-27T11:59:38.012659+00:00",
+    "user_focus": "",
+    "review_state": "approved"
+  }
+}
