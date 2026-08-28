@@ -41,6 +41,18 @@ make dev
 
 Open <http://127.0.0.1:8000>. Local drafts, settings, usage events, review history, and the SQLite database live under `data/` and are ignored by Git.
 
+## UI refresh
+
+The frontend uses a lightweight, framework-free visual system designed to make long-form ML learning feel calm, focused, and polished without changing any product behavior. It uses a warm neutral canvas, one muted teal accent, editorial serif headings, generous reading widths, and subtle surface/border/shadow hierarchy.
+
+The design tokens and shared component treatment live in `frontend/ui-refresh.css`, loaded last by `frontend/index.html`. This keeps the existing phase scripts, routes, API calls, event handlers, MathJax rendering, and local-first flows intact while consistently styling navigation, dashboards, topic readers, review sessions, forms, editors, queues, statuses, and empty states. The responsive navigation scrolls horizontally on narrow screens instead of hiding destinations; all controls retain clear focus and disabled states.
+
+Quick manual UI smoke test:
+
+1. Open Dashboard, Knowledge, and a topic with mathematics; verify the reading width, cards, tags, image, and equations remain readable.
+2. Open Daily Review, Create Topic, Settings, Import YouTube, Draft Queue, and a draft editor; verify primary/secondary actions, inputs, notices, and loading/error states remain usable.
+3. On a narrow browser window, verify navigation remains reachable, forms become one column, and draft/editor content remains horizontally usable.
+
 ## Architecture
 
 - `backend/` — FastAPI, SQLite, content validation, SRS scheduler, and backend-only AI integration

@@ -11,7 +11,7 @@ def create_topic_draft(database, draft_id, payload):
     database.create_draft(draft_id, "topic", payload["title"], payload)
 
 
-def unreviewed_payload(title="Weights and Biases"):
+def unreviewed_payload(title="Optional Review Local Approval"):
     payload = ready_payload() | {"title": title, "category": "ml_fundamentals", "concept_type": "broad_concept"}
     payload.pop("quality_report", None)
     payload.update({"quality_review_state": "not_run", "quality_status": "not_reviewed"})
@@ -29,7 +29,7 @@ def test_valid_not_run_draft_approves_without_provider_call(tmp_path, monkeypatc
     assert validation["quality_review_recommendation"]["level"] == "low"
     approved = client.post("/api/ai/drafts/weights/approve")
     assert approved.status_code == 200
-    assert approved.json()["topic"]["id"] == "weights-and-biases"
+    assert approved.json()["topic"]["id"] == "optional-review-local-approval"
     assert database.monthly_usage(main.datetime.now(main.timezone.utc).strftime("%Y-%m"))[0] == 0
 
 
